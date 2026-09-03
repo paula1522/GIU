@@ -4,15 +4,15 @@ public class Constantes {
     private Constantes() {
     }
 public static final String RUTA_ARCHIVO_PROPIEDADES = 
-        "/applications/config/EAF/CO_Claro_IntCus_EAF_Domain_PR/config/liga-campeones-bff/liga-campeones.properties";
+        "/applications/config/GIU-BFF/giu.properties";
     
   //Intenta leer de las Variables de Entorno del Sistema JVM
     public static final String SYSTEM_PROPERTY_PERFIL =
-            "system.liga.bff.profile";
+            "system.giu.bff.profile";
     
   //Intenta leer de las Variables de Entorno del Sistema Operativo
     public static final String ENV_PROFILE =
-            "LIGA_BFF_PROFILE";
+            "GIU_BFF_PROFILE";
     //CONFIGURACION DE BASE DE DATOS PARA CARGUE DE PROPIEDADES
     public static final String NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES =  "system.db.jndi.name";
     public static final String JDBC_CARGUE_DE_PROPS_URL =  "system.db.local.url";
@@ -20,8 +20,8 @@ public static final String RUTA_ARCHIVO_PROPIEDADES =
     public static final String JDBC_CARGUE_DE_PROPS_PASSWORD =  "system.db.local.password";
     public static final String JDBC_CARGUE_DE_PROPS_DRIVER =  "system.db.local.driver";
 
-    public static final String APLICACION = "LigaDeCampeonesBFF";
-    public static final String NOMBRE_APLICACION_BASE_DATOS = "LIGA_CAMPEONES_WEB";
+    public static final String APLICACION = "GIUBFF";
+    public static final String NOMBRE_APLICACION_BASE_DATOS = "GIU_WEB";
     public static final String CONSULTA_DE_PROPIEDADES = "system.db.query.parametros";
 
        
@@ -51,8 +51,8 @@ public static final String RUTA_ARCHIVO_PROPIEDADES =
     
     public static final String ENDPOINT_WS_SERGENERAL ="system.claro.proxies.ser-general-api";
     public static final String ENPOINT_AUDIT = "system.claro.proxies.endpoint.registro.auditoria";
-    public static final String ENDPOINT_WS_LIGA_CAMPEONES = "system.claro.proxies.liga-campeones-api";
-    public static final String ENDPOINT_GENERATE_TOKEN_WS_LIGA_CAMPEONES = "system.claro.auth.url";
+    public static final String ENDPOINT_WS_GIU = "system.claro.proxies.giu-api";
+    public static final String ENDPOINT_GENERATE_TOKEN_WS_GIU = "system.claro.auth.url";
     public static final String ENDPOINT_WS_SUCCESS_FACTOR = "system.claro.proxies.successFactor";
     
     

@@ -536,7 +536,7 @@ public class Configurador {
 
         ThreadContext.put(
                 "UUID",
-                "LIGA-" + Long.toString(
+                "GIU-" + Long.toString(
                         param.getUuid()));
 
         return param;
