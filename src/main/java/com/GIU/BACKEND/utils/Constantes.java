@@ -4,7 +4,7 @@ public class Constantes {
     private Constantes() {
     }
 public static final String RUTA_ARCHIVO_PROPIEDADES = 
-        "/applications/config/GIU-BFF/giu.properties";
+        "/applications/config/EAF/CO_Claro_IntCus_EAF_Domain_PR/config/GIU-BFF/giu.properties";
     
   //Intenta leer de las Variables de Entorno del Sistema JVM
     public static final String SYSTEM_PROPERTY_PERFIL =
