@@ -90,6 +90,7 @@ public class Propiedades {
 
             conn = utilsBD.obtenerConexion(
 
+                "JDBC",
                 getPropiedad(Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES),
                 getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_URL),
                 getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_USER),

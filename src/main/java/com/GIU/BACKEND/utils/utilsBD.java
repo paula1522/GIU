@@ -12,13 +12,14 @@ import org.apache.logging.log4j.Logger;
 
 public class utilsBD {
 
-    private static final Logger logger =
-            LogManager.getLogger(Constantes.APLICACION);
+    private static final Logger logger = LogManager.getLogger(Constantes.APLICACION);
 
     private utilsBD() {
     }
 
+
     public static Connection obtenerConexion(
+            String typeConnection,
             String jndiName,
             String url,
             String user,
@@ -29,7 +30,9 @@ public class utilsBD {
         System.out.println(">>> JNDI: " + jndiName);
 
         // Intento 1: Conexion mediante JNDI
-        if (jndiName != null && !jndiName.trim().isEmpty()) {
+        if ("JNDI".equalsIgnoreCase(typeConnection)
+            && jndiName != null 
+            && !jndiName.trim().isEmpty()) { 
             try {
                 System.out.println(">>> Intentando lookup JNDI");
 
@@ -55,7 +58,10 @@ public class utilsBD {
         }
 
         // Intento 2: Conexion JDBC directa
-        if (url != null && user != null && password != null) {
+        if ("JDBC".equalsIgnoreCase(typeConnection) 
+            && url != null 
+            && user != null 
+            && password != null) {
             try {
 
                 if (driver != null && !driver.trim().isEmpty()) {
