@@ -1,5 +1,7 @@
 ﻿GIU-FRONTEND/node_modules/
 GIU-FRONTEND/dist/
+GIU-FRONTEND/.angular/
+GIU-FRONTEND/GIU-FRONTEND.war
 target/
 
 .classpath
