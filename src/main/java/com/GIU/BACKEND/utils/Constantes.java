@@ -21,7 +21,7 @@ public static final String RUTA_ARCHIVO_PROPIEDADES =
     public static final String JDBC_CARGUE_DE_PROPS_DRIVER =  "system.db.local.driver";
 
     public static final String APLICACION = "GIUBFF";
-    public static final String NOMBRE_APLICACION_BASE_DATOS = "GIU_WEB";
+    public static final String NOMBRE_APLICACION_BASE_DATOS = "GIU_APP";
     public static final String CONSULTA_DE_PROPIEDADES = "system.db.query.parametros";
 
        

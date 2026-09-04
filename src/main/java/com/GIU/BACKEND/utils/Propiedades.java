@@ -3,7 +3,6 @@ package com.GIU.BACKEND.utils;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -12,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -89,13 +86,17 @@ public class Propiedades {
         Statement stmt = null;
 
         try {
-
             System.out.println("[" + Constantes.APLICACION + "] >>> Solicitando conexion a BD");
 
-            conn = obtenerConexionBD();
+            conn = utilsBD.obtenerConexion(
 
-            System.out.println("[" + Constantes.APLICACION + "] >>> Resultado conexion BD: "
-                    + (conn != null ? "OK" : "NULL"));
+                getPropiedad(Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES),
+                getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_URL),
+                getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_USER),
+                getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_PASSWORD),
+                getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_DRIVER)); 
+
+            System.out.println("[" + Constantes.APLICACION + "] >>> Resultado conexion BD: " + (conn != null ? "OK" : "NULL"));
 
             if (conn == null) {
                 logger.warn("No fue posible establecer conexion con la Base de Datos para leer propiedades.");
@@ -149,54 +150,7 @@ public class Propiedades {
         }
     }
 
-    private Connection obtenerConexionBD() {
-    	System.out.println(">>> INICIO obtenerConexionBD");
-    	
-        String jndiName = getPropiedad(Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES);
-        System.out.println(">>> JNDI: " + jndiName);
-
-        // Intento 1: Servidor WebLogic vía DataSource / JNDI (Producción / QA)
-        if (jndiName != null && !jndiName.trim().isEmpty()) {
-            try {
-            	System.out.println(">>> Intentando lookup JNDI");
-                InitialContext ctx = new InitialContext();
-                DataSource ds = (DataSource) ctx.lookup(jndiName.trim());
-                System.out.println(">>> JNDI lookup OK");
-                Connection conn = ds.getConnection();
-                System.out.println(">>> getConnection OK");
-                logger.info("Conexion BD establecida correctamente via JNDI: {}", jndiName);
-                return conn;
-            } catch (Exception e) {
-            	System.out.println(">>> ERROR JNDI: " + e.getMessage());
-            	 logger.warn(
-            	            "No se pudo conectar via JNDI ({}). Intentando conexion JDBC directa...",
-            	            jndiName,
-            	            e
-            	    );
-            }
-        }
-
-        // Intento 2: JDBC Directo para desarrollo Local (Sin WebLogic)
-        String url = getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_URL);
-        String user = getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_USER);
-        String pass = getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_PASSWORD);
-        String driver = getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_DRIVER);
-
-        if (url != null && user != null && pass != null) {
-            try {
-                if (driver != null && !driver.isEmpty()) {
-                    Class.forName(driver.trim());
-                }
-                Connection conn = DriverManager.getConnection(url.trim(), user.trim(), pass.trim());
-                logger.info("Conexion BD establecida correctamente via JDBC Local ({})", url);
-                return conn;
-            } catch (Exception e) {
-                logger.error("Error al establecer conexion JDBC Local para propiedades", e);
-            }
-        }
-
-        return null;
-    }
+    
 
     private void cerrarRecursosBD(ResultSet rs, Statement stmt, Connection conn) {
         try { if (rs != null) rs.close(); } catch (Exception ignored) {}
