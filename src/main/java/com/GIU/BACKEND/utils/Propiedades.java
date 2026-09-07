@@ -82,20 +82,13 @@ public class Propiedades {
 
         System.out.println("[" + Constantes.APLICACION + "] >>> INICIO cargarPropiedadesPorBD");
 
-        Connection conn = null;
-        Statement stmt = null;
-
-        try {
-            System.out.println("[" + Constantes.APLICACION + "] >>> Solicitando conexion a BD");
-
-            conn = utilsBD.obtenerConexion(
-
+        try (Connection conn = utilsBD.obtenerConexion(
                 "JDBC",
                 getPropiedad(Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES),
                 getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_URL),
                 getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_USER),
                 getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_PASSWORD),
-                getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_DRIVER)); 
+                getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_DRIVER))) {
 
             System.out.println("[" + Constantes.APLICACION + "] >>> Resultado conexion BD: " + (conn != null ? "OK" : "NULL"));
 
@@ -144,7 +137,6 @@ public class Propiedades {
             return false;
 
         } finally {
-            cerrarRecursosBD(null, stmt, conn);
 
             System.out.println("[" + Constantes.APLICACION
                     + "] >>> FIN cargarPropiedadesPorBD");

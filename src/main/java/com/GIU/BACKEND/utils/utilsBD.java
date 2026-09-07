@@ -18,6 +18,16 @@ public class utilsBD {
     }
 
 
+    public static Connection obtenerConexion() {
+        return obtenerConexion(
+                "JDBC",
+                null,
+                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_URL),
+                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_USER),
+                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_PASSWORD),
+                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_DRIVER));
+    }
+            
     public static Connection obtenerConexion(
             String typeConnection,
             String jndiName,
