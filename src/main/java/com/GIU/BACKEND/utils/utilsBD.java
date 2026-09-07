@@ -1,4 +1,3 @@
-
 package com.GIU.BACKEND.utils;
 
 import java.sql.Connection;
@@ -15,42 +14,56 @@ public class utilsBD {
     private static final Logger logger = LogManager.getLogger(Constantes.APLICACION);
 
     private utilsBD() {
+
     }
 
-
-    public static Connection obtenerConexion() {
-        return obtenerConexion(
-                "JDBC",
-                null,
-                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_URL),
-                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_USER),
-                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_PASSWORD),
-                Propiedades.getInstance().getPropiedad(Constantes.JDBC_CARGUE_DE_PROPS_DRIVER));
-    }
-            
     public static Connection obtenerConexion(
-            String typeConnection,
-            String jndiName,
-            String url,
-            String user,
-            String password,
-            String driver) {
+            String tipoConexion,
+            String nombreBD) {
 
         System.out.println(">>> INICIO obtenerConexionBD");
+        System.out.println(">>> Tipo conexion: " + tipoConexion);
+        System.out.println(">>> Base de Datos: " + nombreBD);
+
+        String prefijo = Constantes.PREFIJO_PROPIEDADES_BD + nombreBD;
+
+        String jndiName = Propiedades.getInstance()
+                .getPropiedad(prefijo + ".jndi");
+
+        String url = Propiedades.getInstance()
+                .getPropiedad(prefijo + ".url");
+
+        String user = Propiedades.getInstance()
+                .getPropiedad(prefijo + ".user");
+
+        String password = Propiedades.getInstance()
+                .getPropiedad(prefijo + ".password");
+
+        String driver = Propiedades.getInstance()
+                .getPropiedad(prefijo + ".driver");
+
         System.out.println(">>> JNDI: " + jndiName);
 
         // Intento 1: Conexion mediante JNDI
-        if ("JNDI".equalsIgnoreCase(typeConnection)
-            && jndiName != null 
-            && !jndiName.trim().isEmpty()) { 
+        if (Constantes.TIPO_CONEXION_JNDI.equalsIgnoreCase(tipoConexion)
+            && jndiName != null
+            && !jndiName.trim().isEmpty()) {
+
             try {
+
                 System.out.println(">>> Intentando lookup JNDI");
 
                 InitialContext ctx = new InitialContext();
-                DataSource ds = (DataSource) ctx.lookup(jndiName.trim());
+
+                DataSource ds =
+                        (DataSource) ctx.lookup(jndiName.trim());
+
                 System.out.println(">>> JNDI lookup OK");
+
                 Connection conn = ds.getConnection();
+
                 System.out.println(">>> getConnection OK");
+
                 logger.info(
                         "Conexion BD establecida correctamente via JNDI: {}",
                         jndiName);
@@ -58,7 +71,9 @@ public class utilsBD {
                 return conn;
 
             } catch (Exception e) {
-                System.out.println(">>> ERROR JNDI: " + e.getMessage());
+
+                System.out.println(
+                        ">>> ERROR JNDI: " + e.getMessage());
 
                 logger.warn(
                         "No se pudo conectar via JNDI ({}). Intentando conexion JDBC directa...",
@@ -68,10 +83,11 @@ public class utilsBD {
         }
 
         // Intento 2: Conexion JDBC directa
-        if ("JDBC".equalsIgnoreCase(typeConnection) 
-            && url != null 
-            && user != null 
+        if (Constantes.TIPO_CONEXION_JDBC.equalsIgnoreCase(tipoConexion)
+            && url != null
+            && user != null
             && password != null) {
+
             try {
 
                 if (driver != null && !driver.trim().isEmpty()) {

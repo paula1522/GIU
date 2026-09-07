@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
-import com.GIU.BACKEND.service.UsuarioService;
+import com.GIU.BACKEND.service.GestionUsuariosService;
 
 
 @RestController
 @RequestMapping("/api/aplicaciones")
 public class AplicacionController {
 
-    private final UsuarioService usuarioService;
+    private final GestionUsuariosService usuarioService;
 
-    public AplicacionController(UsuarioService usuarioService) {
+    public AplicacionController(GestionUsuariosService usuarioService) {
         this.usuarioService = usuarioService;
     }
 

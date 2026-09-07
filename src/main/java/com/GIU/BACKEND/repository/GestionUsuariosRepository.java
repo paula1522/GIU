@@ -32,7 +32,9 @@ public class GestionUsuariosRepository {
 
         List<UsuarioAplicacionDTO> usuarios = new ArrayList<>();
 
-        try (Connection conn = utilsBD.obtenerConexion()) {
+        try (Connection conn = utilsBD.obtenerConexion(
+                Constantes.TIPO_CONEXION_JDBC,
+                "local")) {
 
 
             if (conn == null) {
@@ -130,5 +132,5 @@ public class GestionUsuariosRepository {
     }
 
     /* PL- Obtener informacion de usuarios  */
-    
+
 }

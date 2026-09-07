@@ -14,11 +14,9 @@ public static final String RUTA_ARCHIVO_PROPIEDADES =
     public static final String ENV_PROFILE =
             "GIU_BFF_PROFILE";
     //CONFIGURACION DE BASE DE DATOS PARA CARGUE DE PROPIEDADES
-    public static final String NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES =  "system.db.jndi.name";
-    public static final String JDBC_CARGUE_DE_PROPS_URL =  "system.db.local.url";
-    public static final String JDBC_CARGUE_DE_PROPS_USER =  "system.db.local.user";
-    public static final String JDBC_CARGUE_DE_PROPS_PASSWORD =  "system.db.local.password";
-    public static final String JDBC_CARGUE_DE_PROPS_DRIVER =  "system.db.local.driver";
+    public static final String TIPO_CONEXION_JDBC = "JDBC";
+    public static final String TIPO_CONEXION_JNDI = "JNDI";
+    public static final String PREFIJO_PROPIEDADES_BD = "system.db.";
 
     public static final String APLICACION = "GIUBFF";
     public static final String NOMBRE_APLICACION_BASE_DATOS = "GIU_APP";

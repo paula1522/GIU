@@ -16,7 +16,7 @@ import com.GIU.BACKEND.model.CrearUsuarioRequest;
 import com.GIU.BACKEND.model.GestionarEstadoUsuarioRequest;
 import com.GIU.BACKEND.model.ModificarUsuarioRequest;
 import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
-import com.GIU.BACKEND.service.UsuarioService;
+import com.GIU.BACKEND.service.GestionUsuariosService;
 
 @RestController
 @RequestMapping("/api/aplicaciones")

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
 import com.GIU.BACKEND.repository.GestionUsuariosRepository;
 @Service
-public class UsuarioService {
+public class GestionUsuariosService {
     private GestionUsuariosRepository gestionUsuariosRepository = new GestionUsuariosRepository();
 
 
