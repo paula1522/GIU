@@ -27,9 +27,6 @@ public class utilsBD {
 
         String prefijo = Constantes.PREFIJO_PROPIEDADES_BD + nombreBD;
 
-        String jndiName = Propiedades.getInstance()
-                .getPropiedad(prefijo + ".jndi");
-
         String url = Propiedades.getInstance()
                 .getPropiedad(prefijo + ".url");
 
@@ -42,7 +39,11 @@ public class utilsBD {
         String driver = Propiedades.getInstance()
                 .getPropiedad(prefijo + ".driver");
 
+        // JNDI fijo
+        String jndiName = Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES;
+
         System.out.println(">>> JNDI: " + jndiName);
+
 
         // Intento 1: Conexion mediante JNDI
         if (Constantes.TIPO_CONEXION_JNDI.equalsIgnoreCase(tipoConexion)
@@ -76,7 +77,7 @@ public class utilsBD {
                         ">>> ERROR JNDI: " + e.getMessage());
 
                 logger.warn(
-                        "No se pudo conectar via JNDI ({}). Intentando conexion JDBC directa...",
+                        "Error al establecer conexion mediante JNDI: {}",
                         jndiName,
                         e);
             }

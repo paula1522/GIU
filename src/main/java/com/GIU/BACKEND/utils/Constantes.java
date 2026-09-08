@@ -17,6 +17,9 @@ public static final String RUTA_ARCHIVO_PROPIEDADES =
     public static final String TIPO_CONEXION_JDBC = "JDBC";
     public static final String TIPO_CONEXION_JNDI = "JNDI";
     public static final String PREFIJO_PROPIEDADES_BD = "system.db.";
+    public static final String NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES =  "system.db.jndi.name";
+    public static final String NOMBRE_BD_LOCAL = "local";
+
 
     public static final String APLICACION = "GIUBFF";
     public static final String NOMBRE_APLICACION_BASE_DATOS = "GIU_APP";

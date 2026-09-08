@@ -84,7 +84,7 @@ public class Propiedades {
 
         try (Connection conn = utilsBD.obtenerConexion(
             Constantes.TIPO_CONEXION_JDBC,
-            "local")) {
+            Constantes.NOMBRE_BD_LOCAL)) {
 
             System.out.println("[" + Constantes.APLICACION + "] >>> Resultado conexion BD: " + (conn != null ? "OK" : "NULL"));
 
