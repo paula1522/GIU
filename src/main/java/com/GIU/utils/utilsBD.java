@@ -17,12 +17,9 @@ public class utilsBD {
     private utilsBD() {
     }
 
-    public static Connection obtenerConexion(
-            String tipoConexion,
-            String nombreBD) {
+    public static Connection obtenerConexion(String nombreBD) {
 
         System.out.println(">>> INICIO obtenerConexionBD");
-        System.out.println(">>> Tipo conexion: " + tipoConexion);
         System.out.println(">>> Base de Datos: " + nombreBD);
 
         String prefijo =
@@ -42,15 +39,12 @@ public class utilsBD {
 
         // JNDI fijo
         String jndiName = Propiedades.getInstance()
-        .getPropiedad(
-                Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES);
+        .getPropiedad(prefijo + ".jndi");
 
         System.out.println(">>> JNDI: " + jndiName);
 
         // Intento 1: Conexion mediante JNDI
-        if (Constantes.TIPO_CONEXION_JNDI.equalsIgnoreCase(tipoConexion)
-                && jndiName != null
-                && !jndiName.trim().isEmpty()) {
+        if (jndiName != null && !jndiName.trim().isEmpty()){
 
             try {
 
@@ -86,10 +80,7 @@ public class utilsBD {
         }
 
         // Intento 2: Conexion JDBC directa
-        if (Constantes.TIPO_CONEXION_JDBC.equalsIgnoreCase(tipoConexion)
-                && url != null
-                && user != null
-                && password != null) {
+        if (url != null && user != null && password != null) {
 
             try {
 

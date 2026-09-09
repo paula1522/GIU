@@ -82,9 +82,7 @@ public class Propiedades {
 
         System.out.println("[" + Constantes.APLICACION + "] >>> INICIO cargarPropiedadesPorBD");
 
-        try (Connection conn = utilsBD.obtenerConexion(
-            Constantes.TIPO_CONEXION_JDBC,
-            Constantes.NOMBRE_BD_LOCAL)) {
+        try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
             System.out.println("[" + Constantes.APLICACION + "] >>> Resultado conexion BD: " + (conn != null ? "OK" : "NULL"));
 

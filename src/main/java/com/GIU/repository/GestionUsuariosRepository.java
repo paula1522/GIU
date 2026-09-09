@@ -35,9 +35,7 @@ public class GestionUsuariosRepository {
 
                 List<UsuarioRequestDTO> usuarios = new ArrayList<>();
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.TIPO_CONEXION_JDBC,
-                                Constantes.NOMBRE_BD_LOCAL)) {
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_USUARIO(?, ?, ?) }";
 
@@ -126,9 +124,7 @@ public class GestionUsuariosRepository {
 
                 List<UsuarioAplicacionDTO> usuarios = new ArrayList<>();
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.TIPO_CONEXION_JDBC,
-                                Constantes.NOMBRE_BD_LOCAL)) {
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_USUARIO_X_APLICACION(?, ?, ?, ?) }";
 
@@ -248,9 +244,7 @@ public class GestionUsuariosRepository {
                         String usuarioRed,
                         Long apliId) {
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.TIPO_CONEXION_JDBC,
-                                Constantes.NOMBRE_BD_LOCAL)) {
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_ROL_USUARIO("
                                         + "?, ?, ?) }";
@@ -322,9 +316,7 @@ public class GestionUsuariosRepository {
                         String numeroIdentificacion,
                         String usuarioCreacion) {
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.TIPO_CONEXION_JDBC,
-                                Constantes.NOMBRE_BD_LOCAL)) {
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_CREAR_USUARIO("
                                         + "?, ?, ?, ?, ?, ?, ?, ?, ?) }";
@@ -394,9 +386,7 @@ public class GestionUsuariosRepository {
                         String numeroIdentificacion,
                         String usuarioModificacion) {
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.TIPO_CONEXION_JDBC,
-                                Constantes.NOMBRE_BD_LOCAL)) {
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_MODIFICAR_USUARIO("
                                         + "?, ?, ?, ?, ?, ?, ?, ?, ?) }";
@@ -478,9 +468,7 @@ public class GestionUsuariosRepository {
                         Long apliId,
                         GestionarRolUsuarioRequest request) {
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.TIPO_CONEXION_JDBC,
-                                Constantes.NOMBRE_BD_LOCAL)) {
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_GESTIONAR_ROL_USUARIO("
                                         + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";

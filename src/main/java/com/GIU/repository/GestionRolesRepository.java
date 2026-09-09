@@ -30,9 +30,7 @@ public class GestionRolesRepository {
 
         List<RolResponseDTO> roles = new ArrayList<>();
 
-        try (Connection conn = utilsBD.obtenerConexion(
-                Constantes.TIPO_CONEXION_JDBC,
-                Constantes.NOMBRE_BD_LOCAL)) {
+        try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
             String sql =
                     "{ ? = call PKG_GIU_GESTION_ROLES.FN_OBTENER_ROL("
