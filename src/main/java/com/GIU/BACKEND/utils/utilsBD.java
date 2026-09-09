@@ -11,10 +11,10 @@ import org.apache.logging.log4j.Logger;
 
 public class utilsBD {
 
-    private static final Logger logger = LogManager.getLogger(Constantes.APLICACION);
+    private static final Logger logger =
+            LogManager.getLogger(Constantes.APLICACION);
 
     private utilsBD() {
-
     }
 
     public static Connection obtenerConexion(
@@ -25,7 +25,8 @@ public class utilsBD {
         System.out.println(">>> Tipo conexion: " + tipoConexion);
         System.out.println(">>> Base de Datos: " + nombreBD);
 
-        String prefijo = Constantes.PREFIJO_PROPIEDADES_BD + nombreBD;
+        String prefijo =
+                Constantes.PREFIJO_PROPIEDADES_BD + nombreBD;
 
         String url = Propiedades.getInstance()
                 .getPropiedad(prefijo + ".url");
@@ -40,15 +41,16 @@ public class utilsBD {
                 .getPropiedad(prefijo + ".driver");
 
         // JNDI fijo
-        String jndiName = Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES;
+        String jndiName = Propiedades.getInstance()
+        .getPropiedad(
+                Constantes.NOMBRE_JNDI_PARA_CARGUE_DE_PROPIEDADES);
 
         System.out.println(">>> JNDI: " + jndiName);
 
-
         // Intento 1: Conexion mediante JNDI
         if (Constantes.TIPO_CONEXION_JNDI.equalsIgnoreCase(tipoConexion)
-            && jndiName != null
-            && !jndiName.trim().isEmpty()) {
+                && jndiName != null
+                && !jndiName.trim().isEmpty()) {
 
             try {
 
@@ -85,9 +87,9 @@ public class utilsBD {
 
         // Intento 2: Conexion JDBC directa
         if (Constantes.TIPO_CONEXION_JDBC.equalsIgnoreCase(tipoConexion)
-            && url != null
-            && user != null
-            && password != null) {
+                && url != null
+                && user != null
+                && password != null) {
 
             try {
 
@@ -95,10 +97,11 @@ public class utilsBD {
                     Class.forName(driver.trim());
                 }
 
-                Connection conn = DriverManager.getConnection(
-                        url.trim(),
-                        user.trim(),
-                        password.trim());
+                Connection conn =
+                        DriverManager.getConnection(
+                                url.trim(),
+                                user.trim(),
+                                password.trim());
 
                 logger.info(
                         "Conexion BD establecida correctamente via JDBC Local ({})",
@@ -111,9 +114,14 @@ public class utilsBD {
                 logger.error(
                         "Error al establecer conexion JDBC Local",
                         e);
+
+                throw new RuntimeException(
+                        "No fue posible establecer conexion con la Base de Datos.",
+                        e);
             }
         }
 
-        return null;
+        throw new RuntimeException(
+                "No fue posible establecer conexion con la Base de Datos.");
     }
 }

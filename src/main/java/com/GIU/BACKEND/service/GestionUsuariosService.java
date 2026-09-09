@@ -4,50 +4,70 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.GIU.BACKEND.model.GestionarRolUsuarioRequest;
 import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
 import com.GIU.BACKEND.model.UsuarioRequestDTO;
+import com.GIU.BACKEND.model.UsuarioRolResponseDTO;
 import com.GIU.BACKEND.repository.GestionUsuariosRepository;
+
 @Service
 public class GestionUsuariosService {
-    private GestionUsuariosRepository gestionUsuariosRepository = new GestionUsuariosRepository();
+        private GestionUsuariosRepository gestionUsuariosRepository = new GestionUsuariosRepository();
 
-    public List<UsuarioRequestDTO> obtenerUsuarios(
-            String usuarioRed,
-            String estado) {
+        public List<UsuarioRequestDTO> obtenerUsuarios(
+                        String usuarioRed,
+                        String estado) {
 
-        return gestionUsuariosRepository
-                .obtenerUsuarios(
-                        usuarioRed,
-                        estado);
-    }
+                return gestionUsuariosRepository
+                                .obtenerUsuarios(
+                                                usuarioRed,
+                                                estado);
+        }
 
-    public List<UsuarioAplicacionDTO> obtenerUsuariosPorAplicacion(
-            Long apliId,
-            String estado) {
+        public List<UsuarioAplicacionDTO> obtenerUsuariosPorAplicacion(
+                        Long apliId,
+                        String estado) {
 
-        return gestionUsuariosRepository
-                .obtenerUsuarioXAplicacion(apliId, estado);
-    }
+                return gestionUsuariosRepository
+                                .obtenerUsuarioXAplicacion(apliId, estado);
+        }
 
-    public void crearUsuario(UsuarioRequestDTO request) {
+        public UsuarioRolResponseDTO obtenerRolUsuario(
+                        String usuarioRed,
+                        Long apliId) {
 
-    gestionUsuariosRepository.crearUsuario(
-            request.getUsuarioRed(),
-            request.getNombre(),
-            request.getCorreo(),
-            request.getNumeroIdentificacion(),
-            request.getUsuarioCreacion());
-}
+                return gestionUsuariosRepository.obtenerRolUsuario(
+                                usuarioRed,
+                                apliId);
+        }
 
+        public void crearUsuario(UsuarioRequestDTO request) {
 
-    public void modificarUsuario(
-        UsuarioRequestDTO request) {
+                gestionUsuariosRepository.crearUsuario(
+                                request.getUsuarioRed(),
+                                request.getNombre(),
+                                request.getCorreo(),
+                                request.getNumeroIdentificacion(),
+                                request.getUsuarioCreacion());
+        }
 
-    gestionUsuariosRepository.modificarUsuario(
-            request.getUsuarioRed(),
-            request.getNombre(),
-            request.getCorreo(),
-            request.getNumeroIdentificacion(),
-            request.getUsuarioModificacion());
+        public void modificarUsuario(
+                        UsuarioRequestDTO request) {
+
+                gestionUsuariosRepository.modificarUsuario(
+                                request.getUsuarioRed(),
+                                request.getNombre(),
+                                request.getCorreo(),
+                                request.getNumeroIdentificacion(),
+                                request.getUsuarioModificacion());
+        }
+
+        public void gestionarRolUsuario(
+        Long apliId,
+        GestionarRolUsuarioRequest request) {
+
+    gestionUsuariosRepository.gestionarRolUsuario(
+            apliId,
+            request);
 }
 }

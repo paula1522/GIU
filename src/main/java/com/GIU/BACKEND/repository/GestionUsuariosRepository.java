@@ -4,6 +4,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +12,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import com.GIU.BACKEND.model.GestionarRolUsuarioRequest;
 import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
 import com.GIU.BACKEND.model.UsuarioRequestDTO;
+import com.GIU.BACKEND.model.UsuarioRolResponseDTO;
 import com.GIU.BACKEND.utils.Constantes;
 import com.GIU.BACKEND.utils.utilsBD;
 
@@ -35,8 +38,6 @@ public class GestionUsuariosRepository {
                 try (Connection conn = utilsBD.obtenerConexion(
                                 Constantes.TIPO_CONEXION_JDBC,
                                 Constantes.NOMBRE_BD_LOCAL)) {
-
-                        validarConexion(conn);
 
                         String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_USUARIO(?, ?, ?) }";
 
@@ -128,8 +129,6 @@ public class GestionUsuariosRepository {
                 try (Connection conn = utilsBD.obtenerConexion(
                                 Constantes.TIPO_CONEXION_JDBC,
                                 Constantes.NOMBRE_BD_LOCAL)) {
-
-                        validarConexion(conn);
 
                         String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_USUARIO_X_APLICACION(?, ?, ?, ?) }";
 
@@ -242,6 +241,76 @@ public class GestionUsuariosRepository {
                 return usuarios;
         }
 
+        /**
+         * Consulta el rol de un usuario para una aplicación específica
+         */
+        public UsuarioRolResponseDTO obtenerRolUsuario(
+                        String usuarioRed,
+                        Long apliId) {
+
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.TIPO_CONEXION_JDBC,
+                                Constantes.NOMBRE_BD_LOCAL)) {
+
+                        String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_ROL_USUARIO("
+                                        + "?, ?, ?) }";
+
+                        try (CallableStatement stmt = conn.prepareCall(sql)) {
+
+                                stmt.registerOutParameter(1, OracleTypes.CURSOR);
+
+                                stmt.setString(2, usuarioRed);
+                                stmt.setLong(3, apliId);
+
+                                // El endpoint no recibe rolId,
+                                // por eso consultamos cualquier rol de esa aplicación.
+                                stmt.setNull(4, Types.NUMERIC);
+
+                                stmt.execute();
+
+                                try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+
+                                        if (rs.next()) {
+
+                                                UsuarioRolResponseDTO usuarioRol = new UsuarioRolResponseDTO();
+
+                                                usuarioRol.setUsuarioRed(
+                                                                rs.getString("USUA_USUARIO_RED"));
+
+                                                usuarioRol.setApliId(
+                                                                rs.getLong("APLI_ID"));
+
+                                                usuarioRol.setRolId(
+                                                                rs.getLong("ROL_ID"));
+
+                                                usuarioRol.setFechaIn(
+                                                                convertirFecha(
+                                                                                rs.getTimestamp("FECHA_IN")));
+
+                                                usuarioRol.setFechaFin(
+                                                                convertirFecha(
+                                                                                rs.getTimestamp("FECHA_FIN")));
+
+                                                return usuarioRol;
+                                        }
+                                }
+
+                                return null;
+
+                        }
+
+                } catch (Exception e) {
+
+                        logger.error(
+                                        "Error consultando rol del usuario: {}",
+                                        usuarioRed,
+                                        e);
+
+                        throw new RuntimeException(
+                                        "Error consultando rol del usuario",
+                                        e);
+                }
+        }
 
         /**
          * Crea un nuevo usuario.
@@ -256,8 +325,6 @@ public class GestionUsuariosRepository {
                 try (Connection conn = utilsBD.obtenerConexion(
                                 Constantes.TIPO_CONEXION_JDBC,
                                 Constantes.NOMBRE_BD_LOCAL)) {
-
-                        validarConexion(conn);
 
                         String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_CREAR_USUARIO("
                                         + "?, ?, ?, ?, ?, ?, ?, ?, ?) }";
@@ -331,8 +398,6 @@ public class GestionUsuariosRepository {
                                 Constantes.TIPO_CONEXION_JDBC,
                                 Constantes.NOMBRE_BD_LOCAL)) {
 
-                        validarConexion(conn);
-
                         String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_MODIFICAR_USUARIO("
                                         + "?, ?, ?, ?, ?, ?, ?, ?, ?) }";
 
@@ -396,21 +461,6 @@ public class GestionUsuariosRepository {
         }
 
         /**
-         * Valida que la conexión a BD esté disponible.
-         */
-        private void validarConexion(Connection conn) {
-
-                if (conn == null) {
-
-                        logger.warn(
-                                        "No fue posible establecer conexion con la Base de Datos.");
-
-                        throw new RuntimeException(
-                                        "No fue posible establecer conexion con la Base de Datos.");
-                }
-        }
-
-        /**
          * Convierte Timestamp a LocalDateTime.
          */
         private java.time.LocalDateTime convertirFecha(
@@ -419,5 +469,109 @@ public class GestionUsuariosRepository {
                 return timestamp != null
                                 ? timestamp.toLocalDateTime()
                                 : null;
+        }
+
+        /**
+         * Asigna un rol a un usuario para una aplicación específica.
+         */
+        public void gestionarRolUsuario(
+                        Long apliId,
+                        GestionarRolUsuarioRequest request) {
+
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.TIPO_CONEXION_JDBC,
+                                Constantes.NOMBRE_BD_LOCAL)) {
+
+                        String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_GESTIONAR_ROL_USUARIO("
+                                        + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+
+                        try (CallableStatement stmt = conn.prepareCall(sql)) {
+
+                                // IN 1 - Aplicación
+                                stmt.setLong(1, apliId);
+
+                                // IN 2 - Rol
+                                stmt.setLong(2, request.getRolId());
+
+                                // IN 3 - Usuario
+                                stmt.setString(3, request.getUsuarioRed());
+
+                                // IN 4 - Operación
+                                // 0 = asignar
+                                stmt.setInt(4, 0);
+
+                                // IN 5 - Fecha inicio
+                                if (request.getFechaIn() != null) {
+                                        stmt.setTimestamp(
+                                                        5,
+                                                        Timestamp.valueOf(request.getFechaIn()));
+                                } else {
+                                        stmt.setNull(5, Types.TIMESTAMP);
+                                }
+
+                                // IN 6 - Fecha fin
+                                if (request.getFechaFin() != null) {
+                                        stmt.setTimestamp(
+                                                        6,
+                                                        Timestamp.valueOf(request.getFechaFin()));
+                                } else {
+                                        stmt.setNull(6, Types.TIMESTAMP);
+                                }
+
+                                // IN 7 - Usuario modificación
+                                stmt.setString(
+                                                7,
+                                                request.getUsuarioModificacion());
+
+                                // OUT 8 - Cursor
+                                stmt.registerOutParameter(
+                                                8,
+                                                OracleTypes.CURSOR);
+
+                                // OUT 9 - Código
+                                stmt.registerOutParameter(
+                                                9,
+                                                OracleTypes.NUMBER);
+
+                                // OUT 10 - Mensaje
+                                stmt.registerOutParameter(
+                                                10,
+                                                OracleTypes.VARCHAR);
+
+                                stmt.execute();
+
+                                int codigoSalida = stmt.getInt(9);
+
+                                String mensajeSalida = stmt.getString(10);
+
+                                // 0 = operación exitosa
+                                if (codigoSalida != 0) {
+
+                                        throw new RuntimeException(
+                                                        mensajeSalida != null
+                                                                        ? mensajeSalida
+                                                                        : "No fue posible asignar el rol al usuario.");
+                                }
+
+                                // El procedimiento devuelve un cursor,
+                                // pero este servicio solamente responde OK.
+                                try (ResultSet rs = (ResultSet) stmt.getObject(8)) {
+                                        // No necesitamos procesarlo.
+                                }
+                        }
+
+                } catch (Exception e) {
+
+                        logger.error(
+                                        "Error asignando rol {} al usuario {} en la aplicación {}",
+                                        request.getRolId(),
+                                        request.getUsuarioRed(),
+                                        apliId,
+                                        e);
+
+                        throw new RuntimeException(
+                                        "Error asignando rol al usuario.",
+                                        e);
+                }
         }
 }
