@@ -1,14 +1,14 @@
-package com.GIU.BACKEND.service;
+package com.giu.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.GIU.BACKEND.model.GestionarRolUsuarioRequest;
-import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
-import com.GIU.BACKEND.model.UsuarioRequestDTO;
-import com.GIU.BACKEND.model.UsuarioRolResponseDTO;
-import com.GIU.BACKEND.repository.GestionUsuariosRepository;
+import com.giu.model.GestionarRolUsuarioRequest;
+import com.giu.model.UsuarioAplicacionDTO;
+import com.giu.model.UsuarioRequestDTO;
+import com.giu.model.UsuarioRolResponseDTO;
+import com.giu.repository.GestionUsuariosRepository;
 
 @Service
 public class GestionUsuariosService {

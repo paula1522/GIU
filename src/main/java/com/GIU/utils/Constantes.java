@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.utils;
+package com.giu.utils;
 
 public class Constantes {
     private Constantes() {

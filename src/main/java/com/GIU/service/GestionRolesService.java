@@ -1,11 +1,11 @@
-package com.GIU.BACKEND.service;
+package com.giu.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.GIU.BACKEND.model.RolResponseDTO;
-import com.GIU.BACKEND.repository.GestionRolesRepository;
+import com.giu.model.RolResponseDTO;
+import com.giu.repository.GestionRolesRepository;
 
 @Service 
 public class GestionRolesService {

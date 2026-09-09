@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.controller;
+package com.giu.controller;
 
 import java.util.List;
 
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.GIU.BACKEND.model.UsuarioRequestDTO;
-import com.GIU.BACKEND.model.UsuarioRolResponseDTO;
-import com.GIU.BACKEND.service.GestionUsuariosService;
+import com.giu.model.UsuarioRequestDTO;
+import com.giu.model.UsuarioRolResponseDTO;
+import com.giu.service.GestionUsuariosService;
 
 @RestController
 @RequestMapping("/api/usuarios")

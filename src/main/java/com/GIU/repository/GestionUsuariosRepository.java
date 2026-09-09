@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.repository;
+package com.giu.repository;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -12,12 +12,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import com.GIU.BACKEND.model.GestionarRolUsuarioRequest;
-import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
-import com.GIU.BACKEND.model.UsuarioRequestDTO;
-import com.GIU.BACKEND.model.UsuarioRolResponseDTO;
-import com.GIU.BACKEND.utils.Constantes;
-import com.GIU.BACKEND.utils.utilsBD;
+import com.giu.model.GestionarRolUsuarioRequest;
+import com.giu.model.UsuarioAplicacionDTO;
+import com.giu.model.UsuarioRequestDTO;
+import com.giu.model.UsuarioRolResponseDTO;
+import com.giu.utils.Constantes;
+import com.giu.utils.utilsBD;
 
 import oracle.jdbc.OracleTypes;
 

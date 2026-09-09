@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.controller;
+package com.giu.controller;
 
 import java.util.List;
 
@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.GIU.BACKEND.model.GestionarRolUsuarioRequest;
-import com.GIU.BACKEND.model.RolResponseDTO;
-import com.GIU.BACKEND.model.UsuarioAplicacionDTO;
-import com.GIU.BACKEND.model.UsuarioRolResponseDTO;
-import com.GIU.BACKEND.service.GestionRolesService;
-import com.GIU.BACKEND.service.GestionUsuariosService;
+import com.giu.model.GestionarRolUsuarioRequest;
+import com.giu.model.RolResponseDTO;
+import com.giu.model.UsuarioAplicacionDTO;
+import com.giu.model.UsuarioRolResponseDTO;
+import com.giu.service.GestionRolesService;
+import com.giu.service.GestionUsuariosService;
 
 
 @RestController

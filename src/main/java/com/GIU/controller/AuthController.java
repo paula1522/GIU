@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.controller;
+package com.giu.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.GIU.BACKEND.model.LoginRequestDTO;
-import com.GIU.BACKEND.model.LoginResponseDTO;
+import com.giu.model.LoginRequestDTO;
+import com.giu.model.LoginResponseDTO;
 
 @RestController
 @RequestMapping("/auth")

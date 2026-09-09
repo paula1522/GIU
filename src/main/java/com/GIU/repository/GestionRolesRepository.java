@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.repository;
+package com.giu.repository;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -11,9 +11,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.GIU.BACKEND.model.RolResponseDTO;
-import com.GIU.BACKEND.utils.Constantes;
-import com.GIU.BACKEND.utils.utilsBD;
+import com.giu.model.RolResponseDTO;
+import com.giu.utils.Constantes;
+import com.giu.utils.utilsBD;
 
 import oracle.jdbc.OracleTypes;
 

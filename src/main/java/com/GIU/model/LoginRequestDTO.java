@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.model;
+package com.giu.model;
 
 import lombok.Data;
 import lombok.Getter;

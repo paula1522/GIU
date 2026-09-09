@@ -1,4 +1,4 @@
-package com.GIU.BACKEND;
+package com.giu;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;

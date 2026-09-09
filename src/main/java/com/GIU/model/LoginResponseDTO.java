@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.model;
+package com.giu.model;
 
 import java.util.List;
 

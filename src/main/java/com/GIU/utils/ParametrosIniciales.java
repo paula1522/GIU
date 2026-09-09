@@ -1,4 +1,4 @@
-package com.GIU.BACKEND.utils;
+package com.giu.utils;
 
 import java.util.UUID;
 

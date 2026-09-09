@@ -1,10 +1,10 @@
-package com.GIU.BACKEND;
+package com.giu;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.GIU.BACKEND.utils.Configurador;
-import com.GIU.BACKEND.utils.Constantes;
+import com.giu.utils.Configurador;
+import com.giu.utils.Constantes;
 
 @SpringBootApplication
 
