@@ -1,8 +1,11 @@
 package com.giu.model;
 
+import javax.validation.Valid;
+
 import lombok.Data;
 
 @Data
+@Valid
 public class RecursoDTO {
     private int id; // Identificador único del recurso
     private int idPadre; // Identificador del recurso padre 

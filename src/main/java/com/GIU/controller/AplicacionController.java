@@ -2,6 +2,8 @@ package com.giu.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,111 +20,105 @@ import com.giu.model.UsuarioRolResponseDTO;
 import com.giu.service.GestionRolesService;
 import com.giu.service.GestionUsuariosService;
 
-
 @RestController
 @RequestMapping("/api/aplicaciones/{apliId}")
 public class AplicacionController {
 
-    private final GestionUsuariosService usuarioService;
-    private final GestionRolesService rolesService;
+        private final GestionUsuariosService usuarioService;
+        private final GestionRolesService rolesService;
 
-    public AplicacionController(GestionUsuariosService usuarioService, GestionRolesService rolesService) {
-        this.usuarioService = usuarioService;
-        this.rolesService = rolesService;
-    }
-    
-    /**
-     * Listar roles activos por aplicación
-     *
-     * Método: GET
-     * Ruta: /api/aplicaciones/{apliId}/roles
-     *
-     * Ejemplo:
-     * GET /api/aplicaciones/1/roles
-     *
-     */ 
-    @GetMapping("/roles")
-    public ResponseEntity<List<RolResponseDTO>> obtenerRoles(
-            @PathVariable Long apliId) {
+        public AplicacionController(GestionUsuariosService usuarioService, GestionRolesService rolesService) {
+                this.usuarioService = usuarioService;
+                this.rolesService = rolesService;
+        }
 
-        return ResponseEntity.ok(
-                rolesService.obtenerRoles(apliId));
-    }
+        /**
+         * Listar roles activos por aplicación
+         *
+         * Método: GET
+         * Ruta: /api/aplicaciones/{apliId}/roles
+         *
+         * Ejemplo:
+         * GET /api/aplicaciones/1/roles
+         *
+         */
+        @GetMapping("/roles")
+        public ResponseEntity<List<RolResponseDTO>> obtenerRoles(
+                        @PathVariable Long apliId) {
 
-    /**
-     * Listar usuarios activos por aplicación
-     *
-     * Método: GET
-     * Ruta: /api/aplicaciones/{apliId}/usuarios
-     *
-     * Ejemplo:
-     * GET /api/aplicaciones/1/usuarios?estado=ACTIVO
-     *
-     */
-    @GetMapping("/usuarios")
-    public ResponseEntity<List<UsuarioAplicacionDTO>>
-            obtenerUsuariosPorAplicacion(
-                    @PathVariable Long apliId,
-                    @RequestParam(required = false)
-                    String estado) {
+                return ResponseEntity.ok(
+                                rolesService.obtenerRoles(apliId));
+        }
 
-        List<UsuarioAplicacionDTO> usuarios =
-                usuarioService.obtenerUsuariosPorAplicacion(
-                        apliId,
-                        estado);
+        /**
+         * Listar usuarios activos por aplicación
+         *
+         * Método: GET
+         * Ruta: /api/aplicaciones/{apliId}/usuarios
+         *
+         * Ejemplo:
+         * GET /api/aplicaciones/1/usuarios?estado=ACTIVO
+         *
+         */
+        @GetMapping("/usuarios")
+        public ResponseEntity<List<UsuarioAplicacionDTO>> obtenerUsuariosPorAplicacion(
+                        @PathVariable Long apliId,
+                        @RequestParam(required = false) String estado) {
 
-        return ResponseEntity.ok(usuarios);
-    }
+                List<UsuarioAplicacionDTO> usuarios = usuarioService.obtenerUsuariosPorAplicacion(
+                                apliId,
+                                estado);
 
+                return ResponseEntity.ok(usuarios);
+        }
 
-    /**
-     * 
-     * Consultar rol de un usuario para una aplicación específica
-     * 
-     * Método: GET
-     * Ruta: /api/usuarios/aplicaciones/{apliId}/rol/usuarios/{usuarioRed}
-     * 
-     * Ejemplo ruta con filtros:
-     * /api/usuarios/aplicaciones/1/rol/usuarios/UUU111
-     */
-    @GetMapping("/rol/usuarios/{usuarioRed}")
-    public ResponseEntity<UsuarioRolResponseDTO> obtenerRolUsuario(
-            @PathVariable Long apliId,
-            @PathVariable String usuarioRed) {
+        /**
+         * 
+         * Consultar rol de un usuario para una aplicación específica
+         * 
+         * Método: GET
+         * Ruta: /api/usuarios/aplicaciones/{apliId}/rol/usuarios/{usuarioRed}
+         * 
+         * Ejemplo ruta con filtros:
+         * /api/usuarios/aplicaciones/1/rol/usuarios/UUU111
+         */
+        @GetMapping("/rol/usuarios/{usuarioRed}")
+        public ResponseEntity<UsuarioRolResponseDTO> obtenerRolUsuario(
+                        @PathVariable Long apliId,
+                        @PathVariable String usuarioRed) {
 
-        UsuarioRolResponseDTO resultado = usuarioService.obtenerRolUsuario(
-                usuarioRed,
-                apliId);
+                UsuarioRolResponseDTO resultado = usuarioService.obtenerRolUsuario(
+                                usuarioRed,
+                                apliId);
 
-        return ResponseEntity.ok(resultado);
-    }
+                return ResponseEntity.ok(resultado);
+        }
 
+        /**
+         * Asignar rol a un usuario para una aplicación específica
+         *
+         * Método: POST
+         * Ruta: /api/aplicaciones/{apliId}/usuarios/asignacion-rol
+         *
+         * Ejemplo:
+         * POST /api/aplicaciones/1/usuarios/asignacion-rol
+         * {
+         * "usuarioRed": "UUU111",
+         * "rolId": 1,
+         * "fechaIn": "2024-01-01T00:00:00",
+         * "fechaFin": "2024-12-31T23:59:59",
+         * }
+         */
+        @PostMapping("/usuarios/asignacion-rol")
+        public ResponseEntity<Void> gestionarRolUsuario(
+                        @PathVariable Long apliId,
+                        @Valid @RequestBody GestionarRolUsuarioRequest request) {
 
-    /**
-     * Asignar rol a un usuario para una aplicación específica
-     *
-     * Método: POST
-     * Ruta: /api/aplicaciones/{apliId}/usuarios/asignacion-rol
-     *
-     * Ejemplo:
-     * POST /api/aplicaciones/1/usuarios/asignacion-rol
-     * {
-     *   "usuarioRed": "UUU111",
-     *   "rolId": 1,
-     *  "fechaIn": "2024-01-01T00:00:00",
-     *  "fechaFin": "2024-12-31T23:59:59",
-     * }
-     */
-    @PostMapping("/usuarios/asignacion-rol")
-public ResponseEntity<Void> gestionarRolUsuario(
-        @PathVariable Long apliId,
-        @RequestBody GestionarRolUsuarioRequest request) {
+                usuarioService.gestionarRolUsuario(
+                                apliId,
+                                request);
 
-    usuarioService.gestionarRolUsuario(
-            apliId,
-            request);
-
-    return ResponseEntity.ok().build();
-}
+                return ResponseEntity.ok().build();
+        }
 
 }
