@@ -12,7 +12,13 @@ import com.giu.repository.GestionUsuariosRepository;
 
 @Service
 public class GestionUsuariosService {
-        private GestionUsuariosRepository gestionUsuariosRepository = new GestionUsuariosRepository();
+
+        
+        private final GestionUsuariosRepository gestionUsuariosRepository;
+
+        public GestionUsuariosService(GestionUsuariosRepository gestionUsuariosRepository) {
+                this.gestionUsuariosRepository = gestionUsuariosRepository;
+        }
 
         public List<UsuarioRequestDTO> obtenerUsuarios(
                         String usuarioRed,

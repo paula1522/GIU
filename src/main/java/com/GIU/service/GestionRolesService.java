@@ -10,7 +10,11 @@ import com.giu.repository.GestionRolesRepository;
 @Service 
 public class GestionRolesService {
 
-    GestionRolesRepository gestionRolesRepository = new GestionRolesRepository();
+    private final GestionRolesRepository gestionRolesRepository;
+
+        public GestionRolesService(GestionRolesRepository gestionRolesRepository) {
+                this.gestionRolesRepository = gestionRolesRepository;
+        }
     public List<RolResponseDTO> obtenerRoles(Long apliId) {
 
     return gestionRolesRepository.obtenerRoles(apliId);
