@@ -19,6 +19,7 @@ import com.giu.model.UsuarioAplicacionDTO;
 import com.giu.model.UsuarioRolResponseDTO;
 import com.giu.service.GestionRolesService;
 import com.giu.service.GestionUsuariosService;
+import com.giu.utils.RespuestaGenerica;
 
 @RestController
 @RequestMapping("/api/aplicaciones/{apliId}")
@@ -43,11 +44,14 @@ public class AplicacionController {
          *
          */
         @GetMapping("/roles")
-        public ResponseEntity<List<RolResponseDTO>> obtenerRoles(
+        public ResponseEntity<RespuestaGenerica<List<RolResponseDTO>>> obtenerRoles(
                         @PathVariable Long apliId) {
 
-                return ResponseEntity.ok(
-                                rolesService.obtenerRoles(apliId));
+                List<RolResponseDTO> roles = rolesService.obtenerRoles(apliId);
+
+                RespuestaGenerica<List<RolResponseDTO>> RespuestaGenerica = new RespuestaGenerica<>("0", "Proceso exitoso", roles);
+
+                return ResponseEntity.ok(RespuestaGenerica);
         }
 
         /**
@@ -61,16 +65,18 @@ public class AplicacionController {
          *
          */
         @GetMapping("/usuarios")
-        public ResponseEntity<List<UsuarioAplicacionDTO>> obtenerUsuariosPorAplicacion(
-                        @PathVariable Long apliId,
-                        @RequestParam(required = false) String estado) {
+    public ResponseEntity<RespuestaGenerica<List<UsuarioAplicacionDTO>>> obtenerUsuariosPorAplicacion(
+            @PathVariable Long apliId,
+            @RequestParam(required = false) String estado) {
 
-                List<UsuarioAplicacionDTO> usuarios = usuarioService.obtenerUsuariosPorAplicacion(
-                                apliId,
-                                estado);
+        List<UsuarioAplicacionDTO> usuarios =
+                usuarioService.obtenerUsuariosPorAplicacion(apliId, estado);
 
-                return ResponseEntity.ok(usuarios);
-        }
+        RespuestaGenerica<List<UsuarioAplicacionDTO>> RespuestaGenerica =
+                new RespuestaGenerica<>("0", "Proceso exitoso", usuarios);
+
+        return ResponseEntity.ok(RespuestaGenerica);
+    }
 
         /**
          * 
@@ -83,16 +89,18 @@ public class AplicacionController {
          * /api/usuarios/aplicaciones/1/rol/usuarios/UUU111
          */
         @GetMapping("/rol/usuarios/{usuarioRed}")
-        public ResponseEntity<UsuarioRolResponseDTO> obtenerRolUsuario(
-                        @PathVariable Long apliId,
-                        @PathVariable String usuarioRed) {
+    public ResponseEntity<RespuestaGenerica<UsuarioRolResponseDTO>> obtenerRolUsuario(
+            @PathVariable Long apliId,
+            @PathVariable String usuarioRed) {
 
-                UsuarioRolResponseDTO resultado = usuarioService.obtenerRolUsuario(
-                                usuarioRed,
-                                apliId);
+        UsuarioRolResponseDTO resultado =
+                usuarioService.obtenerRolUsuario(usuarioRed, apliId);
 
-                return ResponseEntity.ok(resultado);
-        }
+        RespuestaGenerica<UsuarioRolResponseDTO> RespuestaGenerica =
+                new RespuestaGenerica<>("0", "Proceso exitoso", resultado);
+
+        return ResponseEntity.ok(RespuestaGenerica);
+    }
 
         /**
          * Asignar rol a un usuario para una aplicación específica
@@ -110,15 +118,16 @@ public class AplicacionController {
          * }
          */
         @PostMapping("/usuarios/asignacion-rol")
-        public ResponseEntity<Void> gestionarRolUsuario(
-                        @PathVariable Long apliId,
-                        @Valid @RequestBody GestionarRolUsuarioRequest request) {
+    public ResponseEntity<RespuestaGenerica<Void>> gestionarRolUsuario(
+            @PathVariable Long apliId,
+            @Valid @RequestBody GestionarRolUsuarioRequest request) {
 
-                usuarioService.gestionarRolUsuario(
-                                apliId,
-                                request);
+        usuarioService.gestionarRolUsuario(apliId, request);
 
-                return ResponseEntity.ok().build();
-        }
+        RespuestaGenerica<Void> RespuestaGenerica =
+                new RespuestaGenerica<>("0", "Rol asignado correctamente", null);
+
+        return ResponseEntity.ok(RespuestaGenerica);
+    }
 
 }
