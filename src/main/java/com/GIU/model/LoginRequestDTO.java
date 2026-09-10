@@ -1,12 +1,13 @@
 package com.giu.model;
 
+
 import javax.validation.Valid;
 
 import lombok.Data;
 
 
 @Data
-@Valid
+@Valid 
 public class LoginRequestDTO {
     private String username; // usuario_red
     private String password; 

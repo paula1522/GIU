@@ -23,6 +23,7 @@ import com.giu.utils.RespuestaGenerica;
 
 @RestController
 @RequestMapping("/api/aplicaciones/{apliId}")
+
 public class AplicacionController {
 
         private final GestionUsuariosService usuarioService;
