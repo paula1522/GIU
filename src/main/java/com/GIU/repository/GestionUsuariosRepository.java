@@ -12,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import com.giu.exception.ErrorBaseDatosException;
 import com.giu.exception.ErrorOperacionException;
 import com.giu.model.GestionarRolUsuarioRequest;
 import com.giu.model.UsuarioAplicacionDTO;
@@ -109,9 +108,7 @@ public class GestionUsuariosRepository {
                                         "Error consultando usuarios",
                                         e);
 
-                        throw new ErrorBaseDatosException(
-                                        "Error consultando usuarios",
-                                        e);
+                        throw new RuntimeException(e);
                 }
 
                 return usuarios;
@@ -236,9 +233,7 @@ public class GestionUsuariosRepository {
                                         "Error consultando usuarios asociados a la aplicación",
                                         e);
 
-                        throw new ErrorBaseDatosException(
-                                        "Error consultando usuarios asociados a la aplicación",
-                                        e);
+                        throw new RuntimeException(e);
                 }
 
                 return usuarios;
@@ -318,9 +313,7 @@ public class GestionUsuariosRepository {
                                         usuarioRed,
                                         e);
 
-                        throw new ErrorBaseDatosException(
-                                        "Error consultando rol del usuario",
-                                        e);
+                        throw new RuntimeException(e);
                 }
         }
 
@@ -403,9 +396,7 @@ public class GestionUsuariosRepository {
                                         "Error creando usuario",
                                         e);
 
-                        throw new ErrorBaseDatosException(
-                                        "Error creando usuario",
-                                        e);
+                        throw new RuntimeException(e);
                 }
         }
 
@@ -487,9 +478,7 @@ public class GestionUsuariosRepository {
                                         "Error modificando usuario",
                                         e);
 
-                        throw new ErrorBaseDatosException(
-                                        "Error modificando usuario",
-                                        e);
+                        throw new RuntimeException(e);
                 }
         }
 
@@ -595,9 +584,7 @@ public class GestionUsuariosRepository {
                                         apliId,
                                         e);
 
-                        throw new ErrorBaseDatosException(
-                                        "Error gestionando rol del usuario",
-                                        e);
+                        throw new RuntimeException(e);
                 }
         }
 

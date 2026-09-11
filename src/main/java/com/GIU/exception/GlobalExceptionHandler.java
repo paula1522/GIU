@@ -87,29 +87,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.ok(respuesta);
     }
 
-    /**
-     * Maneja errores técnicos relacionados
-     * con la Base de Datos.
-     */
-    @ExceptionHandler(ErrorBaseDatosException.class)
-    public ResponseEntity<RespuestaGenerica<Void>> manejarErrorBaseDatos(
-            ErrorBaseDatosException ex) {
 
-        log.error(
-                "Error de Base de Datos",
-                ex);
-
-        RespuestaGenerica<Void> respuesta =
-                new RespuestaGenerica<>(
-                        TipoRespuesta.ERROR_BD,
-                        null);
-
-        return ResponseEntity.ok(respuesta);
-    }
 
     /**
      * Maneja cualquier error inesperado
-     * que no haya sido contemplado anteriormente.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RespuestaGenerica<Void>> manejarErrorInterno(
