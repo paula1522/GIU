@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.giu.utils.RespuestaGenerica;
+import com.giu.utils.TipoRespuesta;
 import com.giu.model.UsuarioRequestDTO;
 import com.giu.service.GestionUsuariosService;
 
@@ -46,7 +47,7 @@ public class UsuarioController {
                 estado);
 
         RespuestaGenerica<List<UsuarioRequestDTO>> RespuestaGenerica =
-                new RespuestaGenerica<>("0", "Proceso exitoso", usuarios);
+                new RespuestaGenerica<>(TipoRespuesta.EXITOSO, usuarios);
 
         return ResponseEntity.ok(RespuestaGenerica);
     }
@@ -73,7 +74,7 @@ public class UsuarioController {
         usuarioService.crearUsuario(request);
 
         RespuestaGenerica<Void> RespuestaGenerica =
-                new RespuestaGenerica<>("0", "Usuario creado correctamente", null);
+                new RespuestaGenerica<>(TipoRespuesta.EXITOSO, null);
 
         return ResponseEntity.ok(RespuestaGenerica);
     }
@@ -100,7 +101,7 @@ public class UsuarioController {
         usuarioService.modificarUsuario(request);
 
         RespuestaGenerica<Void> RespuestaGenerica =
-                new RespuestaGenerica<>("0", "Usuario modificado correctamente", null);
+                new RespuestaGenerica<>(TipoRespuesta.EXITOSO, null);
 
         return ResponseEntity.ok(RespuestaGenerica);
     }

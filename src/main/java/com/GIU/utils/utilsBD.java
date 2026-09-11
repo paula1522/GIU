@@ -19,11 +19,17 @@ public class utilsBD {
 
     public static Connection obtenerConexion(String nombreBD) {
 
-        System.out.println(">>> INICIO obtenerConexionBD");
+        System.out.println(">>> INICIO obtenerConexion");
         System.out.println(">>> Base de Datos: " + nombreBD);
 
         String prefijo =
                 Constantes.PREFIJO_PROPIEDADES_BD + nombreBD;
+
+        /*
+         * ==========================================================
+         * 1. OBTENER PROPIEDADES DE LA BASE DE DATOS
+         * ==========================================================
+         */
 
         String url = Propiedades.getInstance()
                 .getPropiedad(prefijo + ".url");
@@ -37,82 +43,142 @@ public class utilsBD {
         String driver = Propiedades.getInstance()
                 .getPropiedad(prefijo + ".driver");
 
-        // JNDI fijo
+        /*
+         * ==========================================================
+         * 2. OBTENER NOMBRE JNDI
+         * ==========================================================
+         *
+         * La propiedad debe contener SOLAMENTE el nombre configurado
+         * en WebLogic.
+         *
+         * Ejemplo:
+         *
+         * system.db.giu.jndi=jdbc/GIUDatalolo
+         *
+         */
+
         String jndiName = Propiedades.getInstance()
-        .getPropiedad(prefijo + ".jndi");
+                .getPropiedad(prefijo + ".jndi");
 
-        System.out.println(">>> JNDI: " + jndiName);
+        System.out.println(">>> Propiedad JNDI: " + jndiName);
 
-        // Intento 1: Conexion mediante JNDI
-        if (jndiName != null && !jndiName.trim().isEmpty()){
+        /*
+         * ==========================================================
+         * 3. INTENTO DE CONEXIÓN MEDIANTE JNDI
+         * ==========================================================
+         */
+
+        if (jndiName != null && !jndiName.trim().isEmpty()) {
 
             try {
 
-                System.out.println(">>> Intentando lookup JNDI");
+                jndiName = jndiName.trim();
+
+                System.out.println(
+                        ">>> Intentando conexión mediante JNDI: "
+                                + jndiName);
 
                 InitialContext ctx = new InitialContext();
 
-                DataSource ds =
-                        (DataSource) ctx.lookup(jndiName.trim());
+                DataSource dataSource =
+                        (DataSource) ctx.lookup(jndiName);
 
-                System.out.println(">>> JNDI lookup OK");
+                System.out.println(
+                        ">>> JNDI encontrado correctamente");
 
-                Connection conn = ds.getConnection();
+                Connection connection =
+                        dataSource.getConnection();
 
-                System.out.println(">>> getConnection OK");
+                System.out.println(
+                        ">>> Conexión obtenida mediante JNDI");
 
                 logger.info(
-                        "Conexion BD establecida correctamente via JNDI: {}",
+                        "Conexión BD establecida correctamente vía JNDI: {}",
                         jndiName);
 
-                return conn;
+                return connection;
 
             } catch (Exception e) {
 
                 System.out.println(
-                        ">>> ERROR JNDI: " + e.getMessage());
+                        ">>> ERROR conexión JNDI: "
+                                + e.getMessage());
 
                 logger.warn(
-                        "Error al establecer conexion mediante JNDI: {}",
+                        "No fue posible establecer conexión mediante JNDI: {}",
                         jndiName,
                         e);
+
+                /*
+                 * IMPORTANTE:
+                 *
+                 * No lanzamos la excepción aquí.
+                 *
+                 * Si JNDI falla, continuamos con JDBC directo.
+                 */
             }
         }
 
-        // Intento 2: Conexion JDBC directa
-        if (url != null && user != null && password != null) {
+        /*
+         * ==========================================================
+         * 4. INTENTO DE CONEXIÓN JDBC DIRECTA
+         * ==========================================================
+         */
+
+        System.out.println(
+                ">>> Intentando conexión JDBC directa");
+
+        if (url != null
+                && user != null
+                && password != null) {
 
             try {
 
-                if (driver != null && !driver.trim().isEmpty()) {
+                if (driver != null
+                        && !driver.trim().isEmpty()) {
+
                     Class.forName(driver.trim());
                 }
 
-                Connection conn =
+                Connection connection =
                         DriverManager.getConnection(
                                 url.trim(),
                                 user.trim(),
                                 password.trim());
 
+                System.out.println(
+                        ">>> Conexión JDBC directa OK");
+
                 logger.info(
-                        "Conexion BD establecida correctamente via JDBC Local ({})",
+                        "Conexión BD establecida correctamente vía JDBC Local ({})",
                         url);
 
-                return conn;
+                return connection;
 
             } catch (Exception e) {
 
+                System.out.println(
+                        ">>> ERROR conexión JDBC: "
+                                + e.getMessage());
+
                 logger.error(
-                        "Error al establecer conexion JDBC Local",
+                        "Error al establecer conexión JDBC Local",
                         e);
 
                 throw new RuntimeException(
-                        "No fue posible establecer conexion con la Base de Datos.",
+                        "No fue posible establecer conexión con la Base de Datos.",
                         e);
             }
         }
 
+        /*
+         * ==========================================================
+         * 5. NINGÚN MÉTODO DE CONEXIÓN DISPONIBLE
+         * ==========================================================
+         */
+
         throw new RuntimeException(
-                "No fue posible establecer conexion con la Base de Datos.");
+                "No fue posible establecer conexión con la Base de Datos.");
     }
 }
+

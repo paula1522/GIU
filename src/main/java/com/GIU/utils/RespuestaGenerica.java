@@ -9,8 +9,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RespuestaGenerica<T> {
-    private String codigoRespuesta;
-    private String descripcionRespuesta;
+    private TipoRespuesta tipoRespuesta;
     private T data;
 
     

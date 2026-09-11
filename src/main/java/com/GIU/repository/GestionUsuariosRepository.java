@@ -12,11 +12,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import com.giu.exception.ErrorBaseDatosException;
+import com.giu.exception.ErrorOperacionException;
 import com.giu.model.GestionarRolUsuarioRequest;
 import com.giu.model.UsuarioAplicacionDTO;
 import com.giu.model.UsuarioRequestDTO;
 import com.giu.model.UsuarioRolResponseDTO;
 import com.giu.utils.Constantes;
+import com.giu.utils.TipoRespuesta;
 import com.giu.utils.utilsBD;
 
 import oracle.jdbc.OracleTypes;
@@ -26,8 +29,8 @@ public class GestionUsuariosRepository {
 
         private static final Logger logger = LogManager.getLogger("GIU");
 
-        /**
-         * Consulta usuarios por usuario de red y/o estado.
+        /*
+         * CONSULTAR USUARIOS
          */
         public List<UsuarioRequestDTO> obtenerUsuarios(
                         String usuarioRed,
@@ -35,7 +38,8 @@ public class GestionUsuariosRepository {
 
                 List<UsuarioRequestDTO> usuarios = new ArrayList<>();
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_USUARIO(?, ?, ?) }";
 
@@ -47,11 +51,7 @@ public class GestionUsuariosRepository {
 
                                 stmt.setString(2, usuarioRed);
                                 stmt.setString(3, estado);
-
-                                // No se expone como filtro del servicio
-                                stmt.setNull(
-                                                4,
-                                                java.sql.Types.NUMERIC);
+                                stmt.setNull(4, Types.NUMERIC);
 
                                 stmt.execute();
 
@@ -84,14 +84,16 @@ public class GestionUsuariosRepository {
 
                                                 usuario.setFechaCreacion(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_CREACION")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_CREACION")));
 
                                                 usuario.setUsuarioCreacion(
                                                                 rs.getString("USUARIO_CREACION"));
 
                                                 usuario.setFechaModificacion(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_MODIFICACION")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_MODIFICACION")));
 
                                                 usuario.setUsuarioModificacion(
                                                                 rs.getString("USUARIO_MODIFICACION"));
@@ -107,7 +109,7 @@ public class GestionUsuariosRepository {
                                         "Error consultando usuarios",
                                         e);
 
-                        throw new RuntimeException(
+                        throw new ErrorBaseDatosException(
                                         "Error consultando usuarios",
                                         e);
                 }
@@ -115,8 +117,8 @@ public class GestionUsuariosRepository {
                 return usuarios;
         }
 
-        /**
-         * Consulta usuarios asociados a una aplicación.
+        /*
+         * CONSULTAR USUARIOS POR APLICACIÓN
          */
         public List<UsuarioAplicacionDTO> obtenerUsuarioXAplicacion(
                         Long apliId,
@@ -124,7 +126,8 @@ public class GestionUsuariosRepository {
 
                 List<UsuarioAplicacionDTO> usuarios = new ArrayList<>();
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.NOMBRE_BD_GIU)) {
 
                         String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_USUARIO_X_APLICACION(?, ?, ?, ?) }";
 
@@ -136,7 +139,7 @@ public class GestionUsuariosRepository {
 
                                 stmt.setNull(
                                                 2,
-                                                java.sql.Types.VARCHAR);
+                                                Types.VARCHAR);
 
                                 stmt.setObject(
                                                 3,
@@ -148,7 +151,7 @@ public class GestionUsuariosRepository {
 
                                 stmt.setNull(
                                                 5,
-                                                java.sql.Types.VARCHAR);
+                                                Types.VARCHAR);
 
                                 stmt.execute();
 
@@ -181,14 +184,16 @@ public class GestionUsuariosRepository {
 
                                                 usuario.setFechaCreacion(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_CREACION")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_CREACION")));
 
                                                 usuario.setUsuarioCreacion(
                                                                 rs.getString("USUARIO_CREACION"));
 
                                                 usuario.setFechaModificacion(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_MODIFICACION")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_MODIFICACION")));
 
                                                 usuario.setUsuarioModificacion(
                                                                 rs.getString("USUARIO_MODIFICACION"));
@@ -212,11 +217,13 @@ public class GestionUsuariosRepository {
 
                                                 usuario.setFechaInRol(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_IN_ROL")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_IN_ROL")));
 
                                                 usuario.setFechaFinRol(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_FIN_ROL")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_FIN_ROL")));
 
                                                 usuarios.add(usuario);
                                         }
@@ -226,39 +233,46 @@ public class GestionUsuariosRepository {
                 } catch (Exception e) {
 
                         logger.error(
-                                        "Error consultando usuarios asociados a la aplicacion",
+                                        "Error consultando usuarios asociados a la aplicación",
                                         e);
 
-                        throw new RuntimeException(
-                                        "Error consultando usuarios asociados a la aplicacion",
+                        throw new ErrorBaseDatosException(
+                                        "Error consultando usuarios asociados a la aplicación",
                                         e);
                 }
 
                 return usuarios;
         }
 
-        /**
-         * Consulta el rol de un usuario para una aplicación específica
+        /*
+         * CONSULTAR ROL DEL USUARIO
          */
         public UsuarioRolResponseDTO obtenerRolUsuario(
                         String usuarioRed,
                         Long apliId) {
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.NOMBRE_BD_GIU)) {
 
-                        String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_ROL_USUARIO("
-                                        + "?, ?, ?) }";
+                        String sql = "{ ? = call PKG_GIU_GESTION_USUARIOS.FN_OBTENER_ROL_USUARIO(?, ?, ?) }";
 
                         try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                                stmt.registerOutParameter(1, OracleTypes.CURSOR);
+                                stmt.registerOutParameter(
+                                                1,
+                                                OracleTypes.CURSOR);
 
-                                stmt.setString(2, usuarioRed);
-                                stmt.setLong(3, apliId);
+                                stmt.setString(
+                                                2,
+                                                usuarioRed);
 
-                                // El endpoint no recibe rolId,
-                                // por eso consultamos cualquier rol de esa aplicación.
-                                stmt.setNull(4, Types.NUMERIC);
+                                stmt.setLong(
+                                                3,
+                                                apliId);
+
+                                stmt.setNull(
+                                                4,
+                                                Types.NUMERIC);
 
                                 stmt.execute();
 
@@ -269,28 +283,32 @@ public class GestionUsuariosRepository {
                                                 UsuarioRolResponseDTO usuarioRol = new UsuarioRolResponseDTO();
 
                                                 usuarioRol.setUsuarioRed(
-                                                                rs.getString("USUA_USUARIO_RED"));
+                                                                rs.getString(
+                                                                                "USUA_USUARIO_RED"));
 
                                                 usuarioRol.setApliId(
-                                                                rs.getLong("APLI_ID"));
+                                                                rs.getLong(
+                                                                                "APLI_ID"));
 
                                                 usuarioRol.setRolId(
-                                                                rs.getLong("ROL_ID"));
+                                                                rs.getLong(
+                                                                                "ROL_ID"));
 
                                                 usuarioRol.setFechaIn(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_IN")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_IN")));
 
                                                 usuarioRol.setFechaFin(
                                                                 convertirFecha(
-                                                                                rs.getTimestamp("FECHA_FIN")));
+                                                                                rs.getTimestamp(
+                                                                                                "FECHA_FIN")));
 
                                                 return usuarioRol;
                                         }
                                 }
 
                                 return null;
-
                         }
 
                 } catch (Exception e) {
@@ -300,14 +318,14 @@ public class GestionUsuariosRepository {
                                         usuarioRed,
                                         e);
 
-                        throw new RuntimeException(
+                        throw new ErrorBaseDatosException(
                                         "Error consultando rol del usuario",
                                         e);
                 }
         }
 
-        /**
-         * Crea un nuevo usuario.
+        /*
+         * CREAR USUARIO
          */
         public void crearUsuario(
                         String usuarioRed,
@@ -316,22 +334,36 @@ public class GestionUsuariosRepository {
                         String numeroIdentificacion,
                         String usuarioCreacion) {
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.NOMBRE_BD_GIU)) {
 
-                        String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_CREAR_USUARIO("
-                                        + "?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+                        String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_CREAR_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?) }";
 
                         try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                                stmt.setString(1, usuarioRed);
-                                stmt.setString(2, nombre);
-                                stmt.setString(3, correo);
-                                stmt.setString(4, numeroIdentificacion);
+                                stmt.setString(
+                                                1,
+                                                usuarioRed);
 
-                                // Super administrador = 0
-                                stmt.setInt(5, 0);
+                                stmt.setString(
+                                                2,
+                                                nombre);
 
-                                stmt.setString(6, usuarioCreacion);
+                                stmt.setString(
+                                                3,
+                                                correo);
+
+                                stmt.setString(
+                                                4,
+                                                numeroIdentificacion);
+
+                                stmt.setInt(
+                                                5,
+                                                0);
+
+                                stmt.setString(
+                                                6,
+                                                usuarioCreacion);
 
                                 stmt.registerOutParameter(
                                                 7,
@@ -351,18 +383,19 @@ public class GestionUsuariosRepository {
 
                                 String mensajeSalida = stmt.getString(9);
 
-                                if (codigoSalida != 0) {
-                                        throw new RuntimeException(
-                                                        mensajeSalida);
-                                }
+                                validarResultadoCrearUsuario(
+                                                codigoSalida,
+                                                mensajeSalida);
 
-                                // El cursor se devuelve desde Oracle,
-                                // pero este servicio solamente necesita
-                                // validar el resultado de la operación.
                                 try (ResultSet rs = (ResultSet) stmt.getObject(7)) {
-                                        // No es necesario procesarlo.
+                                        // El procedimiento ya realizó la operación.
+                                        // No necesitamos recorrer el cursor aquí.
                                 }
                         }
+
+                } catch (ErrorOperacionException e) {
+
+                        throw e;
 
                 } catch (Exception e) {
 
@@ -370,14 +403,14 @@ public class GestionUsuariosRepository {
                                         "Error creando usuario",
                                         e);
 
-                        throw new RuntimeException(
+                        throw new ErrorBaseDatosException(
                                         "Error creando usuario",
                                         e);
                 }
         }
 
-        /**
-         * Modifica la información de un usuario.
+        /*
+         * MODIFICAR USUARIO
          */
         public void modificarUsuario(
                         String usuarioRed,
@@ -386,22 +419,32 @@ public class GestionUsuariosRepository {
                         String numeroIdentificacion,
                         String usuarioModificacion) {
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.NOMBRE_BD_GIU)) {
 
-                        String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_MODIFICAR_USUARIO("
-                                        + "?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+                        String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_MODIFICAR_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?) }";
 
                         try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                                stmt.setString(1, usuarioRed);
-                                stmt.setString(2, nombre);
-                                stmt.setString(3, correo);
-                                stmt.setString(4, numeroIdentificacion);
+                                stmt.setString(
+                                                1,
+                                                usuarioRed);
 
-                                // No se modifica desde este servicio
+                                stmt.setString(
+                                                2,
+                                                nombre);
+
+                                stmt.setString(
+                                                3,
+                                                correo);
+
+                                stmt.setString(
+                                                4,
+                                                numeroIdentificacion);
+
                                 stmt.setNull(
                                                 5,
-                                                java.sql.Types.NUMERIC);
+                                                Types.NUMERIC);
 
                                 stmt.setString(
                                                 6,
@@ -425,18 +468,18 @@ public class GestionUsuariosRepository {
 
                                 String mensajeSalida = stmt.getString(9);
 
-                                if (codigoSalida != 0) {
-                                        throw new RuntimeException(
-                                                        mensajeSalida);
-                                }
+                                validarResultadoModificarUsuario(
+                                                codigoSalida,
+                                                mensajeSalida);
 
-                                // El procedimiento devuelve un cursor,
-                                // pero este servicio solamente necesita
-                                // validar el código de salida.
                                 try (ResultSet rs = (ResultSet) stmt.getObject(7)) {
-                                        // No es necesario procesarlo.
+                                        // No necesitamos recorrer el cursor.
                                 }
                         }
+
+                } catch (ErrorOperacionException e) {
+
+                        throw e;
 
                 } catch (Exception e) {
 
@@ -444,84 +487,82 @@ public class GestionUsuariosRepository {
                                         "Error modificando usuario",
                                         e);
 
-                        throw new RuntimeException(
+                        throw new ErrorBaseDatosException(
                                         "Error modificando usuario",
                                         e);
                 }
         }
 
-        /**
-         * Convierte Timestamp a LocalDateTime.
-         */
-        private java.time.LocalDateTime convertirFecha(
-                        Timestamp timestamp) {
-
-                return timestamp != null
-                                ? timestamp.toLocalDateTime()
-                                : null;
-        }
-
-        /**
-         * Asigna un rol a un usuario para una aplicación específica.
+        /*
+         * GESTIONAR ROL DEL USUARIO
          */
         public void gestionarRolUsuario(
                         Long apliId,
                         GestionarRolUsuarioRequest request) {
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (Connection conn = utilsBD.obtenerConexion(
+                                Constantes.NOMBRE_BD_GIU)) {
 
-                        String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_GESTIONAR_ROL_USUARIO("
-                                        + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+                        String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_GESTIONAR_ROL_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
 
                         try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                                // IN 1 - Aplicación
-                                stmt.setLong(1, apliId);
+                                stmt.setLong(
+                                                1,
+                                                apliId);
 
-                                // IN 2 - Rol
-                                stmt.setLong(2, request.getRolId());
+                                stmt.setLong(
+                                                2,
+                                                request.getRolId());
 
-                                // IN 3 - Usuario
-                                stmt.setString(3, request.getUsuarioRed());
+                                stmt.setString(
+                                                3,
+                                                request.getUsuarioRed());
 
-                                // IN 4 - Operación
-                                // 0 = asignar
-                                stmt.setInt(4, 0);
+                                stmt.setInt(
+                                                4,
+                                                0);
 
-                                // IN 5 - Fecha inicio
                                 if (request.getFechaIn() != null) {
+
                                         stmt.setTimestamp(
                                                         5,
-                                                        Timestamp.valueOf(request.getFechaIn()));
+                                                        Timestamp.valueOf(
+                                                                        request.getFechaIn()));
+
                                 } else {
-                                        stmt.setNull(5, Types.TIMESTAMP);
+
+                                        stmt.setNull(
+                                                        5,
+                                                        Types.TIMESTAMP);
                                 }
 
-                                // IN 6 - Fecha fin
                                 if (request.getFechaFin() != null) {
+
                                         stmt.setTimestamp(
                                                         6,
-                                                        Timestamp.valueOf(request.getFechaFin()));
+                                                        Timestamp.valueOf(
+                                                                        request.getFechaFin()));
+
                                 } else {
-                                        stmt.setNull(6, Types.TIMESTAMP);
+
+                                        stmt.setNull(
+                                                        6,
+                                                        Types.TIMESTAMP);
                                 }
 
-                                // IN 7 - Usuario modificación
                                 stmt.setString(
                                                 7,
                                                 request.getUsuarioModificacion());
 
-                                // OUT 8 - Cursor
                                 stmt.registerOutParameter(
                                                 8,
                                                 OracleTypes.CURSOR);
 
-                                // OUT 9 - Código
                                 stmt.registerOutParameter(
                                                 9,
                                                 OracleTypes.NUMBER);
 
-                                // OUT 10 - Mensaje
                                 stmt.registerOutParameter(
                                                 10,
                                                 OracleTypes.VARCHAR);
@@ -532,34 +573,212 @@ public class GestionUsuariosRepository {
 
                                 String mensajeSalida = stmt.getString(10);
 
-                                // 0 = operación exitosa
-                                if (codigoSalida != 0) {
+                                validarResultadoGestionRol(
+                                                codigoSalida,
+                                                mensajeSalida);
 
-                                        throw new RuntimeException(
-                                                        mensajeSalida != null
-                                                                        ? mensajeSalida
-                                                                        : "No fue posible asignar el rol al usuario.");
-                                }
-
-                                // El procedimiento devuelve un cursor,
-                                // pero este servicio solamente responde OK.
                                 try (ResultSet rs = (ResultSet) stmt.getObject(8)) {
-                                        // No necesitamos procesarlo.
+                                        // No necesitamos recorrer el cursor.
                                 }
                         }
+
+                } catch (ErrorOperacionException e) {
+
+                        throw e;
 
                 } catch (Exception e) {
 
                         logger.error(
-                                        "Error asignando rol {} al usuario {} en la aplicación {}",
+                                        "Error gestionando rol {} del usuario {} en la aplicación {}",
                                         request.getRolId(),
                                         request.getUsuarioRed(),
                                         apliId,
                                         e);
 
-                        throw new RuntimeException(
-                                        "Error asignando rol al usuario.",
+                        throw new ErrorBaseDatosException(
+                                        "Error gestionando rol del usuario",
                                         e);
                 }
+        }
+
+        /*
+         * VALIDAR RESULTADO CREAR USUARIO
+         */
+        private void validarResultadoCrearUsuario(
+                        int codigoSalida,
+                        String mensajeSalida) {
+
+                if (codigoSalida == 0) {
+                        return;
+                }
+
+                switch (codigoSalida) {
+
+                        case 1:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.DATOS_INVALIDOS,
+                                                mensajeSalida);
+
+                        case 2:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 3:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.OPERACION_NO_REALIZADA,
+                                                mensajeSalida);
+
+                        case 4:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.YA_EXISTE,
+                                                mensajeSalida);
+
+                        case 5:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 6:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.DATOS_INVALIDOS,
+                                                mensajeSalida);
+
+                        default:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.ERROR_BD,
+                                                mensajeSalida);
+                }
+        }
+
+        /*
+         * VALIDAR RESULTADO MODIFICAR USUARIO
+         */
+        private void validarResultadoModificarUsuario(
+                        int codigoSalida,
+                        String mensajeSalida) {
+
+                if (codigoSalida == 0) {
+                        return;
+                }
+
+                switch (codigoSalida) {
+
+                        case 1:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.DATOS_INVALIDOS,
+                                                mensajeSalida);
+
+                        case 2:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 3:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.OPERACION_NO_REALIZADA,
+                                                mensajeSalida);
+
+                        case 4:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.YA_EXISTE,
+                                                mensajeSalida);
+
+                        case 5:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 6:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.DATOS_INVALIDOS,
+                                                mensajeSalida);
+
+                        default:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.ERROR_BD,
+                                                mensajeSalida);
+                }
+        }
+
+        /*
+         * VALIDAR RESULTADO GESTIONAR ROL
+         */
+        private void validarResultadoGestionRol(
+                        int codigoSalida,
+                        String mensajeSalida) {
+
+                if (codigoSalida == 0) {
+                        return;
+                }
+
+                switch (codigoSalida) {
+
+                        case 1:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.DATOS_INVALIDOS,
+                                                mensajeSalida);
+
+                        case 2:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.DATOS_INVALIDOS,
+                                                mensajeSalida);
+
+                        case 3:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 4:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 5:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.OPERACION_NO_REALIZADA,
+                                                mensajeSalida);
+
+                        case 6:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 7:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        case 8:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.OPERACION_NO_REALIZADA,
+                                                mensajeSalida);
+
+                        case 9:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.YA_EXISTE,
+                                                mensajeSalida);
+
+                        case 10:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.NO_ENCONTRADO,
+                                                mensajeSalida);
+
+                        default:
+                                throw new ErrorOperacionException(
+                                                TipoRespuesta.ERROR_BD,
+                                                mensajeSalida);
+                }
+        }
+
+        /*
+         * CONVERTIR FECHA
+         */
+        private java.time.LocalDateTime convertirFecha(
+                        Timestamp timestamp) {
+
+                return timestamp != null
+                                ? timestamp.toLocalDateTime()
+                                : null;
         }
 }
