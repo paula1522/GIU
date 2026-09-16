@@ -4,14 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.giu.model.GestionUsuarios.CrearUsuarioRequestDTO;
-import com.giu.model.GestionUsuarios.GestionarRolUsuarioRequestDTO;
-import com.giu.model.GestionUsuarios.GestionarRolesUsuariosRequestDTO;
-import com.giu.model.GestionUsuarios.ModificarUsuarioRequestDTO;
-import com.giu.model.GestionUsuarios.UsuarioAplicacionResponseDTO;
-import com.giu.model.GestionUsuarios.UsuarioResponseDTO;
-import com.giu.model.GestionUsuarios.UsuarioRolRequestDTO;
-import com.giu.model.GestionUsuarios.UsuarioRolResponseDTO;
+import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
+import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
+import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
+import com.giu.model.gestionUsuarios.ModificarUsuarioRequestDTO;
+import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
+import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
+import com.giu.model.gestionUsuarios.UsuarioRolRequestDTO;
+import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.repository.GestionUsuariosRepository;
 
 @Service

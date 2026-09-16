@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import com.giu.model.GestionSeguridad.GestionarEstadoUsuarioRequest;
+import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
 import com.giu.utils.Constantes;
 import com.giu.utils.utilsBD;
 

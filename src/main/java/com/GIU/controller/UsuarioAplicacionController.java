@@ -5,7 +5,6 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,14 +14,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.giu.model.GestionRoles.RolResponseDTO;
-import com.giu.model.GestionUsuarios.GestionarRolUsuarioRequestDTO;
-import com.giu.model.GestionUsuarios.GestionarRolesUsuariosRequestDTO;
-import com.giu.model.GestionUsuarios.UsuarioRolResponseDTO;
+import com.giu.model.gestionRoles.RolResponseDTO;
+import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
+import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
+import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.service.GestionAplicacionesService;
 import com.giu.service.GestionRolesService;
 import com.giu.service.GestionUsuariosService;
-import com.giu.utils.RespuestaGenerica;
+import com.giu.model.RespuestaGenerica;
 import com.giu.utils.TipoRespuesta;
 
 @RestController

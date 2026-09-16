@@ -1,4 +1,4 @@
-package com.giu.model.GestionRoles;
+package com.giu.model.gestionRoles;
 
 
 import lombok.Data;

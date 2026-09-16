@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
-import com.giu.model.GestionSeguridad.GestionarEstadoUsuarioRequest;
-import com.giu.model.GestionUsuarios.GestionarRolUsuarioRequestDTO;
+import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
+import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.repository.GestionSeguridadRepository;
 
 @Service

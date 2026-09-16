@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.giu.model.GestionAplicaciones.AdministradorAplicacionResponseDTO;
-import com.giu.model.GestionAplicaciones.AplicacionResponseDTO;
-import com.giu.model.GestionAplicaciones.CrearAplicacionRequest;
-import com.giu.model.GestionAplicaciones.GestionarAdministradorRequest;
-import com.giu.model.GestionAplicaciones.ModificarAplicacionRequest;
+import com.giu.model.gestionAplicaciones.AdministradorAplicacionResponseDTO;
+import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
+import com.giu.model.gestionAplicaciones.CrearAplicacionRequest;
+import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
+import com.giu.model.gestionAplicaciones.ModificarAplicacionRequest;
 import com.giu.repository.GestionAplicacionesRepository;
 
 @Service
@@ -45,9 +45,10 @@ public class GestionAplicacionesService {
     }
 
     // Método modificar aplicación
-    public AplicacionResponseDTO modificarAplicacion(ModificarAplicacionRequest request, String usuarioModificacion) {
+    public AplicacionResponseDTO modificarAplicacion(Long id, ModificarAplicacionRequest request, String usuarioModificacion) {
 
         return gestionAplicacionesRepository.modificarAplicacion(
+                id,
                 request.getNombre(),
                 request.getCodigo(),
                 request.getDescripcion(),
@@ -56,12 +57,17 @@ public class GestionAplicacionesService {
                 usuarioModificacion);
     }
 
-    // Método para gestionar administradores de aplicaciones
+    // Método para asignar administradores de aplicaciones
     public AdministradorAplicacionResponseDTO crearAdministrador(GestionarAdministradorRequest request, String usuarioModificacion) {
 
-        return gestionAplicacionesRepository.gestionarAdministrador(
-                request,
-                usuarioModificacion,
-                0);
+        return gestionAplicacionesRepository.gestionarAdministrador(request,usuarioModificacion,0);
     }
+
+    // Método para retirar administradores de aplicaciones
+    public AdministradorAplicacionResponseDTO retirarAdministrador(GestionarAdministradorRequest request, String usuarioModificacion) {
+
+        return gestionAplicacionesRepository.gestionarAdministrador(request,usuarioModificacion,1);
+    }
+
+    
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.giu.model.GestionRoles.RolResponseDTO;
+import com.giu.model.gestionRoles.RolResponseDTO;
 import com.giu.utils.Constantes;
 import com.giu.utils.utilsBD;
 

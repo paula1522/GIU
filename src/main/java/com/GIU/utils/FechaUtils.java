@@ -11,4 +11,16 @@ public class FechaUtils {
                 ? timestamp.toLocalDateTime()
                 : null;
     }
+
+     // Valida que la fecha fin sea mayor a la fecha inicio
+    public static boolean fechaFinMayorInicio(
+            LocalDateTime fechaInicio,
+            LocalDateTime fechaFin) {
+
+        if (fechaInicio == null || fechaFin == null) {
+            return true;
+        }
+
+        return fechaFin.isAfter(fechaInicio);
+    }
 }

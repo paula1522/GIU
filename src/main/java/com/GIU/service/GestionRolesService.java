@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.giu.model.GestionRoles.RolResponseDTO;
+import com.giu.model.gestionRoles.RolResponseDTO;
 import com.giu.repository.GestionRolesRepository;
 
 @Service

@@ -1,4 +1,4 @@
-package com.giu.model.GestionAplicaciones;
+package com.giu.model.gestionAplicaciones;
 
 import java.time.LocalDateTime;
 

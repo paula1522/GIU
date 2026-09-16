@@ -1,4 +1,4 @@
-package com.giu.model.GestionUsuarios;
+package com.giu.model.gestionUsuarios;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;

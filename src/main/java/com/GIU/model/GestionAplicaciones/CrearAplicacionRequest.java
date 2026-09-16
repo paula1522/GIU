@@ -1,4 +1,4 @@
-package com.giu.model.GestionAplicaciones;
+package com.giu.model.gestionAplicaciones;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -18,7 +18,7 @@ public class CrearAplicacionRequest {
 
     @Size(max = 200, message = "La descripción no puede superar los 200 caracteres")
     private String descripcion;
-
+    
     private String administracion;
 
 }

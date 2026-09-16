@@ -15,9 +15,9 @@ import oracle.jdbc.OracleTypes;
 
 import org.springframework.stereotype.Repository;
 
-import com.giu.model.GestionAplicaciones.AdministradorAplicacionResponseDTO;
-import com.giu.model.GestionAplicaciones.AplicacionResponseDTO;
-import com.giu.model.GestionAplicaciones.GestionarAdministradorRequest;
+import com.giu.model.gestionAplicaciones.AdministradorAplicacionResponseDTO;
+import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
+import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
 import com.giu.utils.Constantes;
 import com.giu.utils.FechaUtils;
 import com.giu.utils.utilsBD;
@@ -262,6 +262,7 @@ public class GestionAplicacionesRepository {
 
     // Modifica una aplicación -> PRC_MODIFICAR_APLICACION
     public AplicacionResponseDTO modificarAplicacion(
+            Long id,
             String nombre,
             String codigo,
             String descripcion,
@@ -269,29 +270,29 @@ public class GestionAplicacionesRepository {
             String administracion,
             String usuarioModificacion) {
 
-        String sql = "{ call PKG_GIU_GESTION_APLICACIONES.PRC_MODIFICAR_APLICACION(?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+        String sql = "{ call PKG_GIU_GESTION_APLICACIONES.PRC_MODIFICAR_APLICACION(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
 
         try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                 CallableStatement stmt = conn.prepareCall(sql)) {
+            stmt.setLong(1, id);
+            stmt.setString(2, nombre);
+            stmt.setString(3, codigo);
+            stmt.setString(4, descripcion);
+            stmt.setString(5, estado);
+            stmt.setString(6, administracion);
+            stmt.setString(7, usuarioModificacion);
 
-            stmt.setString(1, nombre);
-            stmt.setString(2, codigo);
-            stmt.setString(3, descripcion);
-            stmt.setString(4, estado);
-            stmt.setString(5, administracion);
-            stmt.setString(6, usuarioModificacion);
-
-            stmt.registerOutParameter(7, OracleTypes.CURSOR);
-            stmt.registerOutParameter(8, OracleTypes.NUMBER);
-            stmt.registerOutParameter(9, OracleTypes.VARCHAR);
+            stmt.registerOutParameter(8, OracleTypes.CURSOR);
+            stmt.registerOutParameter(9, OracleTypes.NUMBER);
+            stmt.registerOutParameter(10, OracleTypes.VARCHAR);
 
             stmt.execute();
 
-            int codigoSalida = stmt.getInt(8);
-            String mensajeSalida = stmt.getString(9);
+            int codigoSalida = stmt.getInt(9);
+            String mensajeSalida = stmt.getString(10);
             utilsBD.validarResultado(codigoSalida, mensajeSalida);
 
-            try (ResultSet rs = (ResultSet) stmt.getObject(7)) {
+            try (ResultSet rs = (ResultSet) stmt.getObject(8)) {
 
                 if (rs != null && rs.next()) {
 

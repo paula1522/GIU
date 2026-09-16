@@ -1,4 +1,4 @@
-package com.giu.model.GestionUsuarios;
+package com.giu.model.gestionUsuarios;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

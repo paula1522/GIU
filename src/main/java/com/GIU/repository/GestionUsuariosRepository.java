@@ -12,11 +12,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import com.giu.model.GestionAplicaciones.AplicacionResponseDTO;
-import com.giu.model.GestionUsuarios.GestionarRolUsuarioRequestDTO;
-import com.giu.model.GestionUsuarios.UsuarioAplicacionResponseDTO;
-import com.giu.model.GestionUsuarios.UsuarioResponseDTO;
-import com.giu.model.GestionUsuarios.UsuarioRolResponseDTO;
+import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
+import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
+import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
+import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
+import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.utils.Constantes;
 import com.giu.utils.utilsBD;
 import com.giu.utils.FechaUtils;

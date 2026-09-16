@@ -8,7 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.giu.utils.RespuestaGenerica;
+import com.giu.model.RespuestaGenerica;
 import com.giu.utils.TipoRespuesta;
 
 @RestControllerAdvice

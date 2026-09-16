@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.giu.utils.RespuestaGenerica;
+import com.giu.model.RespuestaGenerica;
 import com.giu.utils.TipoRespuesta;
-import com.giu.model.GestionSeguridad.GestionarEstadoUsuarioRequest;
-import com.giu.model.GestionUsuarios.CrearUsuarioRequestDTO;
-import com.giu.model.GestionUsuarios.ModificarUsuarioRequestDTO;
-import com.giu.model.GestionUsuarios.UsuarioResponseDTO;
+import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
+import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
+import com.giu.model.gestionUsuarios.ModificarUsuarioRequestDTO;
+import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
 import com.giu.service.GestionSeguridadService;
 import com.giu.service.GestionUsuariosService;
 

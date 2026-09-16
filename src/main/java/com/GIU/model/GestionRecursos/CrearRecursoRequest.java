@@ -1,4 +1,4 @@
-package com.giu.model.GestionRecursos;
+package com.giu.model.gestionRecursos;
 
 public class CrearRecursoRequest {
 

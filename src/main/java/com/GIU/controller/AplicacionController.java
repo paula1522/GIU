@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.giu.model.GestionAplicaciones.AdministradorAplicacionResponseDTO;
-import com.giu.model.GestionAplicaciones.AplicacionResponseDTO;
-import com.giu.model.GestionAplicaciones.CrearAplicacionRequest;
-import com.giu.model.GestionAplicaciones.GestionarAdministradorRequest;
-import com.giu.model.GestionAplicaciones.ModificarAplicacionRequest;
+import com.giu.model.gestionAplicaciones.AdministradorAplicacionResponseDTO;
+import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
+import com.giu.model.gestionAplicaciones.CrearAplicacionRequest;
+import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
+import com.giu.model.gestionAplicaciones.ModificarAplicacionRequest;
 import com.giu.service.GestionAplicacionesService;
-import com.giu.utils.RespuestaGenerica;
+import com.giu.model.RespuestaGenerica;
 import com.giu.utils.TipoRespuesta;
 
 @RestController
@@ -97,7 +97,7 @@ public class AplicacionController {
          * Modificar aplicación
          *
          * Método: PUT
-         * Ruta: /api/aplicaciones/{codigo}
+         * Ruta: /api/aplicaciones/{id}
          * 
          * Ejemplo de cuerpo de la solicitud:
          * 
@@ -109,17 +109,18 @@ public class AplicacionController {
          * "administracion": "PROPIA"
          * }
          */
-        @PutMapping("/{codigo}")
-        public ResponseEntity<RespuestaGenerica<Object>> modificarAplicacion(
-                        @PathVariable String codigo,
+        @PutMapping("/{id}")
+        public ResponseEntity<RespuestaGenerica<AplicacionResponseDTO>> modificarAplicacion(
+                        @PathVariable Long id,
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @Valid @RequestBody ModificarAplicacionRequest request) {
 
                 AplicacionResponseDTO aplicacion = aplicacionesService.modificarAplicacion(
+                                id,
                                 request,
                                 usuarioModificacion);
 
-                RespuestaGenerica<Object> respuesta = new RespuestaGenerica<>(
+                RespuestaGenerica<AplicacionResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
                                 aplicacion);
 
@@ -156,13 +157,50 @@ public class AplicacionController {
          *
          * Método: POST
          * Ruta: /api/aplicaciones/administradores
+         * 
+         * Ejemplo de cuerpo de la solicitud:
+         * 
+         * {
+         * "usuarioRed": "uuu111",
+         * "apliId": 1
+         * }
          */
         @PostMapping("/administradores")
-        public ResponseEntity<RespuestaGenerica<AdministradorAplicacionResponseDTO>> gestionarAdministrador(
+        public ResponseEntity<RespuestaGenerica<AdministradorAplicacionResponseDTO>> crearAdministrador(
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @Valid @RequestBody GestionarAdministradorRequest request) {
 
                 AdministradorAplicacionResponseDTO administrador = aplicacionesService.crearAdministrador(
+                                request,
+                                usuarioModificacion);
+
+                RespuestaGenerica<AdministradorAplicacionResponseDTO> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                administrador);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Gestionar administrador de una aplicación
+         *
+         * Método: DELETE
+         * Ruta: /api/aplicaciones/administradores
+         * 
+         * Ejemplo de cuerpo de la solicitud:
+         * 
+         * {
+         * "usuarioRed": "uuu111",
+         * "apliId": 1
+         * }
+         * 
+         */
+        @PutMapping("/administradores")
+        public ResponseEntity<RespuestaGenerica<AdministradorAplicacionResponseDTO>> retirarAdministrador(
+                        @RequestHeader("usuarioModificacion") String usuarioModificacion,
+                        @Valid @RequestBody GestionarAdministradorRequest request) {
+
+                AdministradorAplicacionResponseDTO administrador = aplicacionesService.retirarAdministrador(
                                 request,
                                 usuarioModificacion);
 

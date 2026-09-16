@@ -1,4 +1,6 @@
-package com.giu.utils;
+package com.giu.model;
+
+import com.giu.utils.TipoRespuesta;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
