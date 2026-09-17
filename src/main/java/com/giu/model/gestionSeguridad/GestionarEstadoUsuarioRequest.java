@@ -19,7 +19,6 @@ public class GestionarEstadoUsuarioRequest {
     @NotNull(message = "La operación es obligatoria")
     private Integer operacion;
 
-    @NotNull(message = "El id del rol es obligatorio")
     private Long rolId; 
 
 

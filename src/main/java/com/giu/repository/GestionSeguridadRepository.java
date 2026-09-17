@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
 import com.giu.utils.Constantes;
+import com.giu.utils.Propiedades;
 import com.giu.utils.utilsBD;
 
 import oracle.jdbc.OracleTypes;
@@ -16,53 +17,48 @@ import oracle.jdbc.OracleTypes;
 @Repository
 public class GestionSeguridadRepository {
 
-        private static final Logger logger = LogManager.getLogger(Constantes.APLICACION);
+        private static final Logger logger = LogManager.getLogger(GestionSeguridadRepository.class);
 
         public void gestionarEstadoUsuario(
                         GestionarEstadoUsuarioRequest request) {
 
+                logger.debug("gestionarEstadoUsuario - ejecutando PRC_GESTIONAR_ESTADO_USUARIO. usuarioRed={}, apliId={}, operacion={}",
+                                request.getUsuarioRed(), request.getApliId(), request.getOperacion());
+
+                String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_SEGURIDAD_GESTIONAR_ESTADO);
+
                 try (Connection conn = utilsBD.obtenerConexion(
                                 Constantes.NOMBRE_BD_GIU)) {
 
-                        String sql = "{ call PKG_GIU_GESTION_SEGURIDAD.PRC_GESTIONAR_ESTADO_USUARIO("
-                                        + "?, ?, ?, ?, ?) }";
-
                         try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                                stmt.setLong(1,request.getApliId());
+                                stmt.setLong(1, request.getApliId());
+                                stmt.setString(2, request.getUsuarioRed());
+                                stmt.setInt(3, request.getOperacion());
 
-                                stmt.setString(2,request.getUsuarioRed());
-
-                                stmt.setInt(3,request.getOperacion());
-
-                                stmt.registerOutParameter(4,OracleTypes.NUMBER);
-
-                                stmt.registerOutParameter(5,OracleTypes.VARCHAR);
+                                stmt.registerOutParameter(4, OracleTypes.NUMBER);
+                                stmt.registerOutParameter(5, OracleTypes.VARCHAR);
 
                                 stmt.execute();
 
                                 int codigoSalida = stmt.getInt(4);
-
                                 String mensajeSalida = stmt.getString(5);
 
-                                utilsBD.validarResultado(
-                                                codigoSalida,
-                                                mensajeSalida);
+                                logger.debug("gestionarEstadoUsuario - PL respondió. codigo={}, mensaje={}",
+                                                codigoSalida, mensajeSalida);
+
+                                utilsBD.validarResultado(codigoSalida, mensajeSalida);
                         }
 
                 } catch (Exception e) {
 
-                        logger.error(
-                                        "Error gestionando estado del usuario: {}",
+                        logger.error("gestionarEstadoUsuario - error ejecutando PL. usuarioRed={}, apliId={}, operacion={}",
                                         request.getUsuarioRed(),
+                                        request.getApliId(),
                                         request.getOperacion(),
                                         e);
 
                         throw new RuntimeException(e);
                 }
         }
-
-
-
-        
 }

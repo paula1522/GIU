@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +30,8 @@ import com.giu.utils.TipoRespuesta;
 @RequestMapping("/api/aplicaciones")
 public class AplicacionController {
 
+        private static final Logger logger = LogManager.getLogger(AplicacionController.class);
+
         private final GestionAplicacionesService aplicacionesService;
 
         public AplicacionController(
@@ -49,6 +53,8 @@ public class AplicacionController {
         public ResponseEntity<RespuestaGenerica<List<AplicacionResponseDTO>>> obtenerAplicacion(
                         @RequestParam(required = false) String codigo,
                         @RequestParam(required = false) String estado) {
+
+                logger.info("GET /aplicaciones - codigo={}, estado={}", codigo, estado);
 
                 List<AplicacionResponseDTO> aplicaciones = aplicacionesService.obtenerAplicacion(
                                 codigo,
@@ -81,6 +87,8 @@ public class AplicacionController {
         public ResponseEntity<RespuestaGenerica<AplicacionResponseDTO>> crearAplicacion(
                         @RequestHeader("usuarioCreacion") String usuarioCreacion,
                         @Valid @RequestBody CrearAplicacionRequest request) {
+
+                logger.info("POST /aplicaciones - codigo={}", request.getCodigo());
 
                 AplicacionResponseDTO aplicacion = aplicacionesService.crearAplicacion(
                                 request,
@@ -115,6 +123,8 @@ public class AplicacionController {
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @Valid @RequestBody ModificarAplicacionRequest request) {
 
+                logger.info("PUT /aplicaciones/{}", id);
+
                 AplicacionResponseDTO aplicacion = aplicacionesService.modificarAplicacion(
                                 id,
                                 request,
@@ -139,6 +149,8 @@ public class AplicacionController {
         public ResponseEntity<RespuestaGenerica<List<AdministradorAplicacionResponseDTO>>> obtenerAdministradorAplicacion(
                         @RequestParam(required = false) String usuarioRed,
                         @RequestParam(required = false) Long apliId) {
+
+                logger.info("GET /aplicaciones/administradores - usuarioRed={}, apliId={}", usuarioRed, apliId);
 
                 List<AdministradorAplicacionResponseDTO> administradores = aplicacionesService
                                 .obtenerAdministradorAplicacion(
@@ -170,6 +182,9 @@ public class AplicacionController {
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @Valid @RequestBody GestionarAdministradorRequest request) {
 
+                logger.info("POST /aplicaciones/administradores - usuarioRed={}, apliId={}",
+                                request.getUsuarioRed(), request.getApliId());
+
                 AdministradorAplicacionResponseDTO administrador = aplicacionesService.crearAdministrador(
                                 request,
                                 usuarioModificacion);
@@ -199,6 +214,9 @@ public class AplicacionController {
         public ResponseEntity<RespuestaGenerica<AdministradorAplicacionResponseDTO>> retirarAdministrador(
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @Valid @RequestBody GestionarAdministradorRequest request) {
+
+                logger.info("PUT /aplicaciones/administradores - usuarioRed={}, apliId={}",
+                                request.getUsuarioRed(), request.getApliId());
 
                 AdministradorAplicacionResponseDTO administrador = aplicacionesService.retirarAdministrador(
                                 request,

@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +28,8 @@ import com.giu.service.GestionUsuariosService;
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
+
+        private static final Logger logger = LogManager.getLogger(UsuarioController.class);
 
         private final GestionUsuariosService usuarioService;
         private final GestionSeguridadService gestionSeguridadService;
@@ -51,6 +55,8 @@ public class UsuarioController {
         public ResponseEntity<RespuestaGenerica<List<UsuarioResponseDTO>>> obtenerUsuarios(
                         @RequestParam(required = false) String usuarioRed,
                         @RequestParam(required = false) String estado) {
+
+                logger.info("GET /usuarios - usuarioRed={}, estado={}", usuarioRed, estado);
 
                 List<UsuarioResponseDTO> usuarios = usuarioService.obtenerUsuarios(
                                 usuarioRed,
@@ -82,9 +88,12 @@ public class UsuarioController {
                         @RequestHeader("usuarioCreacion") String usuarioCreacion,
                         @Valid @RequestBody CrearUsuarioRequestDTO request) {
 
+                logger.info("POST /usuarios - usuarioRed={}", request.getUsuarioRed());
+
                 UsuarioResponseDTO usuario = usuarioService.crearUsuario(request, usuarioCreacion);
 
-                RespuestaGenerica<UsuarioResponseDTO> respuesta = new RespuestaGenerica<>(TipoRespuesta.EXITOSO, usuario);
+                RespuestaGenerica<UsuarioResponseDTO> respuesta = new RespuestaGenerica<>(TipoRespuesta.EXITOSO,
+                                usuario);
 
                 return ResponseEntity.ok(respuesta);
         }
@@ -109,9 +118,12 @@ public class UsuarioController {
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @Valid @RequestBody ModificarUsuarioRequestDTO request) {
 
+                logger.info("PUT /usuarios - usuarioRed={}", request.getUsuarioRed());
+
                 UsuarioResponseDTO usuario = usuarioService.modificarUsuario(request, usuarioModificacion);
 
-                RespuestaGenerica<UsuarioResponseDTO> respuesta = new RespuestaGenerica<>(TipoRespuesta.EXITOSO, usuario);
+                RespuestaGenerica<UsuarioResponseDTO> respuesta = new RespuestaGenerica<>(TipoRespuesta.EXITOSO,
+                                usuario);
 
                 return ResponseEntity.ok(respuesta);
         }
@@ -139,6 +151,9 @@ public class UsuarioController {
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @Valid @RequestBody GestionarEstadoUsuarioRequest request) {
 
+                logger.info("PUT /usuarios/gestionar-estado - usuarioRed={}, operacion={}",
+                                request.getUsuarioRed(), request.getOperacion());
+
                 gestionSeguridadService.gestionarEstadoUsuario(request, usuarioModificacion);
 
                 RespuestaGenerica<List<String>> respuesta = new RespuestaGenerica<>(
@@ -147,5 +162,4 @@ public class UsuarioController {
 
                 return ResponseEntity.ok(respuesta);
         }
-
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.giu.model.gestionRoles.RolResponseDTO;
 import com.giu.utils.Constantes;
+import com.giu.utils.Propiedades;
 import com.giu.utils.utilsBD;
 
 import oracle.jdbc.OracleTypes;
@@ -22,16 +23,18 @@ import org.apache.logging.log4j.Logger;
 public class GestionRolesRepository {
 
         // Se define un logger para registrar eventos y errores en la aplicación
-        private static final Logger logger = LogManager.getLogger(Constantes.APLICACION);
+        private static final Logger logger = LogManager.getLogger(GestionRolesRepository.class);
 
         // Consultar los roles activos de una aplicación especifica -> FN_OBTENER_ROL
         public List<RolResponseDTO> obtenerRoles(Long apliId) {
+
+                logger.debug("obtenerRoles - ejecutando FN_OBTENER_ROL. apliId={}", apliId);
 
                 List<RolResponseDTO> roles = new ArrayList<>();
 
                 try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
-                        String sql = "{ ? = call PKG_GIU_GESTION_ROLES.FN_OBTENER_ROL(" + "?, ?, ?) }";
+                        String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_ROLES_OBTENER);
 
                         try (CallableStatement stmt = conn.prepareCall(sql)) {
 
@@ -64,9 +67,11 @@ public class GestionRolesRepository {
                                 }
                         }
 
+                        logger.debug("obtenerRoles - registros mapeados. apliId={}, total={}", apliId, roles.size());
+
                 } catch (Exception e) {
 
-                        logger.error("Error consultando roles de la aplicación: {}", apliId, e);
+                        logger.error("obtenerRoles - error. apliId={}", apliId, e);
 
                         throw new RuntimeException("Error consultando roles de la aplicación", e);
                 }

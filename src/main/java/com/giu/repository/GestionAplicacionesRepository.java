@@ -20,6 +20,7 @@ import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
 import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
 import com.giu.utils.BooleanUtils;
 import com.giu.utils.Constantes;
+import com.giu.utils.Propiedades;
 import com.giu.utils.FechaUtils;
 import com.giu.utils.utilsBD;
 
@@ -33,7 +34,9 @@ public class GestionAplicacionesRepository {
             String codigo,
             String estado) {
 
-        String sql = "{ ? = call PKG_GIU_GESTION_APLICACIONES.FN_OBTENER_APLICACION(?, ?) }";
+        logger.debug("obtenerAplicacion - ejecutando FN_OBTENER_APLICACION. codigo={}, estado={}", codigo, estado);
+
+        String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_OBTENER);
 
         List<AplicacionResponseDTO> aplicaciones = new ArrayList<>();
 
@@ -76,9 +79,11 @@ public class GestionAplicacionesRepository {
                 }
             }
 
+            logger.debug("obtenerAplicacion - registros mapeados. total={}", aplicaciones.size());
+
         } catch (Exception e) {
 
-            logger.error("Error al consultar aplicación", e);
+            logger.error("obtenerAplicacion - error. codigo={}, estado={}", codigo, estado, e);
 
             throw new RuntimeException("Error consultando aplicación", e);
         }
@@ -92,7 +97,11 @@ public class GestionAplicacionesRepository {
             String usuarioRed,
             Long apliId) {
 
-        String sql = "{ ? = call PKG_GIU_GESTION_APLICACIONES.FN_OBTENER_ADMINISTRADOR_APLICACION(?, ?) }";
+        logger.debug(
+                "obtenerAdministradorAplicacion - ejecutando FN_OBTENER_ADMINISTRADOR_APLICACION. usuarioRed={}, apliId={}",
+                usuarioRed, apliId);
+
+        String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_OBTENER_ADMIN);
 
         List<AdministradorAplicacionResponseDTO> administradores = new ArrayList<>();
 
@@ -187,11 +196,12 @@ public class GestionAplicacionesRepository {
                 }
             }
 
+            logger.debug("obtenerAdministradorAplicacion - registros mapeados. total={}", administradores.size());
+
         } catch (Exception e) {
 
-            logger.error(
-                    "Error al consultar administrador de aplicación",
-                    e);
+            logger.error("obtenerAdministradorAplicacion - error. usuarioRed={}, apliId={}",
+                    usuarioRed, apliId, e);
 
             throw new RuntimeException(
                     "Error consultando administrador de aplicación",
@@ -209,7 +219,10 @@ public class GestionAplicacionesRepository {
             Boolean administracion,
             String usuarioCreacion) {
 
-        String sql = "{ call PKG_GIU_GESTION_APLICACIONES.PRC_CREAR_APLICACION(?, ?, ?, ?, ?, ?, ?, ?) }";
+        logger.debug("crearAplicacion - ejecutando PRC_CREAR_APLICACION. codigo={}, usuarioCreacion={}",
+                codigo, usuarioCreacion);
+
+        String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_CREAR);
 
         try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                 CallableStatement stmt = conn.prepareCall(sql)) {
@@ -217,7 +230,7 @@ public class GestionAplicacionesRepository {
             stmt.setString(1, codigo);
             stmt.setString(2, nombre);
             stmt.setString(3, descripcion);
-            stmt.setString(6, BooleanUtils.booleanToAdministracion(administracion));
+            stmt.setString(4, BooleanUtils.booleanToAdministracion(administracion));
             stmt.setString(5, usuarioCreacion);
 
             stmt.registerOutParameter(6, OracleTypes.CURSOR);
@@ -228,6 +241,8 @@ public class GestionAplicacionesRepository {
 
             int codigoSalida = stmt.getInt(7);
             String mensajeSalida = stmt.getString(8);
+
+            logger.debug("crearAplicacion - PL respondió. codigo={}, mensaje={}", codigoSalida, mensajeSalida);
 
             utilsBD.validarResultado(codigoSalida, mensajeSalida);
 
@@ -247,15 +262,19 @@ public class GestionAplicacionesRepository {
                     aplicacion.setUsuarioCreacion(rs.getString("USUARIO_CREACION"));
                     aplicacion.setFechaModificacion(FechaUtils.convertirFecha(rs.getTimestamp("FECHA_MODIFICACION")));
                     aplicacion.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
+
+                    logger.debug("crearAplicacion - registro mapeado. id={}, codigo={}",
+                            aplicacion.getId(), codigo);
                     return aplicacion;
                 }
             }
 
+            logger.warn("crearAplicacion - el cursor vino vacío. codigo={}", codigo);
             return null;
 
         } catch (Exception e) {
 
-            logger.error("Error al crear aplicación", e);
+            logger.error("crearAplicacion - error ejecutando PL. codigo={}", codigo, e);
 
             throw new RuntimeException("Error creando aplicación", e);
         }
@@ -271,7 +290,10 @@ public class GestionAplicacionesRepository {
             Boolean administracion,
             String usuarioModificacion) {
 
-        String sql = "{ call PKG_GIU_GESTION_APLICACIONES.PRC_MODIFICAR_APLICACION(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+        logger.debug("modificarAplicacion - ejecutando PRC_MODIFICAR_APLICACION. id={}, usuarioModificacion={}",
+                id, usuarioModificacion);
+
+        String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_MODIFICAR);
 
         try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                 CallableStatement stmt = conn.prepareCall(sql)) {
@@ -291,6 +313,9 @@ public class GestionAplicacionesRepository {
 
             int codigoSalida = stmt.getInt(9);
             String mensajeSalida = stmt.getString(10);
+
+            logger.debug("modificarAplicacion - PL respondió. codigo={}, mensaje={}", codigoSalida, mensajeSalida);
+
             utilsBD.validarResultado(codigoSalida, mensajeSalida);
 
             try (ResultSet rs = (ResultSet) stmt.getObject(8)) {
@@ -310,27 +335,34 @@ public class GestionAplicacionesRepository {
                     aplicacion.setFechaModificacion(FechaUtils.convertirFecha(rs.getTimestamp("FECHA_MODIFICACION")));
                     aplicacion.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
 
+                    logger.debug("modificarAplicacion - registro mapeado. id={}, codigo={}",
+                            aplicacion.getId(), codigo);
                     return aplicacion;
                 }
             }
+
+            logger.warn("modificarAplicacion - el cursor vino vacío. id={}", id);
             return null;
 
         } catch (Exception e) {
 
-            logger.error("Error al modificar aplicación", e);
+            logger.error("modificarAplicacion - error ejecutando PL. id={}", id, e);
 
             throw new RuntimeException("Error modificando aplicación", e);
         }
     }
 
     // Gestionar un administrador de una aplicación -> PRC_GESTIONAR_ADMINISTRADOR
-
     public AdministradorAplicacionResponseDTO gestionarAdministrador(
             GestionarAdministradorRequest request,
             String usuarioModificacion,
             Integer operacion) {
 
-        String sql = "{ call PKG_GIU_GESTION_APLICACIONES.PRC_GESTIONAR_ADMINISTRADOR(?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+        logger.debug(
+                "gestionarAdministrador - ejecutando PRC_GESTIONAR_ADMINISTRADOR. usuarioRed={}, apliId={}, operacion={}",
+                request.getUsuarioRed(), request.getApliId(), operacion);
+
+        String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_GESTIONAR_ADMIN);
 
         try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
 
@@ -362,6 +394,9 @@ public class GestionAplicacionesRepository {
 
                 int codigoSalida = stmt.getInt(8);
                 String mensajeSalida = stmt.getString(9);
+
+                logger.debug("gestionarAdministrador - PL respondió. codigo={}, mensaje={}", codigoSalida,
+                        mensajeSalida);
 
                 utilsBD.validarResultado(codigoSalida, mensajeSalida);
 
@@ -399,19 +434,24 @@ public class GestionAplicacionesRepository {
                                 FechaUtils.convertirFecha(rs.getTimestamp(18)));
                         administrador.setUsuarioModificacionUsuario(rs.getString(19));
 
+                        logger.debug(
+                                "gestionarAdministrador - registro mapeado. usuarioRed={}, apliId={}, operacion={}",
+                                administrador.getUsuarioRed(), administrador.getApliId(), operacion);
                         return administrador;
                     }
                 }
 
+                logger.warn("gestionarAdministrador - el cursor vino vacío. usuarioRed={}, apliId={}, operacion={}",
+                        request.getUsuarioRed(), request.getApliId(), operacion);
                 return null;
             }
 
         } catch (Exception e) {
 
-            logger.error(
-                    "Error al gestionar administrador de aplicación para usuario {} en aplicación {}",
+            logger.error("gestionarAdministrador - error ejecutando PL. usuarioRed={}, apliId={}, operacion={}",
                     request.getUsuarioRed(),
                     request.getApliId(),
+                    operacion,
                     e);
 
             throw new RuntimeException(

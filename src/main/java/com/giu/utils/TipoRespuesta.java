@@ -8,9 +8,11 @@ public enum TipoRespuesta {
 
     DATOS_INVALIDOS(
             "1002",
-            "Los datos de entrada son inválidos");
+            "Los datos de entrada son inválidos"),
 
-    
+    ERROR(
+            "1001",
+            "Error en el proceso"); 
 
     private final String codigo;
     private final String descripcion;
