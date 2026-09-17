@@ -11,12 +11,11 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
-
-import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
+import com.giu.utils.BooleanUtils;
 import com.giu.utils.Constantes;
 import com.giu.utils.utilsBD;
 import com.giu.utils.FechaUtils;
@@ -193,7 +192,7 @@ public class GestionUsuariosRepository {
                         String nombre,
                         String correo,
                         String numeroIdentificacion,
-                        Integer superAdministrador,
+                        Boolean superAdministrador,
                         String usuarioCreacion) {
 
                 String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_CREAR_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?) }";
@@ -207,8 +206,8 @@ public class GestionUsuariosRepository {
                                 stmt.setString(2, nombre);
                                 stmt.setString(3, correo);
                                 stmt.setString(4, numeroIdentificacion);
-
-                                stmt.setInt(5, superAdministrador != null ? superAdministrador : 0);
+                                Integer superAdmin = BooleanUtils.booleanToSuperAdmin(superAdministrador);
+                                stmt.setInt(5, superAdmin != null ? superAdmin : 0);
 
                                 stmt.setString(6, usuarioCreacion);
 
@@ -269,7 +268,7 @@ public class GestionUsuariosRepository {
                         String nombre,
                         String correo,
                         String numeroIdentificacion,
-                        Integer superAdministrador,
+                        Boolean superAdministrador,
                         String usuarioModificacion) {
 
                 String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_MODIFICAR_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?) }";
@@ -283,9 +282,9 @@ public class GestionUsuariosRepository {
                                 stmt.setString(2, nombre);
                                 stmt.setString(3, correo);
                                 stmt.setString(4, numeroIdentificacion);
-
-                                if (superAdministrador != null) {
-                                        stmt.setInt(5, superAdministrador);
+                                Integer superAdmin = BooleanUtils.booleanToSuperAdmin(superAdministrador);
+                                if (superAdmin != null) {
+                                        stmt.setInt(5, superAdmin);
                                 } else {
                                         stmt.setNull(5, Types.NUMERIC);
                                 }
@@ -342,7 +341,7 @@ public class GestionUsuariosRepository {
         }
 
         // Gestionar rol de un usuario en una aplicación -> PRC_GESTIONAR_ROL_USUARIO
-        public UsuarioAplicacionResponseDTO gestionarRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request,
+        public UsuarioRolResponseDTO gestionarRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request,
                         String usuarioModificacion,
                         Integer operacion) {
 
@@ -386,44 +385,16 @@ public class GestionUsuariosRepository {
 
                                         if (rs.next()) {
 
-                                                UsuarioAplicacionResponseDTO usuario = new UsuarioAplicacionResponseDTO();
+                                                UsuarioRolResponseDTO usuarioRol = new UsuarioRolResponseDTO();
 
-                                                usuario.setId(rs.getLong("ID"));
-                                                usuario.setUsuarioRed(rs.getString("USUARIO_RED"));
-                                                usuario.setNombre(rs.getString("NOMBRE"));
-                                                usuario.setCorreo(rs.getString("CORREO"));
-                                                usuario.setNumeroIdentificacion(rs.getString("NUMERO_IDENTIFICACION"));
-                                                usuario.setEstadoUsua(rs.getString("ESTADO_USUA"));
-                                                usuario.setEsSuperAdmin(rs.getInt("ES_SUPER_ADMIN"));
-
-                                                usuario.setFechaCreacion(
-                                                                FechaUtils.convertirFecha(
-                                                                                rs.getTimestamp("FECHA_CREACION")));
-
-                                                usuario.setUsuarioCreacion(rs.getString("USUARIO_CREACION"));
-
-                                                usuario.setFechaModificacion(
-                                                                FechaUtils.convertirFecha(
-                                                                                rs.getTimestamp("FECHA_MODIFICACION")));
-
-                                                usuario.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
-
-                                                usuario.setCodigoApli(rs.getString("CODIGO_APLI"));
-                                                usuario.setNombreApli(rs.getString("NOMBRE_APLI"));
-                                                usuario.setEstadoApli(rs.getString("ESTADO_APLI"));
-
-                                                usuario.setIdRol(rs.getObject("ID_ROL", Long.class));
-                                                usuario.setNombreRol(rs.getString("NOMBRE_ROL"));
-
-                                                usuario.setFechaInRol(
-                                                                FechaUtils.convertirFecha(
-                                                                                rs.getTimestamp("FECHA_IN_ROL")));
-
-                                                usuario.setFechaFinRol(
-                                                                FechaUtils.convertirFecha(
-                                                                                rs.getTimestamp("FECHA_FIN_ROL")));
-
-                                                return usuario;
+                                                usuarioRol.setUsuarioRed(rs.getString("USUA_USUARIO_RED"));
+                                                usuarioRol.setApliId(rs.getLong("APLI_ID"));
+                                                usuarioRol.setRolId(rs.getLong("ROL_ID"));
+                                                usuarioRol.setFechaIn(FechaUtils.convertirFecha(
+                                                                rs.getTimestamp("FECHA_IN")));
+                                                usuarioRol.setFechaFin(FechaUtils.convertirFecha(
+                                                                rs.getTimestamp("FECHA_FIN")));
+                                                return usuarioRol;
                                         }
                                 }
 

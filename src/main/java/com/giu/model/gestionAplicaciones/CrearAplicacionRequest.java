@@ -19,6 +19,7 @@ public class CrearAplicacionRequest {
     @Size(max = 200, message = "La descripción no puede superar los 200 caracteres")
     private String descripcion;
     
-    private String administracion;
+    // true = PROPIA / false = PORTAL_CONFIGURACIONES
+    private Boolean administracion;
 
 }

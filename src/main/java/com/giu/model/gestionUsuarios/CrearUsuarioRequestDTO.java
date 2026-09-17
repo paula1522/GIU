@@ -26,5 +26,5 @@ public class CrearUsuarioRequestDTO {
     @Size(max = 50, message = "El número de identificación no puede superar los 50 caracteres")
     private String numeroIdentificacion;
 
-    private Integer superAdministrador;
+    private Boolean superAdministrador;
 }

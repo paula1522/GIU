@@ -1,5 +1,6 @@
 package com.giu.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.repository.GestionUsuariosRepository;
+import com.giu.utils.Constantes;
 
 @Service
 public class GestionUsuariosService {
@@ -68,31 +70,48 @@ public class GestionUsuariosService {
         }
 
         // Método asignar rol a usuario
-        public UsuarioAplicacionResponseDTO asignarRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request, String usuarioModificacion) {
-                return gestionUsuariosRepository.gestionarRolUsuario(apliId, request,usuarioModificacion, 0);
+        public UsuarioRolResponseDTO asignarRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request,
+                        String usuarioModificacion) {
+                return gestionUsuariosRepository.gestionarRolUsuario(apliId, request, usuarioModificacion,
+                                Constantes.OPERACION_ASIGNAR);
         }
 
         // Método actualizar vigencia de un rol a usuario
-        public UsuarioAplicacionResponseDTO actualizarVigenciaRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request, String usuarioModificacion) {
-                return gestionUsuariosRepository.gestionarRolUsuario(apliId, request,usuarioModificacion, 2);
+        public UsuarioRolResponseDTO actualizarVigenciaRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request,
+                        String usuarioModificacion) {
+                return gestionUsuariosRepository.gestionarRolUsuario(apliId, request, usuarioModificacion,
+                                Constantes.OPERACION_VIGENCIA);
         }
 
         // Método retirar rol a un usuario
-        public UsuarioAplicacionResponseDTO retirarRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request, String usuarioModificacion) {
-                return gestionUsuariosRepository.gestionarRolUsuario(apliId, request,usuarioModificacion, 1);
+        public UsuarioRolResponseDTO retirarRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request,
+                        String usuarioModificacion) {
+                return gestionUsuariosRepository.gestionarRolUsuario(apliId, request, usuarioModificacion,
+                                Constantes.OPERACION_RETIRAR);
         }
 
-        public void retirarRolesUsuarios(Long apliId, GestionarRolesUsuariosRequestDTO request, String usuarioModificacion) {
+        public List<UsuarioRolResponseDTO> retirarRolesUsuarios(
+                        Long apliId,
+                        GestionarRolesUsuariosRequestDTO request,
+                        String usuarioModificacion) {
+
+                List<UsuarioRolResponseDTO> retirados = new ArrayList<>();
 
                 for (UsuarioRolRequestDTO usuario : request.getUsuariosRed()) {
 
                         GestionarRolUsuarioRequestDTO rolRequest = new GestionarRolUsuarioRequestDTO();
-
                         rolRequest.setUsuarioRed(usuario.getUsuarioRed());
                         rolRequest.setRolId(usuario.getRolId());
 
-                        gestionUsuariosRepository.gestionarRolUsuario(apliId, rolRequest,usuarioModificacion, 1);
+                        UsuarioRolResponseDTO resultado = gestionUsuariosRepository.gestionarRolUsuario(
+                                        apliId, rolRequest, usuarioModificacion, Constantes.OPERACION_RETIRAR);
+
+                        if (resultado != null) {
+                                retirados.add(resultado);
+                        }
                 }
+
+                return retirados;
         }
 
 }

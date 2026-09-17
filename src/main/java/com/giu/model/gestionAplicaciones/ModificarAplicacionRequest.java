@@ -1,6 +1,4 @@
 package com.giu.model.gestionAplicaciones;
-
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import lombok.Data;
@@ -15,6 +13,10 @@ public class ModificarAplicacionRequest {
     
     @Size(max = 200, message = "La descripción no puede superar los 200 caracteres")
     private String descripcion;
-    private String estado;
-    private String administracion;
+
+    // true = ACTIVO / false = INACTIVO
+    private Boolean estado;
+
+    // true = PROPIA / false = PORTAL_CONFIGURACIONES
+    private Boolean administracion;
 }

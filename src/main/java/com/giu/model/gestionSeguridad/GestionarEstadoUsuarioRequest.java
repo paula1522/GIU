@@ -22,6 +22,5 @@ public class GestionarEstadoUsuarioRequest {
     @NotNull(message = "El id del rol es obligatorio")
     private Long rolId; 
 
-    @NotNull(message = "El usuario de modificación es obligatorio")
-    private String usuarioModificacion;
+
 }

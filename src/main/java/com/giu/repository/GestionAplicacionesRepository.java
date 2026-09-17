@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import com.giu.model.gestionAplicaciones.AdministradorAplicacionResponseDTO;
 import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
 import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
+import com.giu.utils.BooleanUtils;
 import com.giu.utils.Constantes;
 import com.giu.utils.FechaUtils;
 import com.giu.utils.utilsBD;
@@ -205,7 +206,7 @@ public class GestionAplicacionesRepository {
             String codigo,
             String nombre,
             String descripcion,
-            String administracion,
+            Boolean administracion,
             String usuarioCreacion) {
 
         String sql = "{ call PKG_GIU_GESTION_APLICACIONES.PRC_CREAR_APLICACION(?, ?, ?, ?, ?, ?, ?, ?) }";
@@ -216,7 +217,7 @@ public class GestionAplicacionesRepository {
             stmt.setString(1, codigo);
             stmt.setString(2, nombre);
             stmt.setString(3, descripcion);
-            stmt.setString(4, administracion);
+            stmt.setString(6, BooleanUtils.booleanToAdministracion(administracion));
             stmt.setString(5, usuarioCreacion);
 
             stmt.registerOutParameter(6, OracleTypes.CURSOR);
@@ -266,8 +267,8 @@ public class GestionAplicacionesRepository {
             String nombre,
             String codigo,
             String descripcion,
-            String estado,
-            String administracion,
+            Boolean estado,
+            Boolean administracion,
             String usuarioModificacion) {
 
         String sql = "{ call PKG_GIU_GESTION_APLICACIONES.PRC_MODIFICAR_APLICACION(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
@@ -278,8 +279,8 @@ public class GestionAplicacionesRepository {
             stmt.setString(2, nombre);
             stmt.setString(3, codigo);
             stmt.setString(4, descripcion);
-            stmt.setString(5, estado);
-            stmt.setString(6, administracion);
+            stmt.setString(5, BooleanUtils.booleanToEstado(estado));
+            stmt.setString(6, BooleanUtils.booleanToAdministracion(administracion));
             stmt.setString(7, usuarioModificacion);
 
             stmt.registerOutParameter(8, OracleTypes.CURSOR);

@@ -18,7 +18,6 @@ import com.giu.model.gestionRoles.RolResponseDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
-import com.giu.service.GestionAplicacionesService;
 import com.giu.service.GestionRolesService;
 import com.giu.service.GestionUsuariosService;
 import com.giu.model.RespuestaGenerica;
@@ -33,7 +32,6 @@ public class UsuarioAplicacionController {
 
         public UsuarioAplicacionController(
                         GestionUsuariosService usuarioService,
-                        GestionAplicacionesService aplicacionesService,
                         GestionRolesService rolesService) {
 
                 this.usuarioService = usuarioService;
@@ -104,21 +102,19 @@ public class UsuarioAplicacionController {
          * }
          */
         @PostMapping("/usuarios/asignacion-rol")
-        public ResponseEntity<RespuestaGenerica<Void>> asignarRolUsuario(
+        public ResponseEntity<RespuestaGenerica<UsuarioRolResponseDTO>> asignarRolUsuario(
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @PathVariable Long apliId,
                         @Valid @RequestBody GestionarRolUsuarioRequestDTO request) {
 
-                
-
-                usuarioService.asignarRolUsuario(
+                UsuarioRolResponseDTO usuarioRol = usuarioService.asignarRolUsuario(
                                 apliId,
                                 request,
                                 usuarioModificacion);
 
-                RespuestaGenerica<Void> respuesta = new RespuestaGenerica<>(
+                RespuestaGenerica<UsuarioRolResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
-                                null);
+                                usuarioRol);
 
                 return ResponseEntity.ok(respuesta);
         }
@@ -133,24 +129,22 @@ public class UsuarioAplicacionController {
          * DELETE /api/aplicaciones/1/usuarios/uuu111
          */
         @DeleteMapping("/usuarios/{usuarioRed}")
-        public ResponseEntity<RespuestaGenerica<Void>> retirarRolUsuario(
+        public ResponseEntity<RespuestaGenerica<UsuarioRolResponseDTO>> retirarRolUsuario(
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @PathVariable Long apliId,
                         @PathVariable String usuarioRed,
                         @Valid @RequestBody GestionarRolUsuarioRequestDTO request) {
 
-                
-
                 request.setUsuarioRed(usuarioRed);
 
-                usuarioService.retirarRolUsuario(
+                UsuarioRolResponseDTO usuarioRol = usuarioService.retirarRolUsuario(
                                 apliId,
                                 request,
                                 usuarioModificacion);
 
-                RespuestaGenerica<Void> respuesta = new RespuestaGenerica<>(
+                RespuestaGenerica<UsuarioRolResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
-                                null);
+                                usuarioRol);
 
                 return ResponseEntity.ok(respuesta);
         }
@@ -165,17 +159,16 @@ public class UsuarioAplicacionController {
          * DELETE /api/aplicaciones/1/usuario
          */
         @DeleteMapping("/usuario")
-        public ResponseEntity<RespuestaGenerica<Void>> retirarRolesUsuarios(
+        public ResponseEntity<RespuestaGenerica<List<UsuarioRolResponseDTO>>> retirarRolesUsuarios(
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @PathVariable Long apliId,
                         @Valid @RequestBody GestionarRolesUsuariosRequestDTO request) {
 
+                List<UsuarioRolResponseDTO> usuariosRoles = usuarioService.retirarRolesUsuarios(apliId, request, usuarioModificacion);
 
-                usuarioService.retirarRolesUsuarios(apliId, request, usuarioModificacion);
-
-                RespuestaGenerica<Void> respuesta = new RespuestaGenerica<>(
+                RespuestaGenerica<List<UsuarioRolResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
-                                null);
+                                usuariosRoles);
 
                 return ResponseEntity.ok(respuesta);
         }

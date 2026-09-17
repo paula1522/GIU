@@ -21,5 +21,5 @@ public class ModificarRolRequest {
     @Size(max = 200, message = "La descripción no puede superar los 200 caracteres")
     private String descripcion;
 
-    private String estado;
+    private Boolean estado;
 }

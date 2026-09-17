@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.repository.GestionSeguridadRepository;
+import com.giu.utils.Constantes;
 
 @Service
 public class GestionSeguridadService {
@@ -27,7 +28,7 @@ public class GestionSeguridadService {
             GestionarEstadoUsuarioRequest request, String usuarioModificacion) {
 
         gestionSeguridadRepository.gestionarEstadoUsuario(request);
-        if (request.getOperacion() == 0 && request.getRolId() != null) {
+        if (request.getOperacion() == Constantes.OPERACION_ACTIVAR && request.getRolId() != null) {
             GestionarRolUsuarioRequestDTO requestRol = new GestionarRolUsuarioRequestDTO();
 
             requestRol.setRolId(request.getRolId());

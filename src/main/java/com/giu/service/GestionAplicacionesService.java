@@ -1,6 +1,5 @@
 package com.giu.service;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -11,6 +10,7 @@ import com.giu.model.gestionAplicaciones.CrearAplicacionRequest;
 import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
 import com.giu.model.gestionAplicaciones.ModificarAplicacionRequest;
 import com.giu.repository.GestionAplicacionesRepository;
+import com.giu.utils.Constantes;
 
 @Service
 public class GestionAplicacionesService {
@@ -60,13 +60,13 @@ public class GestionAplicacionesService {
     // Método para asignar administradores de aplicaciones
     public AdministradorAplicacionResponseDTO crearAdministrador(GestionarAdministradorRequest request, String usuarioModificacion) {
 
-        return gestionAplicacionesRepository.gestionarAdministrador(request,usuarioModificacion,0);
+        return gestionAplicacionesRepository.gestionarAdministrador(request,usuarioModificacion,Constantes.OPERACION_ASIGNAR);
     }
 
     // Método para retirar administradores de aplicaciones
     public AdministradorAplicacionResponseDTO retirarAdministrador(GestionarAdministradorRequest request, String usuarioModificacion) {
 
-        return gestionAplicacionesRepository.gestionarAdministrador(request,usuarioModificacion,1);
+        return gestionAplicacionesRepository.gestionarAdministrador(request,usuarioModificacion,Constantes.OPERACION_RETIRAR);
     }
 
     

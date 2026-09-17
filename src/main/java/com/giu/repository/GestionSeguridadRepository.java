@@ -61,4 +61,8 @@ public class GestionSeguridadRepository {
                         throw new RuntimeException(e);
                 }
         }
+
+
+
+        
 }

@@ -23,7 +23,6 @@ public class ModificarUsuarioRequestDTO {
     @Size(max = 50, message = "El número de identificación no puede superar los 50 caracteres")
     private String numeroIdentificacion;
     
-    @Min(value = 0, message = "El campo superAdministrador debe ser 0 o 1")
-    @Max(value = 1, message = "El campo superAdministrador debe ser 0 o 1")
-    private Integer superAdministrador = 0;
+
+    private Boolean superAdministrador;
 }
