@@ -1,12 +1,11 @@
 package com.giu.model.gestionRecursos;
 
+
 import lombok.Data;
 
 @Data
-public class RecursoResponseDTO {
-
-    private Long id;
-    private Long apliId;
+public class ModificarRecursoRequestDTO {
+  
     private Long recuIdPadre;
     private String codigo;
     private String nombre;

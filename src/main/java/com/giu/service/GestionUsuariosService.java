@@ -45,13 +45,13 @@ public class GestionUsuariosService {
         // Método para obtener los usuarios asociados a una aplicación específica según
         // el estado
         public List<UsuarioAplicacionResponseDTO> obtenerUsuariosPorAplicacion(
-                        Long apliId) {
+                        Long apliId,String estado) {
 
-                logger.info("obtenerUsuariosPorAplicacion - inicio. apliId={}, estado={}", apliId);
+                logger.info("obtenerUsuariosPorAplicacion - inicio. apliId={}, estado={}", apliId, estado);
 
                 List<UsuarioAplicacionResponseDTO> result = gestionUsuariosRepository.obtenerUsuarioXAplicacion(
                                 apliId,
-                                Constantes.ESTADO_ACTIVO);
+                                estado);
 
                 logger.info("obtenerUsuariosPorAplicacion - fin OK. total={}", result.size());
                 return result;

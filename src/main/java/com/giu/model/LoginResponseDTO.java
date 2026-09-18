@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import com.giu.model.gestionRecursos.RecursoDTO;
+import com.giu.model.gestionRecursos.ModificarRecursoRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
 
 import lombok.Data;
@@ -14,6 +14,6 @@ import lombok.Data;
 public class LoginResponseDTO {
     private UsuarioAplicacionResponseDTO usuario;
     private boolean superAdmin;
-    private List<RecursoDTO> permisos;
+    private List<ModificarRecursoRequestDTO> permisos;
     
 }

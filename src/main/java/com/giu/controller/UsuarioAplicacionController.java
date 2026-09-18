@@ -23,9 +23,15 @@ import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
+import com.giu.service.GestionRecursosService;
 import com.giu.service.GestionRolesService;
 import com.giu.service.GestionUsuariosService;
 import com.giu.model.RespuestaGenerica;
+import com.giu.model.gestionRecursos.CrearRecursoRequestDTO;
+import com.giu.model.gestionRecursos.ModificarRecursoRequestDTO;
+import com.giu.model.gestionRecursos.RecursoResponseDTO;
+import com.giu.model.gestionRecursos.RecursoUsuarioResponseDTO;
+import com.giu.utils.Constantes;
 import com.giu.utils.TipoRespuesta;
 
 @RestController
@@ -36,13 +42,16 @@ public class UsuarioAplicacionController {
 
         private final GestionUsuariosService usuarioService;
         private final GestionRolesService rolesService;
+        private final GestionRecursosService recursosService;
 
         public UsuarioAplicacionController(
                         GestionUsuariosService usuarioService,
-                        GestionRolesService rolesService) {
+                        GestionRolesService rolesService,
+                        GestionRecursosService recursosService) {
 
                 this.usuarioService = usuarioService;
                 this.rolesService = rolesService;
+                this.recursosService = recursosService;
         }
 
         /**
@@ -56,11 +65,12 @@ public class UsuarioAplicacionController {
          */
         @GetMapping("/usuarios")
         public ResponseEntity<RespuestaGenerica<List<UsuarioAplicacionResponseDTO>>> obtenerUsuariosPorAplicacion(
-                        @PathVariable Long apliId) {
+                        @PathVariable Long apliId,
+                        @RequestParam(required = false, defaultValue = Constantes.ESTADO_ACTIVO) String estado) {
 
-                logger.info("GET /aplicaciones/{}/usuarios - estado={}", apliId);
+                logger.info("GET /aplicaciones/{}/usuarios - estado={}", apliId, estado);
 
-                List<UsuarioAplicacionResponseDTO> usuarios = usuarioService.obtenerUsuariosPorAplicacion(apliId);
+                List<UsuarioAplicacionResponseDTO> usuarios = usuarioService.obtenerUsuariosPorAplicacion(apliId, estado);
 
                 RespuestaGenerica<List<UsuarioAplicacionResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
@@ -250,6 +260,141 @@ public class UsuarioAplicacionController {
                 RespuestaGenerica<List<UsuarioRolResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
                                 usuariosRoles);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Consultar recursos de una aplicación
+         *
+         * Método: GET
+         * Ruta: /api/aplicaciones/{apliId}/recursos
+         *
+         * Ejemplo:
+         * GET /api/aplicaciones/1/recursos?estado=ACTIVO
+         */
+        @GetMapping("/recursos")
+        public ResponseEntity<RespuestaGenerica<List<RecursoResponseDTO>>> obtenerRecursos(
+                        @PathVariable Long apliId,
+                        @RequestParam(required = false, defaultValue = Constantes.ESTADO_ACTIVO) String estado) {
+
+                logger.info(
+                                "GET /aplicaciones/{}/recursos - estado={}",
+                                apliId,
+                                estado);
+
+                List<RecursoResponseDTO> recursos = recursosService.obtenerRecurso(
+                                apliId,
+                                estado);
+
+                RespuestaGenerica<List<RecursoResponseDTO>> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                recursos);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Crear recurso
+         *
+         * Método: POST
+         * Ruta: /api/aplicaciones/{apliId}/recursos
+         *
+         * Ejemplo de cuerpo de la solicitud:
+         *
+         * {
+         * "recuIdPadre": null,
+         * "codigo": "MENU_USUARIOS",
+         * "nombre": "Usuarios",
+         * "descripcion": "Administración de usuarios",
+         * "tipo": "MENU"
+         * }
+         */
+        @PostMapping("/recursos")
+        public ResponseEntity<RespuestaGenerica<RecursoResponseDTO>> crearRecurso(
+                        @PathVariable Long apliId,
+                        @Valid @RequestBody CrearRecursoRequestDTO request) {
+
+                logger.info("POST /aplicaciones/{}/recursos - codigo={}",
+                                apliId,
+                                request.getCodigo());
+
+                RecursoResponseDTO recurso = recursosService.crearRecurso(
+                                apliId,
+                                request);
+
+                RespuestaGenerica<RecursoResponseDTO> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                recurso);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Modificar recurso
+         *
+         * Método: PUT
+         * Ruta: /api/aplicaciones/{apliId}/recursos/{recuId}
+         *
+         * Ejemplo de cuerpo de la solicitud:
+         *
+         * {
+         * "recuIdPadre": null,
+         * "codigo": "MENU_USUARIOS",
+         * "nombre": "Usuarios",
+         * "descripcion": "Administración de usuarios",
+         * "tipo": "MENU",
+         * "estado": "ACTIVO"
+         * }
+         */
+        @PutMapping("/recursos/{recuId}")
+        public ResponseEntity<RespuestaGenerica<RecursoResponseDTO>> modificarRecurso(
+                        @PathVariable Long apliId,
+                        @PathVariable Long recuId,
+                        @Valid @RequestBody ModificarRecursoRequestDTO request) {
+
+                logger.info("PUT /aplicaciones/{}/recursos/{}",
+                                apliId,
+                                recuId);
+
+                RecursoResponseDTO recurso = recursosService.modificarRecurso(
+                                apliId,
+                                recuId,
+                                request);
+
+                RespuestaGenerica<RecursoResponseDTO> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                recurso);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Consultar recursos asignados a un usuario
+         *
+         * Método: GET
+         * Ruta: /api/aplicaciones/{apliId}/recursos/usuario/{usuarioRed}
+         *
+         * Ejemplo:
+         * GET /api/aplicaciones/1/recursos/usuario/uuu111
+         */
+        @GetMapping("/recursos/usuario/{usuarioRed}")
+        public ResponseEntity<RespuestaGenerica<List<RecursoUsuarioResponseDTO>>> obtenerRecursoUsuario(
+                        @PathVariable Long apliId,
+                        @PathVariable String usuarioRed) {
+
+                logger.info(
+                                "GET /aplicaciones/{}/recursos/usuario/{}",
+                                apliId,
+                                usuarioRed);
+
+                List<RecursoUsuarioResponseDTO> recursos = recursosService.obtenerRecursoUsuario(
+                                usuarioRed,
+                                apliId);
+
+                RespuestaGenerica<List<RecursoUsuarioResponseDTO>> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                recursos);
 
                 return ResponseEntity.ok(respuesta);
         }

@@ -60,7 +60,7 @@ public class Constantes {
         public static final int OPERACION_VIGENCIA = 2;
 
         // ==================== ESTADOS ====================
-        public static final String ESTADO_ACTIVO = "ACTIVO" ;
+        public static final String ESTADO_ACTIVO = "ACTIVO";
 
         // ==================== APLICACIONES ====================
         public static final String SQL_APLICACIONES_OBTENER = "system.pl.aplicaciones.obtener";
@@ -83,4 +83,9 @@ public class Constantes {
         // ==================== ROLES ====================
         public static final String SQL_ROLES_OBTENER = "system.pl.roles.obtener";
 
+        // ==================== RECURSOS ====================
+        public static final String SQL_RECURSOS_OBTENER = "system.pl.recursos.obtener";
+        public static final String SQL_RECURSOS_OBTENER_USUARIO = "system.pl.recursos.obtenerUsuario";
+        public static final String SQL_RECURSOS_CREAR = "system.pl.recursos.crear";
+        public static final String SQL_RECURSOS_MODIFICAR = "system.pl.recursos.modificar";
 }
