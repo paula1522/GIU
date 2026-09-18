@@ -47,18 +47,20 @@ public class AplicacionController {
          * Ruta: /api/aplicaciones
          *
          * Ejemplo:
-         * GET /api/aplicaciones?codigo=GIU&estado=ACTIVO
+         * GET /api/aplicaciones?codigo=GIU&estado=ACTIVO&nombre=APP
          */
         @GetMapping
         public ResponseEntity<RespuestaGenerica<List<AplicacionResponseDTO>>> obtenerAplicacion(
                         @RequestParam(required = false) String codigo,
-                        @RequestParam(required = false) String estado) {
+                        @RequestParam(required = false) String estado,
+                        @RequestParam(required = false) String nombre) {
 
-                logger.info("GET /aplicaciones - codigo={}, estado={}", codigo, estado);
+                logger.info("GET /aplicaciones - codigo={}, estado={}, nombre={}", codigo, estado, nombre);
 
                 List<AplicacionResponseDTO> aplicaciones = aplicacionesService.obtenerAplicacion(
                                 codigo,
-                                estado);
+                                estado,
+                                nombre);
 
                 RespuestaGenerica<List<AplicacionResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,

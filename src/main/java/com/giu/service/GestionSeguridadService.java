@@ -10,6 +10,7 @@ import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.repository.GestionSeguridadRepository;
 import com.giu.utils.Constantes;
+import com.giu.utils.TransaccionUtils;
 
 @Service
 public class GestionSeguridadService {
@@ -29,28 +30,47 @@ public class GestionSeguridadService {
 
     // Método para gestionar el estado de un usuario en el sistema
     public void gestionarEstadoUsuario(
-            GestionarEstadoUsuarioRequest request, String usuarioModificacion) {
+            GestionarEstadoUsuarioRequest request,
+            String usuarioModificacion) {
 
         logger.info("gestionarEstadoUsuario - inicio. usuarioRed={}, apliId={}, operacion={}",
-                request.getUsuarioRed(), request.getApliId(), request.getOperacion());
+                request.getUsuarioRed(),
+                request.getApliId(),
+                request.getOperacion());
 
-        gestionSeguridadRepository.gestionarEstadoUsuario(request);
+        TransaccionUtils.ejecutar(conn -> {
 
-        if (request.getOperacion() == Constantes.OPERACION_ACTIVAR && request.getRolId() != null) {
+            gestionSeguridadRepository.gestionarEstadoUsuario(
+                    conn,
+                    request);
 
-            logger.info("gestionarEstadoUsuario - asignando rol al activar. usuarioRed={}, rolId={}",
-                    request.getUsuarioRed(), request.getRolId());
+            if (request.getOperacion() == Constantes.OPERACION_ACTIVAR
+                    && request.getRolId() != null) {
 
-            GestionarRolUsuarioRequestDTO requestRol = new GestionarRolUsuarioRequestDTO();
-            requestRol.setRolId(request.getRolId());
-            requestRol.setUsuarioRed(request.getUsuarioRed());
-            requestRol.setFechaIn(LocalDateTime.now());
-            requestRol.setFechaFin(null);
+                logger.info(
+                        "gestionarEstadoUsuario - asignando rol al activar. usuarioRed={}, rolId={}",
+                        request.getUsuarioRed(),
+                        request.getRolId());
 
-            gestionUsuariosService.asignarRolUsuario(request.getApliId(), requestRol, usuarioModificacion);
-        }
+                GestionarRolUsuarioRequestDTO requestRol = new GestionarRolUsuarioRequestDTO();
+
+                requestRol.setRolId(request.getRolId());
+                requestRol.setUsuarioRed(request.getUsuarioRed());
+                requestRol.setFechaIn(LocalDateTime.now());
+                requestRol.setFechaFin(null);
+
+                gestionUsuariosService.asignarRolUsuario(
+                        request.getApliId(),
+                        requestRol,
+                        usuarioModificacion);
+
+            }
+
+            return null;
+        });
 
         logger.info("gestionarEstadoUsuario - fin OK. usuarioRed={}, operacion={}",
-                request.getUsuarioRed(), request.getOperacion());
+                request.getUsuarioRed(),
+                request.getOperacion());
     }
 }

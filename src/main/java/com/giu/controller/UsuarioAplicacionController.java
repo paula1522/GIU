@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -145,6 +146,42 @@ public class UsuarioAplicacionController {
                                 apliId, request.getUsuarioRed(), request.getRolId());
 
                 UsuarioRolResponseDTO usuarioRol = usuarioService.asignarRolUsuario(
+                                apliId,
+                                request,
+                                usuarioModificacion);
+
+                RespuestaGenerica<UsuarioRolResponseDTO> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                usuarioRol);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Renovar vigencia de una asignación de rol vencida
+         *
+         * Método: PUT
+         * Ruta: /api/aplicaciones/{apliId}/usuario/vigencia
+         *
+         * Ejemplo:
+         * PUT /api/aplicaciones/1/usuario/vigencia
+         *
+         * Ejemplo de cuerpo de la solicitud:
+         * {
+         * "usuarioRed": "UUU633",
+         * "rolId": 1
+         * }
+         */
+        @PutMapping("/usuario/vigencia")
+        public ResponseEntity<RespuestaGenerica<UsuarioRolResponseDTO>> actualizarVigenciaRolUsuario(
+                        @RequestHeader("usuarioModificacion") String usuarioModificacion,
+                        @PathVariable Long apliId,
+                        @Valid @RequestBody GestionarRolUsuarioRequestDTO request) {
+
+                logger.info("PUT /aplicaciones/{}/usuario/vigencia - usuarioRed={}, rolId={}",
+                                apliId, request.getUsuarioRed(), request.getRolId());
+
+                UsuarioRolResponseDTO usuarioRol = usuarioService.actualizarVigenciaRolUsuario(
                                 apliId,
                                 request,
                                 usuarioModificacion);

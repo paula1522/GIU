@@ -20,39 +20,43 @@ public class GestionSeguridadRepository {
         private static final Logger logger = LogManager.getLogger(GestionSeguridadRepository.class);
 
         public void gestionarEstadoUsuario(
+                        Connection conn,
                         GestionarEstadoUsuarioRequest request) {
 
-                logger.debug("gestionarEstadoUsuario - ejecutando PRC_GESTIONAR_ESTADO_USUARIO. usuarioRed={}, apliId={}, operacion={}",
-                                request.getUsuarioRed(), request.getApliId(), request.getOperacion());
+                logger.debug(
+                                "gestionarEstadoUsuario - ejecutando PRC_GESTIONAR_ESTADO_USUARIO. usuarioRed={}, apliId={}, operacion={}",
+                                request.getUsuarioRed(),
+                                request.getApliId(),
+                                request.getOperacion());
 
-                String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_SEGURIDAD_GESTIONAR_ESTADO);
+                String sql = Propiedades.getInstance()
+                                .getPropiedad(Constantes.SQL_SEGURIDAD_GESTIONAR_ESTADO);
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.NOMBRE_BD_GIU)) {
+                try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                        try (CallableStatement stmt = conn.prepareCall(sql)) {
+                        stmt.setLong(1, request.getApliId());
+                        stmt.setString(2, request.getUsuarioRed());
+                        stmt.setInt(3, request.getOperacion());
 
-                                stmt.setLong(1, request.getApliId());
-                                stmt.setString(2, request.getUsuarioRed());
-                                stmt.setInt(3, request.getOperacion());
+                        stmt.registerOutParameter(4, OracleTypes.NUMBER);
+                        stmt.registerOutParameter(5, OracleTypes.VARCHAR);
 
-                                stmt.registerOutParameter(4, OracleTypes.NUMBER);
-                                stmt.registerOutParameter(5, OracleTypes.VARCHAR);
+                        stmt.execute();
 
-                                stmt.execute();
+                        int codigoSalida = stmt.getInt(4);
+                        String mensajeSalida = stmt.getString(5);
 
-                                int codigoSalida = stmt.getInt(4);
-                                String mensajeSalida = stmt.getString(5);
+                        logger.debug(
+                                        "gestionarEstadoUsuario - PL respondió. codigo={}, mensaje={}",
+                                        codigoSalida,
+                                        mensajeSalida);
 
-                                logger.debug("gestionarEstadoUsuario - PL respondió. codigo={}, mensaje={}",
-                                                codigoSalida, mensajeSalida);
-
-                                utilsBD.validarResultado(codigoSalida, mensajeSalida);
-                        }
+                        utilsBD.validarResultado(codigoSalida, mensajeSalida);
 
                 } catch (Exception e) {
 
-                        logger.error("gestionarEstadoUsuario - error ejecutando PL. usuarioRed={}, apliId={}, operacion={}",
+                        logger.error(
+                                        "gestionarEstadoUsuario - error ejecutando PL. usuarioRed={}, apliId={}, operacion={}",
                                         request.getUsuarioRed(),
                                         request.getApliId(),
                                         request.getOperacion(),

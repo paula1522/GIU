@@ -380,7 +380,8 @@ public class GestionUsuariosRepository {
         }
 
         // Gestionar rol de un usuario en una aplicación -> PRC_GESTIONAR_ROL_USUARIO
-        public UsuarioRolResponseDTO gestionarRolUsuario(Long apliId, GestionarRolUsuarioRequestDTO request,
+        public UsuarioRolResponseDTO gestionarRolUsuario(Connection conn, Long apliId,
+                        GestionarRolUsuarioRequestDTO request,
                         String usuarioModificacion,
                         Integer operacion) {
 
@@ -389,69 +390,65 @@ public class GestionUsuariosRepository {
 
                 String sql = "{ call PKG_GIU_GESTION_USUARIOS.PRC_GESTIONAR_ROL_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
 
-                try (Connection conn = utilsBD.obtenerConexion(
-                                Constantes.NOMBRE_BD_GIU)) {
+                try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                        try (CallableStatement stmt = conn.prepareCall(sql)) {
+                        stmt.setLong(1, apliId);
+                        stmt.setLong(2, request.getRolId());
+                        stmt.setString(3, request.getUsuarioRed());
+                        stmt.setInt(4, operacion);
 
-                                stmt.setLong(1, apliId);
-                                stmt.setLong(2, request.getRolId());
-                                stmt.setString(3, request.getUsuarioRed());
-                                stmt.setInt(4, operacion);
-
-                                if (request.getFechaIn() != null) {
-                                        stmt.setTimestamp(5, Timestamp.valueOf(request.getFechaIn()));
-                                } else {
-                                        stmt.setNull(5, Types.TIMESTAMP);
-                                }
-
-                                if (request.getFechaFin() != null) {
-                                        stmt.setTimestamp(6, Timestamp.valueOf(request.getFechaFin()));
-                                } else {
-                                        stmt.setNull(6, Types.TIMESTAMP);
-                                }
-
-                                stmt.setString(7, usuarioModificacion);
-
-                                stmt.registerOutParameter(8, OracleTypes.CURSOR);
-                                stmt.registerOutParameter(9, OracleTypes.NUMBER);
-                                stmt.registerOutParameter(10, OracleTypes.VARCHAR);
-
-                                stmt.execute();
-
-                                int codigoSalida = stmt.getInt(9);
-                                String mensajeSalida = stmt.getString(10);
-
-                                logger.debug("gestionarRolUsuario - PLrespondió. codigo={}, mensaje={}", codigoSalida,
-                                                mensajeSalida);
-
-                                utilsBD.validarResultado(codigoSalida, mensajeSalida);
-
-                                try (ResultSet rs = (ResultSet) stmt.getObject(8)) {
-
-                                        if (rs.next()) {
-
-                                                UsuarioRolResponseDTO usuarioRol = new UsuarioRolResponseDTO();
-
-                                                usuarioRol.setUsuarioRed(rs.getString("USUA_USUARIO_RED"));
-                                                usuarioRol.setApliId(rs.getLong("APLI_ID"));
-                                                usuarioRol.setRolId(rs.getLong("ROL_ID"));
-                                                usuarioRol.setFechaIn(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_IN")));
-                                                usuarioRol.setFechaFin(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_FIN")));
-
-                                                logger.debug("gestionarRolUsuario - registro mapeado. usuarioRed={}, rolId={}, operacion={}",
-                                                                usuarioRol.getUsuarioRed(), usuarioRol.getRolId(),
-                                                                operacion);
-                                                return usuarioRol;
-                                        }
-                                }
-
-                                logger.warn("gestionarRolUsuario - el cursor vino vacío. usuarioRed={}, apliId={}, rolId={}, operacion={}",
-                                                request.getUsuarioRed(), apliId, request.getRolId(), operacion);
-                                return null;
+                        if (request.getFechaIn() != null) {
+                                stmt.setTimestamp(5, Timestamp.valueOf(request.getFechaIn()));
+                        } else {
+                                stmt.setNull(5, Types.TIMESTAMP);
                         }
+
+                        if (request.getFechaFin() != null) {
+                                stmt.setTimestamp(6, Timestamp.valueOf(request.getFechaFin()));
+                        } else {
+                                stmt.setNull(6, Types.TIMESTAMP);
+                        }
+
+                        stmt.setString(7, usuarioModificacion);
+
+                        stmt.registerOutParameter(8, OracleTypes.CURSOR);
+                        stmt.registerOutParameter(9, OracleTypes.NUMBER);
+                        stmt.registerOutParameter(10, OracleTypes.VARCHAR);
+
+                        stmt.execute();
+
+                        int codigoSalida = stmt.getInt(9);
+                        String mensajeSalida = stmt.getString(10);
+
+                        logger.debug("gestionarRolUsuario - PLrespondió. codigo={}, mensaje={}", codigoSalida,
+                                        mensajeSalida);
+
+                        utilsBD.validarResultado(codigoSalida, mensajeSalida);
+
+                        try (ResultSet rs = (ResultSet) stmt.getObject(8)) {
+
+                                if (rs.next()) {
+
+                                        UsuarioRolResponseDTO usuarioRol = new UsuarioRolResponseDTO();
+
+                                        usuarioRol.setUsuarioRed(rs.getString("USUA_USUARIO_RED"));
+                                        usuarioRol.setApliId(rs.getLong("APLI_ID"));
+                                        usuarioRol.setRolId(rs.getLong("ROL_ID"));
+                                        usuarioRol.setFechaIn(FechaUtils.convertirFecha(
+                                                        rs.getTimestamp("FECHA_IN")));
+                                        usuarioRol.setFechaFin(FechaUtils.convertirFecha(
+                                                        rs.getTimestamp("FECHA_FIN")));
+
+                                        logger.debug("gestionarRolUsuario - registro mapeado. usuarioRed={}, rolId={}, operacion={}",
+                                                        usuarioRol.getUsuarioRed(), usuarioRol.getRolId(),
+                                                        operacion);
+                                        return usuarioRol;
+                                }
+                        }
+
+                        logger.warn("gestionarRolUsuario - el cursor vino vacío. usuarioRed={}, apliId={}, rolId={}, operacion={}",
+                                        request.getUsuarioRed(), apliId, request.getRolId(), operacion);
+                        return null;
 
                 } catch (Exception e) {
 

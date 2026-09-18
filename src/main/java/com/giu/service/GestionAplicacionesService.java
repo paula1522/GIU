@@ -28,10 +28,10 @@ public class GestionAplicacionesService {
     }
 
     // Método para obtener aplicación según el codigo y el estado
-    public List<AplicacionResponseDTO> obtenerAplicacion(String codigo, String estado) {
-        logger.info("obtenerAplicacion - inicio. codigo={}, estado={}", codigo, estado);
+    public List<AplicacionResponseDTO> obtenerAplicacion(String codigo, String estado, String nombre) {
+        logger.info("obtenerAplicacion - inicio. codigo={}, estado={}, nombre={}", codigo, estado, nombre);
 
-        List<AplicacionResponseDTO> result = gestionAplicacionesRepository.obtenerAplicacion(codigo, estado);
+        List<AplicacionResponseDTO> result = gestionAplicacionesRepository.obtenerAplicacion(codigo, estado, nombre);
 
         logger.info("obtenerAplicacion - fin OK. total={}", result.size());
         return result;

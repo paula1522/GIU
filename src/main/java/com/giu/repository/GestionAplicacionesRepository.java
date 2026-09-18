@@ -32,9 +32,10 @@ public class GestionAplicacionesRepository {
     // Consulta una aplicación -> FN_OBTENER_APLICACION
     public List<AplicacionResponseDTO> obtenerAplicacion(
             String codigo,
-            String estado) {
+            String estado,
+            String nombre) {
 
-        logger.debug("obtenerAplicacion - ejecutando FN_OBTENER_APLICACION. codigo={}, estado={}", codigo, estado);
+        logger.debug("obtenerAplicacion - ejecutando FN_OBTENER_APLICACION. codigo={}, estado={}, nombre={}", codigo, estado, nombre);
 
         String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_OBTENER);
 
@@ -44,8 +45,10 @@ public class GestionAplicacionesRepository {
                 CallableStatement stmt = conn.prepareCall(sql)) {
 
             stmt.registerOutParameter(1, OracleTypes.CURSOR);
-            stmt.setString(2, codigo);
-            stmt.setString(3, estado);
+            stmt.setNull(2,Types.NUMERIC);
+            stmt.setString(3, codigo);
+            stmt.setString(4, estado);
+            stmt.setString(5, nombre);
 
             stmt.execute();
 
@@ -83,7 +86,7 @@ public class GestionAplicacionesRepository {
 
         } catch (Exception e) {
 
-            logger.error("obtenerAplicacion - error. codigo={}, estado={}", codigo, estado, e);
+            logger.error("obtenerAplicacion - error. codigo={}, estado={}, nombre={}", codigo, estado,nombre, e);
 
             throw new RuntimeException("Error consultando aplicación", e);
         }
