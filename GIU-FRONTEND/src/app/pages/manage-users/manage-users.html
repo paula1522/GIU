@@ -1,0 +1,43 @@
+<!-- gestionar-usuarios.component.html -->
+<div class="page-shell">
+
+    <div class="users-header">
+      <h2 class="users-title">Gestionar usuarios</h2>
+  
+      <app-button 
+      [text]="'Agregar'"  
+      [icon]="'fa-solid fa-plus text-white'"  
+      [position]="'left'"    
+      [class]="['btn', 'btn-primary', ]" 
+      (clickEventButton)="onAddUser()">
+      </app-button>
+    </div>
+  
+    <div class="users-search">
+
+<app-input placeholder="Buscar usuario..." type="text"  
+srcImgLeft="assets/icons/search.svg">
+</app-input>
+
+    </div>
+  
+    <p class="users-subtitle">Usuarios asociados a la aplicación</p>
+  
+    <!-- Aquí va tu tabla -->
+    <div class="users-table-wrapper">
+  
+      <!-- <table> ... </table> -->
+    </div>
+
+    <div class="card-content">
+      <app-table
+      [tableColumnTitle]="tableTitles"
+      [columnsToDisplay]="tableColumns"
+      [dataSource]="dataSource"
+      [tableTitle]="tableTitle" 
+      (clickEventButton)="actionTable($event)"
+    >
+    </app-table>
+  </div>
+  
+  </div>

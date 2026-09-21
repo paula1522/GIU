@@ -1,0 +1,28 @@
+<div class="application-card">
+
+    <div class="application-info">
+  
+      <div class="application-icon">
+        @if (icon) {
+          <img [src]="icon" [alt]="name">
+        }
+      </div>
+  
+      <div class="application-content">
+        <h3>{{ name }}</h3>
+  
+        <p>{{ description }}</p>
+      </div>
+  
+    </div>
+  
+    <button
+      type="button"
+      class="application-button"
+      (click)="openApplication()"
+      [attr.aria-label]="'Ingresar a ' + name"
+    >
+      <span>→</span>
+    </button>
+  
+  </div>

@@ -1,0 +1,89 @@
+@use 'sass:color';
+@use '../../../../styles/variables' as *;
+
+.application-card {
+  background: #ffffff;
+  border: 1px solid #e9e4e3;
+  border-left: 3px solid  $primary-color !important;
+  border-radius: 12px;
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%; // para que todas las cards del grid queden parejas
+}
+
+.application-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.application-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  flex-shrink: 0;
+
+  background:  $primary-color !important;
+  color:  $primary-color !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+}
+
+.application-content {
+  h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #1B1B1F;
+    margin: 0 0 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #5B5B63;
+    line-height: 1.4;
+    margin: 0;
+  }
+}
+
+.application-button {
+  align-self: flex-end;
+  margin-top: auto; // empuja el botón al fondo del card, aunque cambie el largo de la descripción
+
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+
+  border: 1px solid  $primary-color !important;
+  background: #ffffff;
+  color: #5B5B63;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  span {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: #FDEBEE;
+    color:  $primary-color !important;
+    border-color:  $primary-color !important;
+  }
+}

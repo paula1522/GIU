@@ -1,0 +1,81 @@
+<app-modal #componentModal  [size]="'small'" 
+            [showFooter]="false" 
+            [includeHeader]="false" 
+            [closeOnBackdropClick]="closeOnBackdropClick"
+            (backClicEvent) = "backClicEvent()">
+    <div class="content-center"   [class.loading-modal]="loading">
+        <ng-container *ngIf="icon">
+            <div class="dialog-icon">
+              <img [src]="icon" alt="Error" />
+            </div>
+          </ng-container>
+          
+        <ng-container *ngIf="image">
+            <div class="dialog-image">
+              <img [src]="image" style="width: 61px;">
+            </div>
+        </ng-container>
+
+        <label for="" class="title-modal" *ngIf="title" >{{ title }}</label>
+        <div class="comment" *ngIf="comment" [innerHTML]="comment"></div>
+
+
+        <div *ngIf="loading" class="loading-container">
+
+          <!-- LOADER NORMAL -->
+          <img
+            *ngIf="!showProgress"
+            src="assets/img/spinner_claro_modal.gif"
+            class="spinner"
+          />
+      
+          <!-- LOADER CON BARRA -->
+          <div
+            *ngIf="showProgress"
+            class="progress-container">
+      
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                [style.width.%]="progress">
+              </div>
+            </div>
+      
+            <div class="progress-text">
+              {{ progress }}%
+            </div>
+      
+          </div>
+      
+      </div>
+      
+      <div
+        class="commentLoading"
+        *ngIf="commentLoading"
+        [innerHTML]="commentLoading">
+      </div>
+
+
+        <div class="buttons">
+            <app-button *ngIf="titleBtn1"
+                class="size-button"
+                [title]="titleBtn1"
+                [text]="titleBtn1"
+                [class]="['btn ', ' btn-primary w-100 circle']"
+                [disabled]="false"
+                (clickEventButton)="eventClickEventButton1()">
+            </app-button>
+            
+            <app-button   *ngIf="titleBtn2"
+                class="size-button"
+                [title]="titleBtn2"
+                [text]="titleBtn2"
+                [class]="'btn btn-outline-danger w-100 circle'"
+                [disabled]="false" 
+                (clickEventButton)="eventClickEventButton2()">
+            </app-button>
+        </div>
+    </div>
+</app-modal>
+
+

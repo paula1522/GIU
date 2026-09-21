@@ -1,0 +1,253 @@
+@use '../../../../../styles/variables' as *;
+
+.button-radius {
+  padding: 12px !important;
+  font-size: 16px !important;
+  border-radius: 20px !important; // Botones redondeados
+}
+
+.default-btn {
+  border-radius: 5px;
+  border: 0px;
+  padding: 0.3rem;
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.btn-primary:hover {
+  background-color: $primary-color;
+  // Gris de fondo para el botón primary
+  border-color: $primary-color !important;
+  color: white !important; // Texto en gris oscuro
+}
+
+// Botón Secundario (blanco con borde rojo)
+.btn-outline-danger {
+  background-color: white !important; // Blanco de fondo para el botón secundario
+  color: $primary-color;
+  // Texto en rojo
+  border-color: $primary-color;
+  width: 134px;
+  height: 25px;
+  padding: 1px 10px;
+
+}
+
+.btn-secondary {
+  // background-color:  #dddddd !important;
+  // Gris de fondo para el botón primary
+  // border-color: #d8d8d8 !important;
+  color: #000000 !important; // Texto en gris oscuro
+  height: 35px;
+  
+}
+
+.btn-secondary:hover {
+  // background-color: #b8b8b8 !important;
+  // border-color: #b8b8b8 !important;
+  color: rgb(0, 0, 0) !important;
+}
+
+.btn-outline-green {
+  background-color: white !important; // Blanco de fondo para el botón secundario
+  color: $primary-color;
+
+  ; // Texto en rojo
+  border-color: $primary-color;
+
+  ;
+}
+
+.btn-outline-green:hover {
+  background-color: $primary-color;
+
+  ; // Cambia a rojo en hover
+  color: white !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: $primary-color;
+
+  ; // Cambia a rojo en hover
+  color: $primary-color;
+  ;
+}
+
+.btn-outline-danger:disabled {
+  background-color: $primary-color !important;
+  /* Fondo rojo */
+  color: white !important;
+  /* Texto blanco */
+  border-color: $primary-color;
+  /* Borde rojo */
+  cursor: not-allowed;
+  /* Muestra un ícono de no permitido */
+  opacity: 0.65;
+  /* Opcional, da un efecto visual */
+}
+
+// Botón Limpiar (gris claro)
+.btn-light {
+  background-color: #f8f9fa !important;
+  border-color: #ddd !important;
+  color: #6c757d !important;
+}
+
+.btn-light:hover {
+  background-color: #e2e6ea !important;
+  color: #495057 !important;
+}
+
+.btn-grey {
+  background-color: #b8b8b8 !important;
+  border-color: #b8b8b8 !important;
+  color: #2d2d2d !important;
+}
+
+.btn-grey:hover {
+  background-color: #f8f9fa !important;
+  color: #000 !important;
+}
+
+/* Botones de navegación */
+.btn-outline-primary {
+  color: $primary-color;
+  border-color: $primary-color;
+  border-radius: 20px;
+  padding: 5px 30px;
+}
+
+a,
+.btn-link {
+  color: $primary-color;
+  /* Color verde azulado para los links */
+  font-weight: bold !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: $primary-color;
+  color: white !important;
+  border-color: $primary-color;
+}
+
+.btn-outline-blue {
+  border-color: rgba(24, 115, 133, 1);
+  color: rgba(24, 115, 133, 1);
+  border-radius: 20px;
+  padding: 3px 22px;
+  border: 2px solid rgba(24, 115, 133, 1);
+  font-size: 13px;
+}
+
+.circle {
+  width: 200px;
+  font-size: 13px;
+  border-radius: 20px;
+}
+
+.s-icon {
+  width: 30px;
+  color: black;
+  background: no-repeat;
+  border: none;
+}
+
+// Botón Primario
+.btn-primary {
+  width: 280px;
+  height: 40px;
+
+  padding: 0 24px;
+
+  border: none !important;
+  border-radius: 10px !important;
+
+  background: $primary-color !important;
+  color: #ffffff !important;
+
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 14px rgba(24, 115, 133, 0.20);
+
+  transition: all 0.2s ease;
+}
+
+// Botón Primario
+.btn-primary-secondary {
+  border-radius: 6px;
+  padding: 5px 20px;
+  background: #ffffff;
+  // border-color: #afafaf;
+  color: #000000;
+  // height: 50px;
+  font-size: 18px;
+  border: 1px solid #afafaf;
+}
+.icon-info,
+.icon-danger,
+.icon-warning,
+.icon-sucess {
+  position: relative;
+  min-height: 31px;
+  min-width: 31px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.icon-sucess {
+  color: #059669;
+}
+
+.icon-info {
+  color: #187385;
+}
+
+.icon-danger {
+  color: #D82831;
+}
+
+.icon-warning {
+  color: #ffc107;
+}
+
+.icon-sucess:hover {
+  background-color: rgba(215, 242, 219, 1);
+  height: 34px;
+  width: 34px;
+}
+
+.icon-info:hover {
+  background-color: rgba(24, 115, 133, 0.08);
+  height: 34px;
+  width: 34px;
+}
+
+.icon-danger:hover {
+  background-color: rgba(253, 232, 233, 1);
+  height: 34px;
+  width: 34px;
+}
+
+.icon-warning:hover {
+  background-color: rgba(255, 226, 208, 1);
+  height: 34px;
+  width: 34px;
+}
+
+.btn-createot {
+  font-size: 16px;
+  font-weight: 700;
+  height: 40px;
+  width: 134px;
+}

@@ -1,0 +1,62 @@
+<header class="header">
+
+  <div class="header-left">
+    <div class="logo">
+      <img class="logo-icon" src="/assets/icons/logoClaro.png"> 
+      <span class="logo-text">
+        Portal GIU
+      </span>
+    </div>
+  </div>
+
+  <div class="header-right">
+
+    <button
+      type="button"
+      class="user-menu-button"
+      (click)="toggleUserMenu()"
+    >
+
+      <div class="user-avatar">
+        {{ getInitials(userName) }}
+      </div>
+
+      <div class="user-details">
+        <span class="user-name">
+          {{ userName }}
+        </span>
+
+        <span class="user-role">
+          Administrador
+        </span>
+      </div>
+
+      <span
+        class="chevron"
+        [class.open]="showUserMenu"
+      >
+        ▾
+      </span>
+
+    </button>
+
+    @if (showUserMenu) {
+      <div class="user-dropdown">
+
+        <div class="dropdown-divider"></div>
+
+        <button
+          type="button"
+          class="dropdown-item logout"
+          (click)="logout()"
+        >
+          <span>↪</span>
+          <span>Cerrar sesión</span>
+        </button>
+
+      </div>
+    }
+
+  </div>
+
+</header>

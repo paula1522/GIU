@@ -1,0 +1,15 @@
+<div class="checkbox-container">
+    <input
+      type="checkbox"
+      [id]="id"
+      [checked]="checked"
+      [disabled]="disabled"
+      (change)="onChange($event)"
+    />
+  
+  @if (textLabel) {
+    <label class="form-label capitalize">
+      {{ textLabel }}
+    </label>
+  }
+  </div>

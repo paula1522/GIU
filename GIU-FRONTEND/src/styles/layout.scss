@@ -1,0 +1,9 @@
+// src/styles/layout.scss
+@use 'variables' as *;
+
+.page-shell {
+  max-width: $page-max-width;
+  margin: 0 auto;
+  padding: $page-padding-top $page-padding-x $page-padding-bottom;
+  box-sizing: border-box;
+}

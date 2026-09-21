@@ -1,0 +1,22 @@
+.radio-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  
+    input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      margin: 0;
+      accent-color: #000;
+    }
+  
+    input:disabled {
+      cursor: not-allowed;
+    }
+  
+    label {
+      cursor: pointer;
+      margin: 0;
+    }
+  }

@@ -1,0 +1,19 @@
+<div>
+  <div class="steps">
+    @for (step of listSteps; track step; let i = $index){
+    <div class="step" [class.active]="step.active" [class.check]="step.check">
+      <div class="circle" (click) = "previous(i)">
+        @if (step.check){
+          <i class="icon fas fa-check fa-lg"></i>
+        } @else {
+        <span class="textstep">
+          {{ i+1 }}
+        </span>
+        }
+      </div>
+      <span class="textline">{{ step.label }}</span>
+    </div>
+    }
+  </div>
+  <!-- <button (click)="next()">next</button> -->
+</div>

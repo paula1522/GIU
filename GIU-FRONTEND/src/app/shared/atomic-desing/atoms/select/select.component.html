@@ -1,0 +1,157 @@
+<div class="select-wrapper">
+
+  <div
+    class="select-container"
+    [id]="id"
+    [class.is-invalid]="controlInvalid"
+    [class.is-open]="isOpen"
+    [class.disabled]="control.disabled"
+  >
+
+    <!-- ICONO IZQUIERDO -->
+
+    @if (srcImgLeft) {
+
+      <span class="select-icon-left">
+
+        <img
+          [src]="srcImgLeft"
+          alt="icon"
+        />
+
+      </span>
+
+    }
+
+
+    <!-- CONTENIDO -->
+
+    <div
+      class="select-content"
+      [class.has-value]="hasValue"
+    >
+
+      <!-- LABEL -->
+
+      @if (textLabel) {
+
+        <label class="form-label">
+
+          {{ textLabel }}
+
+        </label>
+
+      }
+
+
+      <!-- SELECT / TRIGGER -->
+
+      <button
+        type="button"
+        class="select-trigger"
+        [attr.aria-expanded]="isOpen"
+        [disabled]="control.disabled"
+        (click)="toggleDropdown()"
+      >
+
+        <span
+          class="select-value"
+          [class.placeholder]="!hasValue"
+        >
+
+          {{ selectedLabel }}
+
+        </span>
+
+
+        <!-- FLECHA -->
+
+        <span class="select-arrow"></span>
+
+      </button>
+
+
+      <!-- LISTA -->
+
+      @if (isOpen) {
+
+        <div class="select-options">
+
+          <!-- OPCIÓN POR DEFECTO -->
+
+          @if (defaultOption) {
+
+            <button
+              type="button"
+              class="select-option default-option"
+              [class.selected]="!hasValue"
+              (click)="selectDefaultOption()"
+            >
+
+              {{ defaultOption }}
+
+            </button>
+
+          }
+
+
+          <!-- OPCIONES -->
+
+          @for (
+            option of options;
+            track option[valueKey]
+          ) {
+
+            <button
+              type="button"
+              class="select-option"
+              [class.selected]="isSelected(option)"
+              (click)="selectOption(option)"
+            >
+
+              {{ option[displayKey] }}
+
+            </button>
+
+          }
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+
+  <!-- MENSAJES DE VALIDACIÓN -->
+
+  @if (
+    controlInvalid &&
+    filteredMessages.length
+  ) {
+
+    <div class="error-container">
+
+      @for (
+        validation of filteredMessages;
+        track validation.type
+      ) {
+
+        @if (hasError(validation.type)) {
+
+          <small class="text-danger">
+
+            {{ validation.message }}
+
+          </small>
+
+        }
+
+      }
+
+    </div>
+
+  }
+
+</div>

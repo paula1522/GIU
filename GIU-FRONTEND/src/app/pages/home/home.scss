@@ -1,0 +1,44 @@
+@use 'sass:color';
+@use '../../../styles/variables' as *;
+
+.applications-section {
+    padding: 30px;
+  }
+  
+  .applications-section h2 {
+    margin: 0 0 25px;
+  
+    font-size: 24px;
+    font-weight: 700;
+  }
+  
+  .welcome-container {
+    width: 100%;
+    min-height: 100px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  
+    padding: 0 40px;
+  
+    margin-bottom: 20px;
+  
+    background: #b4d1b7;
+    border-radius: 28px;
+  
+    box-sizing: border-box;
+  
+    span {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+  }
+  
+  .applications-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 16px;
+    row-gap: 60px; 
+  }

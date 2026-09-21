@@ -1,0 +1,33 @@
+@if (type === 'button'){
+<button (click)="emitClick()" [attr.aria-label]="text" [attr.title]="title" [ngClass]="class " class="m-0 w-100"
+  [style]="styles" [attr.type]="type" [disabled]="disabled" [style.color]="textColor">
+
+
+  <!-- @if (icon)
+  {<span class="{{ icon }} "></span>} -->
+
+  @if (icon && position == 'left')
+  { <span [class]="icon" class="me-3"></span>}
+
+  {{ text }}
+
+  @if (icon && position == 'right'){ 
+    <span [class]="icon" class="ms-3"></span>}
+
+    
+
+  @if (srcImg)
+  {<img [src]="srcImg" />}
+</button>
+}
+
+@if( type === 'icon'){
+<div (click)="emitClick()" [ngClass]="class">
+  @if (icon)
+  {<span class="{{ icon }}"></span>}
+
+  @if (srcImg)
+  {<img [src]="srcImg" alt="icon" />}
+</div>
+<!-- <span class="">{{title}}</span> -->
+}

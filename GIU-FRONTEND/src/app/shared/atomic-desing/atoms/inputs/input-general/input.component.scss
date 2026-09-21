@@ -1,0 +1,130 @@
+@use '../../../../../../styles/variables' as *;
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+input::placeholder {
+  font-size: 0.8rem;
+  color: rgb(160, 158, 158);
+}
+
+.form-label {
+  font-size: 0.8rem;
+  margin: 2px;
+  color: #2D2D2D;
+
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.input-textarea {
+  height: 80px;
+  max-height: 80px;
+  resize: none;
+}
+
+.input-wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+.input-custom-style {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  width: 100%;
+  min-height: 43px;
+  padding: 0 10px 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--Gris-Medio, #B4B4B4);
+  background: var(--Blanco, #FFF);
+  position: relative;
+}
+
+.input-icon-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+
+  margin-left: 8px;
+
+  flex-shrink: 0;
+}
+
+.input-icon-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+
+  margin-right: 10px;
+
+  flex-shrink: 0;
+}
+
+.input-icon-left img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.input-icon-right img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.input-custom-style:has(.input-custom:disabled) {
+  background-color: #F5F5F5;
+  cursor: not-allowed;
+  border-color: $item-color;
+}
+
+.input-custom {
+  flex: 1;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent;
+  padding: 8px 0;
+}
+
+.input-custom:focus,
+.input-custom:active {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.error-container {
+  min-height: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.text-danger {
+  color: $primary-color !important;
+  font-size: 12px;
+  // font-weight: bold;
+  white-space: pre-line;
+  margin-top: 5px;
+  display: block;
+}
+

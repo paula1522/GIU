@@ -1,0 +1,29 @@
+@if (isOpen){
+<div class="modal modal-backdrop" (click)="onBackdropClick()">
+  <div class="modal-content" #modal [ngClass]="['clickable-backdrop', sizeClass]" (click)="$event.stopPropagation()">
+    @if (includeHeader){
+    <button type="button" class="close" aria-label="Close" (click)="close()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    }
+
+  
+      @if (title){
+      <h5 class="modal-title">{{ title }}</h5>
+      }
+      <ng-content></ng-content>
+    
+
+    @if (showFooter){
+    <div class="modal-footer">
+      @if (cancelText){
+      <app-button [class]="classCancelBtn" [text]="cancelText" (click)="close()"></app-button>
+      }
+      @if (confirmText){
+      <app-button [class]="classConfirmBtn" [text]="confirmText" (click)="confirm()"></app-button>
+      }
+    </div>
+    }
+  </div>
+</div>
+}

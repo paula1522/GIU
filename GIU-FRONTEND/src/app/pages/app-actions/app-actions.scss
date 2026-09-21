@@ -1,0 +1,161 @@
+// detalle-aplicacion.scss
+
+// ===== Variables del sistema (reutiliza si ya las tienes centralizadas) =====
+$red: #E4032B;
+$red-dark: #B8021F;
+$red-soft: #FDEBEE;
+$ink: #1B1B1F;
+$ink-soft: #5B5B63;
+$line: #E9E4E3;
+$surface: #FFFFFF;
+$bg: #F5F1F0;
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: $bg;
+  color: $ink;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ===== Header con breadcrumb =====
+.top {
+  background: $surface;
+  border-bottom: 1px solid $line;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+}
+
+.crumbs {
+  font-size: 13px;
+  color: $ink-soft;
+
+  b {
+    color: $ink;
+    font-weight: 600;
+  }
+}
+
+// ===== Banner de la app =====
+.app-banner {
+  background: linear-gradient(135deg, $red-soft, $surface 70%);
+  border: 1px solid $line;
+  border-radius: 18px;
+  padding: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  margin-bottom: 34px;
+}
+
+.app-banner-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-name-pill {
+  display: inline-block;
+  background: $surface;
+  border: 1px solid $line;
+  border-radius: 10px;
+  padding: 12px 20px;
+
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: $ink;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.app-banner-right {
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+
+  background: $surface;
+  border: 1px solid $line;
+  color: $line;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+// ===== Título de acciones =====
+.actions-heading {
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: $ink;
+  margin: 0 0 18px;
+}
+
+// ===== Grid de acciones =====
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+
+  @media (max-width: 680px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  background: $surface;
+  border: 1px solid $line;
+  border-radius: 12px;
+  padding: 16px 18px;
+
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    border-color: $red;
+    box-shadow: 0 8px 20px rgba($red, 0.08);
+    transform: translateY(-1px);
+  }
+}
+
+.action-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+
+  background: $red-soft;
+  color: $red;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 21px;
+    height: 21px;
+  }
+}
+
+.action-label {
+  font-size: 13.5px;
+}

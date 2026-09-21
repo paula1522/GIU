@@ -1,0 +1,39 @@
+<div class="login-container">
+
+  <div class="login-card">
+
+   <h1>Bienvenido</h1>
+
+    <p>Ingresa tus credenciales para continuar en el portal de gestion de usuarios.</p>
+<br>
+    <div class="login-inputs">
+    <app-input placeholder="Usuario de red" type="text" [form]="loginForm" [controlName]="'username'"
+      [validationMessages]="controlMessages"
+      srcImgLeft="assets/icons/user-bold.svg">
+    </app-input>
+
+    <app-input placeholder="Contraseña" type="password" [form]="loginForm" [controlName]="'password'"
+      [validationMessages]="controlMessages" srcImgLeft="assets/icons/pasword.svg"  [showEyeIcon]="true">
+    </app-input>
+
+
+  <div class="forgot-password">
+    <a
+      href="#"
+      (click)="forgotPassword($event)"
+      class="forgot-password-link">
+      ¿Olvidaste tu contraseña?
+    </a>
+  </div>
+</div>
+  <div class="login-button">
+    <app-button
+      [text]="'Iniciar Sesión'"
+      [class]="['btn', 'btn-primary']"
+      (clickEventButton)="onSubmit()">
+    </app-button>
+  </div>
+
+</div>
+
+</div>

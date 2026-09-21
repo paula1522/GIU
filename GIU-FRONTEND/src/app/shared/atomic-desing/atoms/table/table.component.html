@@ -1,0 +1,106 @@
+<div class="container-table">
+  <!-- Header -->
+  <div class="header-records-table">
+    <div class="d-block">
+      <h1>{{ tableTitle }}</h1>
+      <label><strong>{{ totalRegistros }}</strong> registros encontrados</label>
+    </div>
+    <ng-content></ng-content>
+  </div>
+  @if (dataSource.length > 0) {
+  <!-- Tabla -->
+  <div class="table-scroll">
+    <table class="responsive-table">
+      <thead>
+        <tr>
+          @for (title of tableColumnTitle; track $index) {
+          <th>{{ title | titlecase }}</th>
+          }
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (item of paginatedData; track $index) {
+        <tr>
+
+          @for (column of columnsToDisplay; track $index) {
+          <td>
+
+            <!-- Si la columna tiene botones -->
+            @if (item[column].typeColum === 'BUTTON' && item[column]?.actionButtons) {
+
+            <div class="cell center icons">
+              @for (button of item[column].actionButtons; track $index) {
+              <app-button [disabled]="button?.disabled ?? false" [styles]="button?.styles ?? ''"
+                [class]="button?.class ?? ''" [icon]="button?.icon ?? ''" [title]="button.title"
+                [srcImg]="button?.img ?? ''" [type]="button?.type ?? ''" (click)="onAction(item, button.action)">
+              </app-button>
+              }
+            </div>
+
+            } @else if (item[column].typeColum === 'STATUS' && (item[column]?.satusValue || !item[column]?.satusValue)
+            && item[column]?.columValue) {
+
+            <span class="badge" [class.badge-success]="item[column].satusValue"
+              [class.badge-danger]="!item[column].satusValue">
+              {{ item[column].columValue }}
+            </span>
+
+            } @else if (item[column].typeColum === 'STRING' && item[column]?.columValue) {
+
+            <!-- Texto normal -->
+            <span class="cell-text">{{ item[column].columValue }}</span>
+            <span class="tooltip">{{ item[column].columValue }}</span>
+
+            }
+          </td>
+          }
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  } @else {
+
+  <div class="no-data">
+    <strong>No Hay Información Actualmente.</strong>
+  </div>
+
+  }
+
+  <!-- Paginación -->
+  @if (showPaginator && dataSource.length > 0) {
+  <div class="pagination-container">
+
+    <button (click)="goToFirstPage()" [disabled]="currentPageIndex === 1">
+      &laquo; Inicio
+    </button>
+
+    <button (click)="previousPage()" [disabled]="currentPageIndex === 1">
+      &lt; Anterior
+    </button>
+
+    @for (page of pagesToShow; track $index) {
+
+    @if (page === '...') {
+    <button disabled>...</button>
+    } @else {
+    <button (click)="goToPage(page)" [disabled]="currentPageIndex === page">
+      {{ page }}
+    </button>
+    }
+
+    }
+
+    <button (click)="nextPage()" [disabled]="currentPageIndex === totalPages">
+      &gt; Siguiente
+    </button>
+
+    <button (click)="goToLastPage()" [disabled]="currentPageIndex === totalPages">
+      &raquo; Fin
+    </button>
+
+  </div>
+  }
+
+</div>

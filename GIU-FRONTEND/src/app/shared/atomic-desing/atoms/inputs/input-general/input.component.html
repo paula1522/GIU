@@ -1,0 +1,89 @@
+<div class="input-wrapper">
+
+  <!-- Label -->
+  @if (textLabel) {
+    <label class="form-label capitalize">
+      {{ textLabel.replace('*', '') }}
+    </label>
+  }
+
+  <!-- Contenedor principal -->
+  <div class="input-custom-style">
+
+    <!-- Icono izquierdo -->
+    @if (srcImgLeft) {
+      <span class="input-icon-left">
+        <img
+          [src]="srcImgLeft"
+          alt=""
+        />
+      </span>
+    }
+    
+
+    <!-- Reactive Form -->
+    @if (control) {
+      @if (isTextArea) {
+        <textarea
+          class="input-custom input-textarea"
+          [placeholder]="placeholder"
+          [formControl]="control"
+        ></textarea>
+      }@else {
+        <input
+          class="input-custom"
+          [type]="showPassword ? 'text' : type"
+          [placeholder]="placeholder"
+          [formControl]="control"
+          [class.space-icon]="showEyeIcon"
+        />
+      }
+    }
+    <!-- Template-driven -->
+    @else {
+      <input
+        class="input-custom"
+        [type]="showPassword ? 'text' : type"
+        [placeholder]="placeholder"
+        [(ngModel)]="ngModelValue"
+        [class.space-icon]="showEyeIcon"
+      />
+    }
+
+    <!-- Icono ojo -->
+    @if (showEyeIcon) {
+      <div class="eye-icon" (click)="togglePasswordVisibility()">
+        <img
+          [src]="showPassword 
+            ? iconeye
+            : iconEyeSlash"
+          alt="toggle password"
+        />
+      </div>
+    }
+
+    <!-- Icono derecho -->
+    @if (srcImgRight) {
+      <span class="input-icon-right">
+        <img
+          [src]="srcImgRight"
+          alt=""
+        />
+      </span>
+    }
+
+  </div>
+
+  <!-- Mensajes de error -->
+  @if (controlInvalid && filteredMessages.length) {
+    <div class="error-container">
+      @for (validation of filteredMessages; track validation.type) {
+        @if (hasError(validation.type)) {
+          <small class="text-danger">
+            {{ validation.message }}
+          </small>
+        }
+      }
+    </div>
+  }
+</div>
