@@ -4,7 +4,7 @@ package com.giu.model.gestionRoles;
 import lombok.Data;
 
 @Data
-public class RecursoRolResponseDTO {
+public class RecursosRolResponseDTO {
 
     private Long id;
     private Long rolId;

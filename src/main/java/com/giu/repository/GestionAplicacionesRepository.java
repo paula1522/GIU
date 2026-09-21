@@ -17,7 +17,9 @@ import org.springframework.stereotype.Repository;
 
 import com.giu.model.gestionAplicaciones.AdministradorAplicacionResponseDTO;
 import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
+import com.giu.model.gestionAplicaciones.CrearAplicacionRequest;
 import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
+import com.giu.model.gestionAplicaciones.ModificarAplicacionRequest;
 import com.giu.utils.BooleanUtils;
 import com.giu.utils.Constantes;
 import com.giu.utils.Propiedades;
@@ -35,7 +37,8 @@ public class GestionAplicacionesRepository {
             String estado,
             String nombre) {
 
-        logger.debug("obtenerAplicacion - ejecutando FN_OBTENER_APLICACION. codigo={}, estado={}, nombre={}", codigo, estado, nombre);
+        logger.debug("obtenerAplicacion - ejecutando FN_OBTENER_APLICACION. codigo={}, estado={}, nombre={}", codigo,
+                estado, nombre);
 
         String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_OBTENER);
 
@@ -45,7 +48,7 @@ public class GestionAplicacionesRepository {
                 CallableStatement stmt = conn.prepareCall(sql)) {
 
             stmt.registerOutParameter(1, OracleTypes.CURSOR);
-            stmt.setNull(2,Types.NUMERIC);
+            stmt.setNull(2, Types.NUMERIC);
             stmt.setString(3, codigo);
             stmt.setString(4, estado);
             stmt.setString(5, nombre);
@@ -86,7 +89,7 @@ public class GestionAplicacionesRepository {
 
         } catch (Exception e) {
 
-            logger.error("obtenerAplicacion - error. codigo={}, estado={}, nombre={}", codigo, estado,nombre, e);
+            logger.error("obtenerAplicacion - error. codigo={}, estado={}, nombre={}", codigo, estado, nombre, e);
 
             throw new RuntimeException("Error consultando aplicación", e);
         }
@@ -111,10 +114,8 @@ public class GestionAplicacionesRepository {
         try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                 CallableStatement stmt = conn.prepareCall(sql)) {
 
-            // Retorno de la función
             stmt.registerOutParameter(1, OracleTypes.CURSOR);
 
-            // Parámetros de entrada
             stmt.setString(2, usuarioRed);
 
             if (apliId != null) {
@@ -216,24 +217,21 @@ public class GestionAplicacionesRepository {
 
     // Crea una aplicación -> PRC_CREAR_APLICACION
     public AplicacionResponseDTO crearAplicacion(
-            String codigo,
-            String nombre,
-            String descripcion,
-            Boolean administracion,
+            CrearAplicacionRequest request,
             String usuarioCreacion) {
 
         logger.debug("crearAplicacion - ejecutando PRC_CREAR_APLICACION. codigo={}, usuarioCreacion={}",
-                codigo, usuarioCreacion);
+                request.getCodigo(), usuarioCreacion);
 
         String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_CREAR);
 
         try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                 CallableStatement stmt = conn.prepareCall(sql)) {
 
-            stmt.setString(1, codigo);
-            stmt.setString(2, nombre);
-            stmt.setString(3, descripcion);
-            stmt.setString(4, BooleanUtils.booleanToAdministracion(administracion));
+            stmt.setString(1, request.getCodigo());
+            stmt.setString(2, request.getNombre());
+            stmt.setString(3, request.getDescripcion());
+            stmt.setString(4, BooleanUtils.booleanToAdministracion(request.getAdministracion()));
             stmt.setString(5, usuarioCreacion);
 
             stmt.registerOutParameter(6, OracleTypes.CURSOR);
@@ -267,17 +265,17 @@ public class GestionAplicacionesRepository {
                     aplicacion.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
 
                     logger.debug("crearAplicacion - registro mapeado. id={}, codigo={}",
-                            aplicacion.getId(), codigo);
+                            aplicacion.getId(), request.getCodigo());
                     return aplicacion;
                 }
             }
 
-            logger.warn("crearAplicacion - el cursor vino vacío. codigo={}", codigo);
+            logger.warn("crearAplicacion - el cursor vino vacío. codigo={}", request.getCodigo());
             return null;
 
         } catch (Exception e) {
 
-            logger.error("crearAplicacion - error ejecutando PL. codigo={}", codigo, e);
+            logger.error("crearAplicacion - error ejecutando PL. codigo={}", request.getCodigo(), e);
 
             throw new RuntimeException("Error creando aplicación", e);
         }
@@ -286,11 +284,7 @@ public class GestionAplicacionesRepository {
     // Modifica una aplicación -> PRC_MODIFICAR_APLICACION
     public AplicacionResponseDTO modificarAplicacion(
             Long id,
-            String nombre,
-            String codigo,
-            String descripcion,
-            Boolean estado,
-            Boolean administracion,
+            ModificarAplicacionRequest request,
             String usuarioModificacion) {
 
         logger.debug("modificarAplicacion - ejecutando PRC_MODIFICAR_APLICACION. id={}, usuarioModificacion={}",
@@ -301,11 +295,11 @@ public class GestionAplicacionesRepository {
         try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                 CallableStatement stmt = conn.prepareCall(sql)) {
             stmt.setLong(1, id);
-            stmt.setString(2, nombre);
-            stmt.setString(3, codigo);
-            stmt.setString(4, descripcion);
-            stmt.setString(5, BooleanUtils.booleanToEstado(estado));
-            stmt.setString(6, BooleanUtils.booleanToAdministracion(administracion));
+            stmt.setString(2, request.getNombre());
+            stmt.setString(3, request.getCodigo());
+            stmt.setString(4, request.getDescripcion());
+            stmt.setString(5, BooleanUtils.booleanToEstado(request.getEstado()));
+            stmt.setString(6, BooleanUtils.booleanToAdministracion(request.getAdministracion()));
             stmt.setString(7, usuarioModificacion);
 
             stmt.registerOutParameter(8, OracleTypes.CURSOR);
@@ -339,7 +333,7 @@ public class GestionAplicacionesRepository {
                     aplicacion.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
 
                     logger.debug("modificarAplicacion - registro mapeado. id={}, codigo={}",
-                            aplicacion.getId(), codigo);
+                            aplicacion.getId(), request.getCodigo());
                     return aplicacion;
                 }
             }

@@ -45,7 +45,7 @@ public class GestionUsuariosService {
         // Método para obtener los usuarios asociados a una aplicación específica según
         // el estado
         public List<UsuarioAplicacionResponseDTO> obtenerUsuariosPorAplicacion(
-                        Long apliId,String estado) {
+                        Long apliId, String estado) {
 
                 logger.info("obtenerUsuariosPorAplicacion - inicio. apliId={}, estado={}", apliId, estado);
 
@@ -59,14 +59,39 @@ public class GestionUsuariosService {
 
         // Método para obtener el rol de un usuario específico en una aplicación
         public UsuarioRolResponseDTO obtenerRolUsuario(String usuarioRed, Long apliId) {
-                logger.info("obtenerRolUsuario - inicio. usuarioRed={}, apliId={}", usuarioRed, apliId);
 
-                UsuarioRolResponseDTO result = gestionUsuariosRepository.obtenerRolUsuario(
+                logger.info("obtenerRolUsuario - inicio. usuarioRed={}, apliId={}",
                                 usuarioRed,
                                 apliId);
 
+                List<UsuarioRolResponseDTO> result = gestionUsuariosRepository.obtenerRolUsuario(
+                                usuarioRed,
+                                apliId,
+                                null);
+
+                UsuarioRolResponseDTO usuarioRol = result.isEmpty() ? null : result.get(0);
+
                 logger.info("obtenerRolUsuario - fin OK. usuarioRed={}, rolId={}",
-                                usuarioRed, result != null ? result.getRolId() : null);
+                                usuarioRed,
+                                usuarioRol != null ? usuarioRol.getRolId() : null);
+
+                return usuarioRol;
+        }
+
+        public List<UsuarioRolResponseDTO> obtenerUsuariosRol(Long rolId) {
+
+                logger.info("obtenerUsuariosRol - inicio. rolId={}", rolId);
+
+                List<UsuarioRolResponseDTO> result = gestionUsuariosRepository.obtenerRolUsuario(
+                                null,
+                                null,
+                                rolId);
+
+                logger.info(
+                                "obtenerUsuariosRol - fin OK. rolId={}, total={}",
+                                rolId,
+                                result.size());
+
                 return result;
         }
 
@@ -75,11 +100,7 @@ public class GestionUsuariosService {
                 logger.info("crearUsuario - inicio. usuarioRed={}", request.getUsuarioRed());
 
                 UsuarioResponseDTO result = gestionUsuariosRepository.crearUsuario(
-                                request.getUsuarioRed(),
-                                request.getNombre(),
-                                request.getCorreo(),
-                                request.getNumeroIdentificacion(),
-                                request.getSuperAdministrador(),
+                                request,
                                 usuarioCreacion);
 
                 logger.info("crearUsuario - fin OK. usuarioRed={}, id={}",
@@ -92,11 +113,7 @@ public class GestionUsuariosService {
                 logger.info("modificarUsuario - inicio. usuarioRed={}", request.getUsuarioRed());
 
                 UsuarioResponseDTO result = gestionUsuariosRepository.modificarUsuario(
-                                request.getUsuarioRed(),
-                                request.getNombre(),
-                                request.getCorreo(),
-                                request.getNumeroIdentificacion(),
-                                request.getSuperAdministrador(),
+                                request,
                                 usuarioModificacion);
 
                 logger.info("modificarUsuario - fin OK. usuarioRed={}, id={}",

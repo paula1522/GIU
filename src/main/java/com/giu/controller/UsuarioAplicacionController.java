@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.giu.model.gestionRoles.RolResponseDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
@@ -31,6 +29,9 @@ import com.giu.model.gestionRecursos.CrearRecursoRequestDTO;
 import com.giu.model.gestionRecursos.ModificarRecursoRequestDTO;
 import com.giu.model.gestionRecursos.RecursoResponseDTO;
 import com.giu.model.gestionRecursos.RecursoUsuarioResponseDTO;
+import com.giu.model.gestionRoles.CrearRolRequestDTO;
+import com.giu.model.gestionRoles.ModificarRolRequestDTO;
+import com.giu.model.gestionRoles.RolResponseDTO;
 import com.giu.utils.Constantes;
 import com.giu.utils.TipoRespuesta;
 
@@ -54,6 +55,8 @@ public class UsuarioAplicacionController {
                 this.recursosService = recursosService;
         }
 
+        /* GESTIONAR USUARIOS */
+
         /**
          * Consultar usuarios asociados a una aplicación
          *
@@ -70,7 +73,8 @@ public class UsuarioAplicacionController {
 
                 logger.info("GET /aplicaciones/{}/usuarios - estado={}", apliId, estado);
 
-                List<UsuarioAplicacionResponseDTO> usuarios = usuarioService.obtenerUsuariosPorAplicacion(apliId, estado);
+                List<UsuarioAplicacionResponseDTO> usuarios = usuarioService.obtenerUsuariosPorAplicacion(apliId,
+                                estado);
 
                 RespuestaGenerica<List<UsuarioAplicacionResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
@@ -80,25 +84,62 @@ public class UsuarioAplicacionController {
         }
 
         /**
-         * Consultar roles de una aplicación
+         * Retirar rol a un usuario para una aplicación específica
          *
-         * Método: GET
-         * Ruta: /api/aplicaciones/{apliId}/roles
+         * Método: DELETE
+         * Ruta: /api/aplicaciones/{apliId}/usuarios/{usuarioRed}
          *
          * Ejemplo:
-         * GET /api/aplicaciones/1/roles
+         * DELETE /api/aplicaciones/1/usuarios/uuu111
          */
-        @GetMapping("/roles")
-        public ResponseEntity<RespuestaGenerica<List<RolResponseDTO>>> obtenerRoles(
-                        @PathVariable Long apliId) {
+        @DeleteMapping("/usuario/{usuarioRed}")
+        public ResponseEntity<RespuestaGenerica<UsuarioRolResponseDTO>> retirarRolUsuario(
+                        @RequestHeader("usuarioModificacion") String usuarioModificacion,
+                        @PathVariable Long apliId,
+                        @PathVariable String usuarioRed,
+                        @Valid @RequestBody GestionarRolUsuarioRequestDTO request) {
 
-                logger.info("GET /aplicaciones/{}/roles", apliId);
+                logger.info("DELETE /aplicaciones/{}/usuarios/{} - rolId={}",
+                                apliId, usuarioRed, request.getRolId());
 
-                List<RolResponseDTO> roles = rolesService.obtenerRoles(apliId);
+                request.setUsuarioRed(usuarioRed);
 
-                RespuestaGenerica<List<RolResponseDTO>> respuesta = new RespuestaGenerica<>(
+                UsuarioRolResponseDTO usuarioRol = usuarioService.retirarRolUsuario(
+                                apliId,
+                                request,
+                                usuarioModificacion);
+
+                RespuestaGenerica<UsuarioRolResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
-                                roles);
+                                usuarioRol);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Retirar roles a multiplex usuarios de una aplicación específica
+         *
+         * Método: DELETE
+         * Ruta: /api/aplicaciones/{apliId}/usuario
+         *
+         * Ejemplo:
+         * DELETE /api/aplicaciones/1/usuario
+         */
+        @DeleteMapping("/usuario")
+        public ResponseEntity<RespuestaGenerica<List<UsuarioRolResponseDTO>>> retirarRolesUsuarios(
+                        @RequestHeader("usuarioModificacion") String usuarioModificacion,
+                        @PathVariable Long apliId,
+                        @Valid @RequestBody GestionarRolesUsuariosRequestDTO request) {
+
+                logger.info("DELETE /aplicaciones/{}/usuario - total={}",
+                                apliId, request.getUsuariosRed().size());
+
+                List<UsuarioRolResponseDTO> usuariosRoles = usuarioService.retirarRolesUsuarios(apliId, request,
+                                usuarioModificacion);
+
+                RespuestaGenerica<List<UsuarioRolResponseDTO>> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                usuariosRoles);
 
                 return ResponseEntity.ok(respuesta);
         }
@@ -126,6 +167,35 @@ public class UsuarioAplicacionController {
                 RespuestaGenerica<UsuarioRolResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
                                 resultado);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Consultar roles de una aplicación -> GESTIONAR ROLES DE UNA APLICACIÓN y GESTIONAR USUARIOS
+         *
+         * Método: GET
+         * Ruta: /api/aplicaciones/{apliId}/roles
+         *
+         * Ejemplo:
+         * GET /api/aplicaciones/1/roles?estado=ACTIVO
+         */
+        @GetMapping("/roles")
+        public ResponseEntity<RespuestaGenerica<List<RolResponseDTO>>> obtenerRoles(
+                        @PathVariable Long apliId,
+                        @RequestParam(required = false, defaultValue = Constantes.ESTADO_ACTIVO) String estado) {
+
+                logger.info("GET /aplicaciones/{}/roles - estado={}",
+                                apliId,
+                                estado);
+
+                List<RolResponseDTO> roles = rolesService.obtenerRoles(
+                                apliId,
+                                estado);
+
+                RespuestaGenerica<List<RolResponseDTO>> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                roles);
 
                 return ResponseEntity.ok(respuesta);
         }
@@ -203,66 +273,83 @@ public class UsuarioAplicacionController {
                 return ResponseEntity.ok(respuesta);
         }
 
+        /* GESTIONAR ROLES DE UNA APLICACIÓN */
+
         /**
-         * Retirar rol a un usuario para una aplicación específica
+         * Modificar rol
          *
-         * Método: DELETE
-         * Ruta: /api/aplicaciones/{apliId}/usuarios/{usuarioRed}
+         * Método: PUT
+         * Ruta: /api/aplicaciones/{apliId}/roles/{rolId}
          *
-         * Ejemplo:
-         * DELETE /api/aplicaciones/1/usuarios/uuu111
+         * Ejemplo de cuerpo de la solicitud:
+         *
+         * {
+         * "nombre": "ADMINISTRADOR",
+         * "descripcion": "Rol administrador modificado",
+         * "estado": "ACTIVO"
+         * }
          */
-        @DeleteMapping("/usuario/{usuarioRed}")
-        public ResponseEntity<RespuestaGenerica<UsuarioRolResponseDTO>> retirarRolUsuario(
-                        @RequestHeader("usuarioModificacion") String usuarioModificacion,
+        @PutMapping("/roles/{rolId}")
+        public ResponseEntity<RespuestaGenerica<RolResponseDTO>> modificarRol(
                         @PathVariable Long apliId,
-                        @PathVariable String usuarioRed,
-                        @Valid @RequestBody GestionarRolUsuarioRequestDTO request) {
+                        @PathVariable Long rolId,
+                        @RequestHeader("usuarioModificacion") String usuarioModificacion,
+                        @Valid @RequestBody ModificarRolRequestDTO request) {
 
-                logger.info("DELETE /aplicaciones/{}/usuarios/{} - rolId={}",
-                                apliId, usuarioRed, request.getRolId());
+                logger.info("PUT /aplicaciones/{}/roles/{}",
+                                apliId,
+                                rolId);
 
-                request.setUsuarioRed(usuarioRed);
-
-                UsuarioRolResponseDTO usuarioRol = usuarioService.retirarRolUsuario(
+                RolResponseDTO rol = rolesService.modificarRol(
+                                rolId,
                                 apliId,
                                 request,
                                 usuarioModificacion);
 
-                RespuestaGenerica<UsuarioRolResponseDTO> respuesta = new RespuestaGenerica<>(
+                RespuestaGenerica<RolResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
-                                usuarioRol);
+                                rol);
 
                 return ResponseEntity.ok(respuesta);
         }
 
         /**
-         * Retirar rol a un usuario para una aplicación específica
+         * Crear rol
          *
-         * Método: DELETE
-         * Ruta: /api/aplicaciones/{apliId}/usuario
+         * Método: POST
+         * Ruta: /api/aplicaciones/{apliId}/roles
          *
-         * Ejemplo:
-         * DELETE /api/aplicaciones/1/usuario
+         * Ejemplo de cuerpo de la solicitud:
+         *
+         * {
+         * "nombre": "ADMINISTRADOR",
+         * "descripcion": "Rol administrador de la aplicación",
+         * "recursos": [1, 2, 3]
+         * }
          */
-        @DeleteMapping("/usuarios")
-        public ResponseEntity<RespuestaGenerica<List<UsuarioRolResponseDTO>>> retirarRolesUsuarios(
-                        @RequestHeader("usuarioModificacion") String usuarioModificacion,
+        @PostMapping("/roles")
+        public ResponseEntity<RespuestaGenerica<RolResponseDTO>> crearRol(
                         @PathVariable Long apliId,
-                        @Valid @RequestBody GestionarRolesUsuariosRequestDTO request) {
+                        @RequestHeader("usuarioCreacion") String usuarioCreacion,
+                        @Valid @RequestBody CrearRolRequestDTO request) {
 
-                logger.info("DELETE /aplicaciones/{}/usuario - total={}",
-                                apliId, request.getUsuariosRed().size());
+                logger.info("POST /aplicaciones/{}/roles - nombre={}",
+                                apliId,
+                                request.getNombre());
 
-                List<UsuarioRolResponseDTO> usuariosRoles = usuarioService.retirarRolesUsuarios(apliId, request,
-                                usuarioModificacion);
+                RolResponseDTO rol = rolesService.crearRol(
+                                apliId,
+                                request,
+                                usuarioCreacion);
 
-                RespuestaGenerica<List<UsuarioRolResponseDTO>> respuesta = new RespuestaGenerica<>(
+                RespuestaGenerica<RolResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
-                                usuariosRoles);
+                                rol);
 
                 return ResponseEntity.ok(respuesta);
         }
+
+        /* GESTIONAR RECURSOS */
 
         /**
          * Consultar recursos de una aplicación
@@ -278,8 +365,7 @@ public class UsuarioAplicacionController {
                         @PathVariable Long apliId,
                         @RequestParam(required = false, defaultValue = Constantes.ESTADO_ACTIVO) String estado) {
 
-                logger.info(
-                                "GET /aplicaciones/{}/recursos - estado={}",
+                logger.info("GET /aplicaciones/{}/recursos - estado={}",
                                 apliId,
                                 estado);
 
@@ -370,7 +456,7 @@ public class UsuarioAplicacionController {
         }
 
         /**
-         * Consultar recursos asignados a un usuario
+         * Consultar recursos asignados a un usuario -> no se esta utilizando
          *
          * Método: GET
          * Ruta: /api/aplicaciones/{apliId}/recursos/usuario/{usuarioRed}
@@ -383,8 +469,7 @@ public class UsuarioAplicacionController {
                         @PathVariable Long apliId,
                         @PathVariable String usuarioRed) {
 
-                logger.info(
-                                "GET /aplicaciones/{}/recursos/usuario/{}",
+                logger.info("GET /aplicaciones/{}/recursos/usuario/{}",
                                 apliId,
                                 usuarioRed);
 

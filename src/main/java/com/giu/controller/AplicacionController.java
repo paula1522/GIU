@@ -40,6 +40,8 @@ public class AplicacionController {
                 this.aplicacionesService = aplicacionesService;
         }
 
+        /* GESTIONAR APLICACIONES  */
+
         /**
          * Consultar aplicación
          *
@@ -138,6 +140,9 @@ public class AplicacionController {
 
                 return ResponseEntity.ok(respuesta);
         }
+
+
+        /* GESTIONAR ASIGNACION DE ADMINISTRADORES */
 
         /**
          * Consultar administradores de una aplicación

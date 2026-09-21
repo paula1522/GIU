@@ -49,36 +49,30 @@ public class utilsBD {
 
                                 jndiName = jndiName.trim();
 
-                                System.out.println(
-                                                ">>> Intentando conexión mediante JNDI: "
+                                System.out.println(">>> Intentando conexión mediante JNDI: "
                                                                 + jndiName);
 
                                 InitialContext ctx = new InitialContext();
 
                                 DataSource dataSource = (DataSource) ctx.lookup(jndiName);
 
-                                System.out.println(
-                                                ">>> JNDI encontrado correctamente");
+                                System.out.println(">>> JNDI encontrado correctamente");
 
                                 Connection connection = dataSource.getConnection();
 
-                                System.out.println(
-                                                ">>> Conexión obtenida mediante JNDI");
+                                System.out.println(">>> Conexión obtenida mediante JNDI");
 
-                                logger.info(
-                                                "Conexión BD establecida correctamente vía JNDI: {}",
+                                logger.info("Conexión BD establecida correctamente vía JNDI: {}",
                                                 jndiName);
 
                                 return connection;
 
                         } catch (Exception e) {
 
-                                System.out.println(
-                                                ">>> ERROR conexión JNDI: "
+                                System.out.println(">>> ERROR conexión JNDI: "
                                                                 + e.getMessage());
 
-                                logger.warn(
-                                                "No fue posible establecer conexión mediante JNDI: {}",
+                                logger.warn("No fue posible establecer conexión mediante JNDI: {}",
                                                 jndiName,
                                                 e);
 
@@ -87,8 +81,7 @@ public class utilsBD {
 
                 //2. Intento de conexión mediante JDBC directa
 
-                System.out.println(
-                                ">>> Intentando conexión JDBC directa");
+                System.out.println(">>> Intentando conexión JDBC directa");
 
                 if (url != null
                                 && user != null
@@ -107,33 +100,27 @@ public class utilsBD {
                                                 user.trim(),
                                                 password.trim());
 
-                                System.out.println(
-                                                ">>> Conexión JDBC directa OK");
+                                System.out.println(">>> Conexión JDBC directa OK");
 
-                                logger.info(
-                                                "Conexión BD establecida correctamente vía JDBC Local ({})",
+                                logger.info("Conexión BD establecida correctamente vía JDBC Local ({})",
                                                 url);
 
                                 return connection;
 
                         } catch (Exception e) {
 
-                                System.out.println(
-                                                ">>> ERROR conexión JDBC: "
+                                System.out.println(">>> ERROR conexión JDBC: "
                                                                 + e.getMessage());
 
-                                logger.error(
-                                                "Error al establecer conexión JDBC Local",
+                                logger.error("Error al establecer conexión JDBC Local",
                                                 e);
 
-                                throw new RuntimeException(
-                                                "No fue posible establecer conexión con la Base de Datos.",
+                                throw new RuntimeException("No fue posible establecer conexión con la Base de Datos.",
                                                 e);
                         }
                 }
 
-                throw new RuntimeException(
-                                "No fue posible establecer conexión con la Base de Datos.");
+                throw new RuntimeException("No fue posible establecer conexión con la Base de Datos.");
         }
 
 

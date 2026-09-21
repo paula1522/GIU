@@ -23,14 +23,12 @@ public class GestionSeguridadRepository {
                         Connection conn,
                         GestionarEstadoUsuarioRequest request) {
 
-                logger.debug(
-                                "gestionarEstadoUsuario - ejecutando PRC_GESTIONAR_ESTADO_USUARIO. usuarioRed={}, apliId={}, operacion={}",
+                logger.debug("gestionarEstadoUsuario - ejecutando PRC_GESTIONAR_ESTADO_USUARIO. usuarioRed={}, apliId={}, operacion={}",
                                 request.getUsuarioRed(),
                                 request.getApliId(),
                                 request.getOperacion());
 
-                String sql = Propiedades.getInstance()
-                                .getPropiedad(Constantes.SQL_SEGURIDAD_GESTIONAR_ESTADO);
+                String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_SEGURIDAD_GESTIONAR_ESTADO);
 
                 try (CallableStatement stmt = conn.prepareCall(sql)) {
 
@@ -46,8 +44,7 @@ public class GestionSeguridadRepository {
                         int codigoSalida = stmt.getInt(4);
                         String mensajeSalida = stmt.getString(5);
 
-                        logger.debug(
-                                        "gestionarEstadoUsuario - PL respondió. codigo={}, mensaje={}",
+                        logger.debug("gestionarEstadoUsuario - PL respondió. codigo={}, mensaje={}",
                                         codigoSalida,
                                         mensajeSalida);
 
@@ -55,12 +52,10 @@ public class GestionSeguridadRepository {
 
                 } catch (Exception e) {
 
-                        logger.error(
-                                        "gestionarEstadoUsuario - error ejecutando PL. usuarioRed={}, apliId={}, operacion={}",
+                        logger.error("gestionarEstadoUsuario - error ejecutando PL. usuarioRed={}, apliId={}, operacion={}",
                                         request.getUsuarioRed(),
                                         request.getApliId(),
-                                        request.getOperacion(),
-                                        e);
+                                        request.getOperacion(), e);
 
                         throw new RuntimeException(e);
                 }

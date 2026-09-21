@@ -40,7 +40,7 @@ public class UsuarioController {
                 this.gestionSeguridadService = gestionSeguridadService;
         }
 
-        /* GESTION DE USUARIOS */
+        /* GESTIONAR USUARIOS */
 
         /**
          * Consultar usuarios
@@ -127,8 +127,6 @@ public class UsuarioController {
 
                 return ResponseEntity.ok(respuesta);
         }
-
-        /* GESTION DE SEGURIDAD */
 
         /***
          * Gestionar estado de usuario

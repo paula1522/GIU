@@ -82,6 +82,10 @@ public class Constantes {
 
         // ==================== ROLES ====================
         public static final String SQL_ROLES_OBTENER = "system.pl.roles.obtener";
+        public static final String SQL_ROLES_RECURSOS = "system.pl.roles.recursos";
+        public static final String SQL_ROLES_CREAR = "system.pl.roles.crear";
+        public static final String SQL_ROLES_MODIFICAR = "system.pl.roles.modificar";
+        public static final String SQL_ROLES_GESTIONAR_RECURSOS = "system.pl.roles.gestionar.recursos";
 
         // ==================== RECURSOS ====================
         public static final String SQL_RECURSOS_OBTENER = "system.pl.recursos.obtener";

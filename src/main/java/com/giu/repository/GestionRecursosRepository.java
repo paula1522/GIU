@@ -31,8 +31,7 @@ public class GestionRecursosRepository {
                         Long apliId,
                         String estado) {
 
-                logger.debug(
-                                "obtenerRecurso - ejecutando FN_OBTENER_RECURSO. apliId={}, estado={}",
+                logger.debug("obtenerRecurso - ejecutando FN_OBTENER_RECURSO. apliId={}, estado={}",
                                 apliId,
                                 estado);
 
@@ -44,10 +43,8 @@ public class GestionRecursosRepository {
                 try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                                 CallableStatement stmt = conn.prepareCall(sql)) {
 
-                        // Retorno de la función
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);
 
-                        // Parámetros de entrada
                         if (apliId != null) {
                                 stmt.setLong(2, apliId);
                         } else {
@@ -66,12 +63,10 @@ public class GestionRecursosRepository {
 
                                         recurso.setId(rs.getLong("ID"));
                                         recurso.setApliId(rs.getLong("APLI_ID"));
-                                        recurso.setRecuIdPadre(
-                                                        rs.getLong("RECU_ID_PADRE"));
+                                        recurso.setRecuIdPadre(rs.getLong("RECU_ID_PADRE"));
                                         recurso.setCodigo(rs.getString("CODIGO"));
                                         recurso.setNombre(rs.getString("NOMBRE"));
-                                        recurso.setDescripcion(
-                                                        rs.getString("DESCRIPCION"));
+                                        recurso.setDescripcion(rs.getString("DESCRIPCION"));
                                         recurso.setTipo(rs.getString("TIPO"));
                                         recurso.setEstado(rs.getString("ESTADO"));
 
@@ -79,21 +74,16 @@ public class GestionRecursosRepository {
                                 }
                         }
 
-                        logger.debug(
-                                        "obtenerRecurso - registros mapeados. total={}",
+                        logger.debug("obtenerRecurso - registros mapeados. total={}",
                                         recursos.size());
 
                 } catch (Exception e) {
 
-                        logger.error(
-                                        "obtenerRecurso - error. apliId={}, estado={}",
+                        logger.error("obtenerRecurso - error. apliId={}, estado={}",
                                         apliId,
-                                        estado,
-                                        e);
+                                        estado, e);
 
-                        throw new RuntimeException(
-                                        "Error consultando recursos",
-                                        e);
+                        throw new RuntimeException("Error consultando recursos", e);
                 }
 
                 return recursos;
@@ -104,8 +94,7 @@ public class GestionRecursosRepository {
                         String usuarioRed,
                         Long apliId) {
 
-                logger.debug(
-                                "obtenerRecursoUsuario - ejecutando FN_OBTENER_RECURSO_USUARIO. usuarioRed={}, apliId={}",
+                logger.debug("obtenerRecursoUsuario - ejecutando FN_OBTENER_RECURSO_USUARIO. usuarioRed={}, apliId={}",
                                 usuarioRed,
                                 apliId);
 
@@ -117,10 +106,8 @@ public class GestionRecursosRepository {
                 try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
                                 CallableStatement stmt = conn.prepareCall(sql)) {
 
-                        // Retorno de la función
                         stmt.registerOutParameter(1, OracleTypes.CURSOR);
 
-                        // Parámetros de entrada
                         stmt.setString(2, usuarioRed);
 
                         if (apliId != null) {
@@ -138,35 +125,27 @@ public class GestionRecursosRepository {
                                         RecursoUsuarioResponseDTO recurso = new RecursoUsuarioResponseDTO();
 
                                         recurso.setId(rs.getLong("ID"));
-                                        recurso.setRecuIdPadre(
-                                                        rs.getLong("RECU_ID_PADRE"));
+                                        recurso.setRecuIdPadre(rs.getLong("RECU_ID_PADRE"));
                                         recurso.setCodigo(rs.getString("CODIGO"));
                                         recurso.setNombre(rs.getString("NOMBRE"));
-                                        recurso.setDescripcion(
-                                                        rs.getString("DESCRIPCION"));
+                                        recurso.setDescripcion(rs.getString("DESCRIPCION"));
                                         recurso.setTipo(rs.getString("TIPO"));
-                                        recurso.setApliNombre(
-                                                        rs.getString("APLI_NOMBRE"));
+                                        recurso.setApliNombre(rs.getString("APLI_NOMBRE"));
 
                                         recursos.add(recurso);
                                 }
                         }
 
-                        logger.debug(
-                                        "obtenerRecursoUsuario - registros mapeados. total={}",
+                        logger.debug("obtenerRecursoUsuario - registros mapeados. total={}",
                                         recursos.size());
 
                 } catch (Exception e) {
 
-                        logger.error(
-                                        "obtenerRecursoUsuario - error. usuarioRed={}, apliId={}",
+                        logger.error("obtenerRecursoUsuario - error. usuarioRed={}, apliId={}",
                                         usuarioRed,
-                                        apliId,
-                                        e);
+                                        apliId, e);
 
-                        throw new RuntimeException(
-                                        "Error consultando recursos del usuario",
-                                        e);
+                        throw new RuntimeException("Error consultando recursos del usuario", e);
                 }
 
                 return recursos;
@@ -177,8 +156,7 @@ public class GestionRecursosRepository {
                         Long apliId,
                         CrearRecursoRequestDTO request) {
 
-                logger.debug(
-                                "crearRecurso - ejecutando PRC_CREAR_RECURSO. apliId={}, codigo={}",
+                logger.debug("crearRecurso - ejecutando PRC_CREAR_RECURSO. apliId={}, codigo={}",
                                 apliId,
                                 request.getCodigo());
 
@@ -210,8 +188,7 @@ public class GestionRecursosRepository {
                         int codigoSalida = stmt.getInt(8);
                         String mensajeSalida = stmt.getString(9);
 
-                        logger.debug(
-                                        "crearRecurso - PL respondió. codigo={}, mensaje={}",
+                        logger.debug("crearRecurso - PL respondió. codigo={}, mensaje={}",
                                         codigoSalida,
                                         mensajeSalida);
 
@@ -227,17 +204,14 @@ public class GestionRecursosRepository {
 
                                         recurso.setId(rs.getLong("ID"));
                                         recurso.setApliId(rs.getLong("APLI_ID"));
-                                        recurso.setRecuIdPadre(
-                                                        rs.getLong("RECU_ID_PADRE"));
+                                        recurso.setRecuIdPadre(rs.getLong("RECU_ID_PADRE"));
                                         recurso.setCodigo(rs.getString("CODIGO"));
                                         recurso.setNombre(rs.getString("NOMBRE"));
-                                        recurso.setDescripcion(
-                                                        rs.getString("DESCRIPCION"));
+                                        recurso.setDescripcion(rs.getString("DESCRIPCION"));
                                         recurso.setTipo(rs.getString("TIPO"));
                                         recurso.setEstado(rs.getString("ESTADO"));
 
-                                        logger.debug(
-                                                        "crearRecurso - registro mapeado. id={}, codigo={}",
+                                        logger.debug("crearRecurso - registro mapeado. id={}, codigo={}",
                                                         recurso.getId(),
                                                         recurso.getCodigo());
 
@@ -245,8 +219,7 @@ public class GestionRecursosRepository {
                                 }
                         }
 
-                        logger.warn(
-                                        "crearRecurso - el cursor vino vacío. apliId={}, codigo={}",
+                        logger.warn("crearRecurso - el cursor vino vacío. apliId={}, codigo={}",
                                         apliId,
                                         request.getCodigo());
 
@@ -254,15 +227,11 @@ public class GestionRecursosRepository {
 
                 } catch (Exception e) {
 
-                        logger.error(
-                                        "crearRecurso - error ejecutando PL. apliId={}, codigo={}",
+                        logger.error("crearRecurso - error ejecutando PL. apliId={}, codigo={}",
                                         apliId,
-                                        request.getCodigo(),
-                                        e);
+                                        request.getCodigo(), e);
 
-                        throw new RuntimeException(
-                                        "Error creando recurso",
-                                        e);
+                        throw new RuntimeException("Error creando recurso", e);
                 }
         }
 
@@ -306,8 +275,7 @@ public class GestionRecursosRepository {
                         int codigoSalida = stmt.getInt(10);
                         String mensajeSalida = stmt.getString(11);
 
-                        logger.debug(
-                                        "modificarRecurso - PL respondió. codigo={}, mensaje={}",
+                        logger.debug("modificarRecurso - PL respondió. codigo={}, mensaje={}",
                                         codigoSalida,
                                         mensajeSalida);
 
@@ -323,17 +291,14 @@ public class GestionRecursosRepository {
 
                                         recurso.setId(rs.getLong("ID"));
                                         recurso.setApliId(rs.getLong("APLI_ID"));
-                                        recurso.setRecuIdPadre(
-                                                        rs.getLong("RECU_ID_PADRE"));
+                                        recurso.setRecuIdPadre(rs.getLong("RECU_ID_PADRE"));
                                         recurso.setCodigo(rs.getString("CODIGO"));
                                         recurso.setNombre(rs.getString("NOMBRE"));
-                                        recurso.setDescripcion(
-                                                        rs.getString("DESCRIPCION"));
+                                        recurso.setDescripcion(rs.getString("DESCRIPCION"));
                                         recurso.setTipo(rs.getString("TIPO"));
                                         recurso.setEstado(rs.getString("ESTADO"));
 
-                                        logger.debug(
-                                                        "modificarRecurso - registro mapeado. id={}, codigo={}",
+                                        logger.debug("modificarRecurso - registro mapeado. id={}, codigo={}",
                                                         recurso.getId(),
                                                         recurso.getCodigo());
 
@@ -341,8 +306,7 @@ public class GestionRecursosRepository {
                                 }
                         }
 
-                        logger.warn(
-                                        "modificarRecurso - el cursor vino vacío. id={}, apliId={}",
+                        logger.warn("modificarRecurso - el cursor vino vacío. id={}, apliId={}",
                                         recuId,
                                         apliId);
 
@@ -350,15 +314,11 @@ public class GestionRecursosRepository {
 
                 } catch (Exception e) {
 
-                        logger.error(
-                                        "modificarRecurso - error ejecutando PL. id={}, apliId={}",
+                        logger.error("modificarRecurso - error ejecutando PL. id={}, apliId={}",
                                         recuId,
-                                        apliId,
-                                        e);
+                                        apliId, e);
 
-                        throw new RuntimeException(
-                                        "Error modificando recurso",
-                                        e);
+                        throw new RuntimeException("Error modificando recurso", e);
                 }
         }
 }
