@@ -14,6 +14,7 @@ import com.giu.model.gestionRoles.RecursosRolResponseDTO;
 import com.giu.model.gestionRoles.RolResponseDTO;
 import com.giu.repository.GestionRolesRepository;
 import com.giu.utils.Constantes;
+import com.giu.utils.TransaccionUtils;
 
 @Service
 public class GestionRolesService {
@@ -51,16 +52,50 @@ public class GestionRolesService {
         }
 
         // Método para crear un rol
-        public RolResponseDTO crearRol(Long apliId, CrearRolRequestDTO request, String usuarioCreacion) {
+         public RolResponseDTO crearRol(
+            Long apliId,
+            CrearRolRequestDTO request,
+            String usuarioCreacion) {
 
-                logger.info("crearRol - inicio. apliId={}, nombre={}", apliId, request.getNombre());
+        logger.info("crearRol - inicio. apliId={}, nombre={}",
+                apliId,
+                request.getNombre());
 
-                RolResponseDTO result = gestionRolesRepository.crearRol(apliId, request, usuarioCreacion);
+        RolResponseDTO result = TransaccionUtils.ejecutar(conn -> {
 
-                logger.info("crearRol - fin OK. apliId={}, id={}", apliId, result != null ? result.getId() : null);
+            RolResponseDTO rol =
+                    gestionRolesRepository.crearRol(
+                            conn,
+                            apliId,
+                            request,
+                            usuarioCreacion);
 
-                return result;
-        }
+            if (rol == null || rol.getId() == null) {
+                throw new RuntimeException(
+                        "No fue posible obtener el rol creado");
+            }
+
+            GestionarRecursosRolRequestDTO requestRecursos =
+                    new GestionarRecursosRolRequestDTO();
+
+            requestRecursos.setRecursos(request.getRecursos());
+
+            gestionRolesRepository.gestionarRecursosRol(
+                    conn,
+                    requestRecursos,
+                    rol.getId(),
+                    Constantes.OPERACION_ASIGNAR,
+                    usuarioCreacion);
+
+            return rol;
+        });
+
+        logger.info("crearRol - fin OK. apliId={}, id={}",
+                apliId,
+                result != null ? result.getId() : null);
+
+        return result;
+    }
 
         // Método para modificar un rol
         public RolResponseDTO modificarRol(Long rolId, Long apliId, ModificarRolRequestDTO request,
@@ -82,8 +117,9 @@ public class GestionRolesService {
 
                 logger.info("asignarRecursos - inicio. rolId={}, recursos={}", rolId, request.getRecursos());
 
-                List<RecursosRolResponseDTO> result = gestionRolesRepository.gestionarRecursosRol(
-                                request, rolId, Constantes.OPERACION_ASIGNAR, usuarioModificacion);
+                List<RecursosRolResponseDTO> result = TransaccionUtils
+                                .ejecutar(conn -> gestionRolesRepository.gestionarRecursosRol(
+                                conn,request, rolId, Constantes.OPERACION_ASIGNAR, usuarioModificacion));
 
                 logger.info("asignarRecursos - fin OK. rolId={}, total={}", rolId, result.size());
 
@@ -96,8 +132,9 @@ public class GestionRolesService {
 
                 logger.info("retirarRecursos - inicio. rolId={}, recursos={}", rolId, request.getRecursos());
 
-                List<RecursosRolResponseDTO> result = gestionRolesRepository.gestionarRecursosRol(request, rolId,
-                                Constantes.OPERACION_RETIRAR, usuarioModificacion);
+                List<RecursosRolResponseDTO> result = TransaccionUtils
+                                .ejecutar(conn -> gestionRolesRepository.gestionarRecursosRol(conn, request, rolId,
+                                Constantes.OPERACION_RETIRAR, usuarioModificacion));
 
                 logger.info("retirarRecursos - fin OK. rolId={}, total={}", rolId, result.size());
 

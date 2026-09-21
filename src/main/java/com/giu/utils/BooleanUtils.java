@@ -6,7 +6,7 @@ public class BooleanUtils {
     public static String booleanToEstado(Boolean valor) {
         if (valor == null)
             return null;
-        return valor ? "ACTIVO" : "INACTIVO";
+        return valor ? Constantes.ESTADO_ACTIVO : Constantes.ESTADO_INACTIVO;
     }
 
     // true = PROPIA, false = PORTAL_CONFIGURACIONES

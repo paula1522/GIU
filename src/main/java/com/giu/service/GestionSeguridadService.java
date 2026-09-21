@@ -47,8 +47,7 @@ public class GestionSeguridadService {
                         if (request.getOperacion() == Constantes.OPERACION_ACTIVAR
                                         && request.getRolId() != null) {
 
-                                logger.info(
-                                                "gestionarEstadoUsuario - asignando rol al activar. usuarioRed={}, rolId={}",
+                                logger.info("gestionarEstadoUsuario - asignando rol al activar. usuarioRed={}, rolId={}",
                                                 request.getUsuarioRed(),
                                                 request.getRolId());
 

@@ -179,6 +179,7 @@ public class GestionRolesRepository {
 
         // Crea un rol -> PRC_CREAR_ROL
         public RolResponseDTO crearRol(
+                        Connection conn,
                         Long apliId,
                         CrearRolRequestDTO request,
                         String usuarioCreacion) {
@@ -189,8 +190,7 @@ public class GestionRolesRepository {
 
                 String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_ROLES_CREAR);
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
-                                CallableStatement stmt = conn.prepareCall(sql)) {
+                try (CallableStatement stmt = conn.prepareCall(sql)) {
 
                         stmt.setLong(1, apliId);
                         stmt.setString(2, request.getNombre());
@@ -321,6 +321,7 @@ public class GestionRolesRepository {
 
         // Gestiona los recursos de un rol -> PRC_GESTIONAR_RECURSOS_ROL
         public List<RecursosRolResponseDTO> gestionarRecursosRol(
+                        Connection conn,
                         GestionarRecursosRolRequestDTO request,
                         Long rolId,
                         Integer operacion,
@@ -333,8 +334,7 @@ public class GestionRolesRepository {
 
                 String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_ROLES_GESTIONAR_RECURSOS);
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
-                                CallableStatement stmt = conn.prepareCall(sql)) {
+                try (CallableStatement stmt = conn.prepareCall(sql)) {
 
                         OracleConnection oracleConnection = conn.unwrap(OracleConnection.class);
 

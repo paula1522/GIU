@@ -61,6 +61,11 @@ public class Constantes {
 
         // ==================== ESTADOS ====================
         public static final String ESTADO_ACTIVO = "ACTIVO";
+        public static final String ESTADO_INACTIVO = "INACTIVO";
+
+        // ==================== HEADERS ====================
+        public static final String HDR_USUARIO_CREACION = "usuarioCreacion";
+        public static final String HDR_USUARIO_MODIFICACION = "usuarioModificacion";
 
         // ==================== APLICACIONES ====================
         public static final String SQL_APLICACIONES_OBTENER = "system.pl.aplicaciones.obtener";
