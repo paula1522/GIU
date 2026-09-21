@@ -7,6 +7,6 @@ export const environment = {
   version: '1.0.0',
   url_bff: baseUrlBff,   
   authProxyUrl: `${baseUrlBff}/auth/token`,
-  ros_api: `${baseUrlBff}/ros-proxy`,
   aro_api: `${baseUrlBff}/aro-proxy`,
+  auth: `${baseUrlBff}/auth/login`,
 }

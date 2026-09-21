@@ -1,5 +1,5 @@
 <section class="applications-section">
-
+  <div class="page-shell">
     <h2>GESTIÓN DE APLICACIONES ASOCIADAS</h2>
   
     <div class="applications-grid">
@@ -10,10 +10,11 @@
           [name]="application.name"
           [description]="application.description"
           [icon]="application.icon"
+          (click)="openApplication()"
         />
   
       }
   
     </div>
-  
+  </div>
   </section>

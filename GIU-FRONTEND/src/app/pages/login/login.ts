@@ -4,6 +4,8 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../shared/atomic-desing/atoms/button/button.component';
 import { Router } from '@angular/router';
 import { APP_ROUTES } from '../../utils/constants/routes.constants';
+import { AuthLoginService } from '../../services/api/auth/auth-Login';
+import { AuthResponse } from '../../models/api/api-auth.model';
 @Component({
   selector: 'app-login',
   imports: [InputComponent, ButtonComponent],
@@ -25,6 +27,7 @@ export class Login {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private authLoginService:  AuthLoginService
   ){
 
   }
@@ -45,7 +48,24 @@ export class Login {
       this.markAllAsTouched(this.loginForm);
       return;
     }
-
+    // this.authLoginService.login(
+    //   this.loginForm.value.username,
+    //   this.loginForm.value.password, 'GIU'
+    // )
+    // .subscribe({
+    //   next: (res: AuthResponse) => {
+  
+    //     console.log('Login exitoso:', res);
+  
+    //     this.router.navigate([APP_ROUTES.HOME]);
+    //   },
+  
+    //   error: (error) => {
+  
+    //     console.error('Error login:', error);
+  
+    //   }
+    // });
     this.router.navigate([APP_ROUTES.HOME]);
   }
 

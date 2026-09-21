@@ -9,7 +9,9 @@ export interface ActionButton {
 }
 
 export interface ColumnConfig {
-    typeColum: typeColum;
+    columName?: string;
+    typeColum?: typeColum;
+    stylesColumnName?: string;
     satusValue?: boolean;
     columValue?: string;
     actionButtons?: ActionButton[];

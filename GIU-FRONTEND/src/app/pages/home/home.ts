@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { Card } from '../../shared/molecule/card/card';
+import { Router } from '@angular/router';
+import { APP_ROUTES } from '../../utils/constants/routes.constants';
 
 @Component({
   selector: 'app-home',
@@ -40,4 +42,16 @@ export class Home {
       icon: 'assets/icons/reschedule.svg'
     }
   ];
+
+  constructor(
+    private router: Router,
+
+  ){
+
+  }
+
+
+  openApplication(){
+    this.router.navigate([APP_ROUTES.APP_ACTIONS]);
+  }
 }
