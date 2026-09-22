@@ -1,0 +1,75 @@
+.dashboard { max-width: 1200px; margin: 0 auto; }
+.page-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: #1a1a2e; }
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.metric-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-left: 4px solid #e92012;
+}
+.metric-success { border-left-color: #198754; }
+.metric-info { border-left-color: #0d6efd; }
+.metric-value { font-size: 2rem; font-weight: 700; color: #1a1a2e; }
+.metric-label { font-size: 0.8125rem; color: #64748b; margin-top: 0.25rem; }
+
+.section { margin-bottom: 2rem; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.section-title { font-size: 1.25rem; font-weight: 600; color: #1a1a2e; }
+
+.btn-primary {
+  padding: 0.5rem 1rem;
+  background: #e92012;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  &:hover { background: #ce1104; }
+}
+
+.loading { padding: 2rem; text-align: center; color: #64748b; }
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.app-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  cursor: pointer;
+  &:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.07); transform: translateY(-2px); }
+  &:focus { outline: 2px solid #e92012; outline-offset: 2px; }
+}
+.app-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+.app-icon { font-size: 1.5rem; color: #e92012; }
+.app-name { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 0; }
+.app-code { font-size: 0.8125rem; color: #64748b; margin: 0.25rem 0; }
+.app-desc { font-size: 0.8125rem; color: #64748b; margin-top: 0.5rem; }
+.app-card-footer { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; }
+.admin-link { font-size: 0.8125rem; color: #e92012; font-weight: 500; }
+
+.badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-danger { background: #fee2e2; color: #991b1b; }

@@ -32,8 +32,9 @@
             <div class="cell center icons">
               @for (button of item[column].actionButtons; track $index) {
               <app-button [disabled]="button?.disabled ?? false" [styles]="button?.styles ?? ''"
-                [class]="button?.class ?? ''" [icon]="button?.icon ?? ''" [title]="button.title"
-                [srcImg]="button?.img ?? ''" [type]="button?.type ?? ''" (click)="onAction(item, button.action)">
+                [class]="button?.class ?? 'default-btn'" [icon]="button?.icon ?? ''" [title]="button.title"
+                [text]="button?.label ?? ''" [srcImg]="button?.img ?? ''" [type]="button?.type ?? 'button'"
+                (click)="onAction(item, button.action)">
               </app-button>
               }
             </div>

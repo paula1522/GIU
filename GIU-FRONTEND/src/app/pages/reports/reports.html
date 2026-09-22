@@ -1,0 +1,67 @@
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">Reportes</h1>
+    <app-button
+      [text]="'Exportar CSV'"
+      [icon]="'bi bi-download'"
+      [class]="['btn', 'btn-primary-secondary']"
+      [type]="'button'"
+      (clickEventButton)="exportarCsv()"
+    ></app-button>
+  </div>
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'usuarios'" (click)="setTab('usuarios')">Usuarios por app</button>
+    <button class="tab" [class.active]="activeTab() === 'roles'" (click)="setTab('roles')">Roles por app</button>
+    <button class="tab" [class.active]="activeTab() === 'permisos'" (click)="setTab('permisos')">Permisos por rol</button>
+    <button class="tab" [class.active]="activeTab() === 'administradores'" (click)="setTab('administradores')">Admins por app</button>
+  </div>
+  @if (loading()) { <div class="loading">Cargando…</div> }
+  @else {
+    @switch (activeTab()) {
+      @case ('usuarios') {
+        <app-table
+          [tableTitle]="'Usuarios por aplicación'"
+          [tableColumnTitle]="usuariosColTitles"
+          [columnsToDisplay]="usuariosCols"
+          [dataSource]="usuariosData()"
+          [showPaginator]="true"
+          [totalItemsPerPag]="10"
+          [idTable]="'report-usuarios'"
+        ></app-table>
+      }
+      @case ('roles') {
+        <app-table
+          [tableTitle]="'Roles por aplicación'"
+          [tableColumnTitle]="rolesColTitles"
+          [columnsToDisplay]="rolesCols"
+          [dataSource]="rolesData()"
+          [showPaginator]="true"
+          [totalItemsPerPag]="10"
+          [idTable]="'report-roles'"
+        ></app-table>
+      }
+      @case ('permisos') {
+        <div class="cards">
+          @for (r of reportePermisos(); track r.rolId) {
+            <div class="card">
+              <h3>{{ r.rolNombre }} — {{ r.apliNombre }}</h3>
+              <p>{{ r.totalPermisos }} permiso(s)</p>
+              <div class="tags">@for (p of r.permisos; track p.codigo) { <span class="badge badge-info">{{ p.codigo }}</span> }</div>
+            </div>
+          }
+        </div>
+      }
+      @case ('administradores') {
+        <app-table
+          [tableTitle]="'Administradores por aplicación'"
+          [tableColumnTitle]="adminsColTitles"
+          [columnsToDisplay]="adminsCols"
+          [dataSource]="adminsData()"
+          [showPaginator]="true"
+          [totalItemsPerPag]="10"
+          [idTable]="'report-admins'"
+        ></app-table>
+      }
+    }
+  }
+</div>

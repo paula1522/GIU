@@ -1,0 +1,114 @@
+<app-header-pages
+  [title]="'Aplicaciones'"
+  [subtitle]="'Listado de las aplicaciones que puede gestionar'"
+  [buttons]="headerButtons()"
+  (buttonClick)="onHeaderButtonClick($event)"
+></app-header-pages>
+
+<div class="page">
+  <div class="filters-bar">
+    <input type="text" class="input" placeholder="Buscar…" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); filtrar()" />
+    <select class="input" [ngModel]="estadoFiltro()" (ngModelChange)="estadoFiltro.set($event); filtrar()">
+      <option value="">Todos</option>
+      <option value="ACTIVO">Activo</option>
+      <option value="INACTIVO">Inactivo</option>
+    </select>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Cargando…</div>
+  } @else {
+    <app-table
+      [tableTitle]="'Aplicaciones'"
+      [tableColumnTitle]="tableColumnTitle"
+      [columnsToDisplay]="columnsToDisplay"
+      [dataSource]="tableData()"
+      [showPaginator]="true"
+      [totalItemsPerPag]="10"
+      [idTable]="'applications-list'"
+      (clickEventButton)="onTableAction($event)"
+    ></app-table>
+  }
+</div>
+
+<!-- Modal crear/editar -->
+@if (showForm()) {
+  <div class="overlay" (click)="cerrarForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingApp() ? 'Editar aplicación' : 'Nueva aplicación' }}</h2>
+        <app-button
+          [icon]="'bi bi-x-lg'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarForm()"
+        ></app-button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="appForm" (ngSubmit)="guardar()">
+          <app-input
+            [textLabel]="'Código'"
+            [form]="appForm"
+            [controlName]="'codigo'"
+            [validationMessages]="validationMessages"
+            [placeholder]="'Código único'"
+            [type]="'text'"
+          ></app-input>
+
+          <app-input
+            [textLabel]="'Nombre'"
+            [form]="appForm"
+            [controlName]="'nombre'"
+            [validationMessages]="validationMessages"
+            [placeholder]="'Nombre de la aplicación'"
+            [type]="'text'"
+          ></app-input>
+
+          <app-input
+            [textLabel]="'Descripción'"
+            [form]="appForm"
+            [controlName]="'descripcion'"
+            [placeholder]="'Descripción opcional'"
+            [isTextArea]="true"
+            [showRequiredMark]="false"
+          ></app-input>
+
+          <div class="form-field">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="administracion" />
+              Administración vía Portal de Configuraciones
+            </label>
+          </div>
+
+          <div class="modal-actions">
+            <app-button
+              [text]="'Cancelar'"
+              [class]="['btn', 'btn-primary-secondary']"
+              [type]="'button'"
+              (clickEventButton)="cerrarForm()"
+            ></app-button>
+            <app-button
+              [text]="saving() ? 'Guardando…' : 'Guardar'"
+              [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
+              [class]="['btn', 'btn-primary']"
+              [type]="'submit'"
+              [disabled]="saving()"
+              (clickEventButton)="guardar()"
+            ></app-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Confirmación de cambio de estado -->
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  [title]="confirmTitle()"
+  [message]="confirmMsg()"
+  [confirmText]="confirmApp()?.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'"
+  [isDestructive]="confirmApp()?.estado === 'ACTIVO'"
+  (confirm)="ejecutarToggle()"
+  (cancel)="confirmVisible.set(false)"
+></app-confirm-modal>

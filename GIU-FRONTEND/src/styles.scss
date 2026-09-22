@@ -6,7 +6,8 @@
 @use '@angular/material' as mat;
 @use 'styles/variables' as *;
 @use 'styles/layout';
-// ===== Tema base de Angular Material =====
+/* ===== Bootstrap Icons ===== */
+@import 'bootstrap-icons/font/bootstrap-icons.css';// ===== Tema base de Angular Material =====
 html {
   @include mat.theme((
     color: (

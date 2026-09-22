@@ -1,18 +1,18 @@
-import { Component, signal, inject  } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
-import { HeaderComponent } from './shared/header/header.component';
+import { MainLayoutComponent } from './shared/layout/main-layout/main-layout';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent],
+  imports: [RouterOutlet, MainLayoutComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
-  protected readonly title = signal('GIU-FRONTEND');
+  readonly title = signal('GIU-FRONTEND');
   private router = inject(Router);
 
-  showHeader(): boolean {
-    return !this.router.url.startsWith('/login');
+  isLoginPage(): boolean {
+    return this.router.url.startsWith('/login');
   }
 }

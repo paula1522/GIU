@@ -1,0 +1,133 @@
+.page { max-width: 1200px; margin: 0 auto; }
+.page-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: #1a1a2e; }
+.filters-bar { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+.input { padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem; flex: 1; }
+.count { font-size: 0.8125rem; color: #64748b; margin-bottom: 0.75rem; }
+.loading, .empty { padding: 2rem; text-align: center; color: #64748b; }
+.table-container { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.table th { text-align: left; padding: 0.75rem 1rem; background: #f5f5f5; border-bottom: 2px solid #e2e8f0; font-weight: 600; color: #64748b; }
+.table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; }
+.badge { display: inline-flex; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.actions-cell { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.btn-sm { padding: 0.3rem 0.7rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; }
+.btn-danger { background: #dc3545; color: #fff; }
+.btn-success { background: #198754; color: #fff; }
+.btn-edit { background: #fff; border: 1px solid #e2e8f0; color: #1a1a2e; }
+
+/* Modal */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+.modal { background: #fff; border-radius: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); width: 90%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
+.modal-header h2 { font-size: 1rem; font-weight: 600; margin: 0; }
+.modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; }
+.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.form-label { font-size: 0.75rem; font-weight: 600; color: #64748b; }
+.confirm-msg { font-size: 0.875rem; color: #1a1a2e; line-height: 1.5; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem; }
+.btn-secondary { padding: 0.5rem 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 0.875rem; color: #1a1a2e; }
+.btn-primary { padding: 0.5rem 1rem; background: #e92012; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.875rem; font-weight: 500; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+.input:disabled { background: #f5f5f5; cursor: not-allowed; }
+
+/* Fase de búsqueda */
+.search-phase { display: flex; flex-direction: column; gap: 1rem; }
+.phase-info {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8125rem; color: #64748b; line-height: 1.5;
+  background: #f8fafc; padding: 0.75rem 1rem; border-radius: 8px; border-left: 3px solid #e92012;
+  margin: 0;
+}
+.phase-info i { font-size: 1rem; color: #e92012; }
+.search-error {
+  font-size: 0.8125rem; color: #dc3545; background: #fee2e2;
+  padding: 0.5rem 0.75rem; border-radius: 6px;
+}
+
+/* Banner de estado del usuario */
+.user-status-banner {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8125rem; padding: 0.6rem 1rem; border-radius: 8px;
+  &.found { background: #d1fae5; color: #065f46; }
+  &.new-user { background: #dbeafe; color: #1e40af; }
+  i { font-size: 1rem; }
+}
+
+/* Errores de campo */
+.field-error { font-size: 0.75rem; color: #dc3545; font-weight: 500; }
+.hint { font-weight: 400; color: #94a3b8; font-size: 0.7rem; }
+
+/* Checkbox administrador */
+.form-field-checkbox { flex-direction: row; }
+.checkbox-label {
+  display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer;
+  input[type="checkbox"] { width: 18px; height: 18px; margin-top: 0.1rem; accent-color: #e92012; }
+}
+.checkbox-text { display: flex; flex-direction: column; gap: 0.1rem;
+  strong { font-size: 0.8125rem; color: #1a1a2e; }
+  small { font-size: 0.7rem; color: #64748b; }
+}
+
+/* Sección de asignación de rol */
+.form-section-title {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8125rem; font-weight: 600; color: #1a1a2e;
+  border-top: 1px solid #e2e8f0; padding-top: 0.75rem; margin-top: 0.25rem;
+  i { color: #e92012; }
+}
+
+/* Fila de dos columnas para fechas */
+.form-row { display: flex; gap: 1rem; .form-field { flex: 1; } }
+
+/* ===== Estilos para botones dentro del átomo de tabla ===== */
+::ng-deep .btn-table-edit {
+  background: #fff !important; border: 1px solid #e2e8f0 !important;
+  color: #1a1a2e !important; padding: 0.3rem 0.7rem !important;
+  border-radius: 6px !important; font-size: 0.75rem !important;
+  cursor: pointer !important; font-weight: 500 !important;
+}
+::ng-deep .btn-table-danger {
+  background: #dc3545 !important; color: #fff !important;
+  border: none !important; padding: 0.3rem 0.7rem !important;
+  border-radius: 6px !important; font-size: 0.75rem !important;
+  cursor: pointer !important; font-weight: 500 !important;
+}
+::ng-deep .btn-table-success {
+  background: #198754 !important; color: #fff !important;
+  border: none !important; padding: 0.3rem 0.7rem !important;
+  border-radius: 6px !important; font-size: 0.75rem !important;
+  cursor: pointer !important; font-weight: 500 !important;
+}
+
+/* ===== Estilos para átomos de Botón ===== */
+/* Las clases btn-primary y btn-primary-secondary están definidas en el átomo ButtonComponent */
+
+/* ===== Estilos para átomo de Checkbox ===== */
+.checkbox-hint {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+  display: block;
+}
+::ng-deep .checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #e92012;
+    cursor: pointer;
+  }
+  .form-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    cursor: pointer;
+    margin: 0;
+  }
+}

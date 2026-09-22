@@ -1,0 +1,96 @@
+<div class="layout" [class.collapsed]="sidebarCollapsed()">
+  @if (!sidebarVisible()) {
+    <div class="sidebar-overlay" (click)="toggleSidebarMobile()"></div>
+  }
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed()" [class.hidden]="!sidebarVisible()">
+    <div class="sidebar-header">
+      <span class="logo">GIU</span>
+      <span class="logo-mini">G</span>
+      <button class="sidebar-close-mobile" (click)="toggleSidebarMobile()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" (click)="onNavClickClearApp()">
+        <span class="nav-icon"><i class="bi bi-house"></i></span>
+        <span class="nav-label">Inicio</span>
+      </a>
+      <a routerLink="/aplicaciones" routerLinkActive="active" class="nav-item" (click)="onNavClickClearApp()">
+        <span class="nav-icon"><i class="bi bi-app-indicator"></i></span>
+        <span class="nav-label">Aplicaciones</span>
+      </a>
+      <a routerLink="/usuarios-globales" routerLinkActive="active" class="nav-item" (click)="onNavClickClearApp()">
+        <span class="nav-icon"><i class="bi bi-people"></i></span>
+        <span class="nav-label">Usuarios</span>
+      </a>
+
+      @if (hasCurrentApp()) {
+        <div class="nav-section">{{ currentAppName() }}</div>
+        <a [routerLink]="['/aplicaciones', currentAppId(), 'usuarios']" routerLinkActive="active" class="nav-item" (click)="onNavClick()">
+          <span class="nav-icon"><i class="bi bi-people"></i></span>
+          <span class="nav-label">Usuarios App</span>
+        </a>
+        <a [routerLink]="['/aplicaciones', currentAppId(), 'roles']" routerLinkActive="active" class="nav-item" (click)="onNavClick()">
+          <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
+          <span class="nav-label">Roles</span>
+        </a>
+        <a [routerLink]="['/aplicaciones', currentAppId(), 'permisos']" routerLinkActive="active" class="nav-item" (click)="onNavClick()">
+          <span class="nav-icon"><i class="bi bi-key"></i></span>
+          <span class="nav-label">Permisos</span>
+        </a>
+        <a [routerLink]="['/aplicaciones', currentAppId(), 'administradores']" routerLinkActive="active" class="nav-item" (click)="onNavClick()">
+          <span class="nav-icon"><i class="bi bi-shield-check"></i></span>
+          <span class="nav-label">Administradores</span>
+        </a>
+      }
+
+      <a routerLink="/auditoria" routerLinkActive="active" class="nav-item" (click)="onNavClick()">
+        <span class="nav-icon"><i class="bi bi-clipboard-check"></i></span>
+        <span class="nav-label">Auditoría</span>
+      </a>
+      <a routerLink="/reportes" routerLinkActive="active" class="nav-item" (click)="onNavClick()">
+        <span class="nav-icon"><i class="bi bi-bar-chart"></i></span>
+        <span class="nav-label">Reportes</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <button class="toggle-btn" (click)="toggleSidebar()" aria-label="Colapsar menú">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="header-breadcrumb">
+        <span class="breadcrumb-text">GIU — Gestión Integral de Usuarios</span>
+      </div>
+      <div class="header-right">
+        <div class="user-menu">
+          <button class="user-trigger" (click)="toggleUserMenu()">
+            <span class="user-avatar">{{ usuarioRed().charAt(0).toUpperCase() }}</span>
+            <span class="user-name">{{ usuarioRed() }}</span>
+            @if (isSuperAdmin()) {
+              <span class="user-role">Super Admin</span>
+            }
+          </button>
+          @if (userMenuOpen()) {
+            <div class="user-dropdown">
+              <div class="user-info">
+                <strong>{{ nombre() }}</strong>
+              </div>
+              <button class="dropdown-item logout" (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+    <footer class="footer">
+      <span>GIU — Gestión Integral de Usuarios</span>
+      <span class="footer-version">v1.0.0</span>
+    </footer>
+  </div>
+</div>

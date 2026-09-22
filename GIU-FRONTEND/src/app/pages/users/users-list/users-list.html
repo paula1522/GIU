@@ -1,0 +1,220 @@
+<app-header-pages
+  [title]="'Usuarios'"
+  [subtitle]="'Gestión de usuarios de la aplicación'"
+  [buttons]="headerButtons()"
+  (buttonClick)="onHeaderButtonClick($event)"
+></app-header-pages>
+
+<div class="page">
+
+  <div class="filters-bar">
+    <input type="text" class="input" placeholder="Buscar por usuario, nombre o correo…" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); filtrar()" />
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Cargando…</div>
+  } @else {
+    <!-- Átomo de Tabla reutilizable con paginación integrada -->
+    <app-table
+      [tableTitle]="'Usuarios de la aplicación'"
+      [tableColumnTitle]="tableColumnTitle"
+      [columnsToDisplay]="columnsToDisplay"
+      [dataSource]="tableData()"
+      [showPaginator]="true"
+      [totalItemsPerPag]="10"
+      [idTable]="'users-list'"
+      (clickEventButton)="onTableAction($event)"
+    ></app-table>
+  }
+</div>
+
+<!-- Modal crear/editar -->
+@if (showForm()) {
+  <div class="overlay" (click)="cerrarForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingUser() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+        <app-button
+          [icon]="'bi bi-x-lg'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarForm()"
+        ></app-button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Fase 1: Búsqueda por usuarioRed -->
+        @if (formPhase() === 'search') {
+          <div class="search-phase">
+            <p class="phase-info">
+              <i class="bi bi-search"></i>
+              Ingrese el <strong>usuario de red</strong> para verificar si ya existe en el sistema.
+            </p>
+            <form [formGroup]="searchForm" (ngSubmit)="buscarUsuario()">
+              <app-input
+                [textLabel]="'Usuario de Red'"
+                [form]="searchForm"
+                [controlName]="'usuarioRed'"
+                [validationMessages]="searchValidationMessages"
+                [placeholder]="'ej: maria.gomez'"
+                [type]="'text'"
+              ></app-input>
+              @if (searchError()) {
+                <div class="search-error">{{ searchError() }}</div>
+              }
+              <div class="modal-actions">
+                <app-button
+                  [text]="'Cancelar'"
+                  [class]="['btn', 'btn-primary-secondary']"
+                  [type]="'button'"
+                  (clickEventButton)="cerrarForm()"
+                ></app-button>
+                <app-button
+                  [text]="searching() ? 'Buscando…' : 'Buscar usuario'"
+                  [icon]="searching() ? 'bi bi-arrow-clockwise' : 'bi bi-search'"
+                  [class]="['btn', 'btn-primary']"
+                  [type]="'submit'"
+                  [disabled]="searching()"
+                  (clickEventButton)="buscarUsuario()"
+                ></app-button>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- Fase 2: Formulario completo -->
+        @if (formPhase() === 'form') {
+          <form [formGroup]="userForm" (ngSubmit)="guardar()">
+
+            <!-- Banner de usuario encontrado / nuevo -->
+            <div class="user-status-banner" [class.found]="foundUser()" [class.new-user]="!foundUser()">
+              <i class="bi" [class.bi-check-circle-fill]="foundUser()" [class.bi-person-plus-fill]="!foundUser()"></i>
+              @if (foundUser()) {
+                Usuario existente — los campos se han cargado para edición.
+              } @else {
+                Usuario no encontrado — complete los datos para crearlo.
+              }
+            </div>
+
+            <app-input
+              [textLabel]="'Usuario de Red'"
+              [form]="userForm"
+              [controlName]="'usuarioRed'"
+              [validationMessages]="userValidationMessages"
+              [type]="'text'"
+            ></app-input>
+
+            <app-input
+              [textLabel]="'Nombre completo'"
+              [form]="userForm"
+              [controlName]="'nombre'"
+              [validationMessages]="userValidationMessages"
+              [placeholder]="'Nombre completo'"
+              [type]="'text'"
+            ></app-input>
+
+            <app-input
+              [textLabel]="'Correo electrónico'"
+              [form]="userForm"
+              [controlName]="'correo'"
+              [validationMessages]="userValidationMessages"
+              [placeholder]="'correo@claro.com.co'"
+              [type]="'email'"
+            ></app-input>
+
+            <app-input
+              [textLabel]="'Número de identificación'"
+              [form]="userForm"
+              [controlName]="'numeroIdentificacion'"
+              [validationMessages]="userValidationMessages"
+              [placeholder]="'Cédula'"
+              [type]="'text'"
+            ></app-input>
+
+            <!-- Selector de perfil -->
+            <app-select
+              [id]="'select-perfil'"
+              [textLabel]="'Perfil'"
+              [control]="perfilControl"
+              [options]="perfilOptions()"
+              [displayKey]="'nameSelect'"
+              [valueKey]="'id'"
+              [defaultOption]="'— Seleccione un perfil —'"
+              [count_validation_messages]="userValidationMessages"
+            ></app-select>
+
+            <!-- Checkbox Administrador -->
+            <div class="form-field form-field-checkbox">
+              <app-checkbox
+                [id]="'chk-admin'"
+                [textLabel]="'Es Administrador'"
+                [form]="userForm"
+                [controlName]="'esAdministrador'"
+              ></app-checkbox>
+              <small class="checkbox-hint">Marca esta casilla si el usuario tendrá privilegios de administrador sobre la aplicación.</small>
+            </div>
+
+            <!-- Asignación de rol con fechas opcionales -->
+            <div class="form-section-title">
+              <i class="bi bi-person-badge"></i> Asignación de Rol
+            </div>
+            <app-select
+              [id]="'select-rol'"
+              [textLabel]="'Rol'"
+              [control]="rolControl"
+              [options]="rolOptions()"
+              [displayKey]="'nameSelect'"
+              [valueKey]="'id'"
+              [defaultOption]="'— Sin rol —'"
+              [showRequiredMark]="false"
+            ></app-select>
+            <div class="form-row">
+              <app-input
+                [textLabel]="'Fecha Inicio'"
+                [form]="userForm"
+                [controlName]="'fechaInRol'"
+                [type]="'date'"
+                [showRequiredMark]="false"
+              ></app-input>
+              <app-input
+                [textLabel]="'Fecha Fin'"
+                [form]="userForm"
+                [controlName]="'fechaFinRol'"
+                [type]="'date'"
+                [showRequiredMark]="false"
+              ></app-input>
+            </div>
+
+            <div class="modal-actions">
+              <app-button
+                [text]="'Cancelar'"
+                [class]="['btn', 'btn-primary-secondary']"
+                [type]="'button'"
+                (clickEventButton)="cerrarForm()"
+              ></app-button>
+              <app-button
+                [text]="saving() ? 'Guardando…' : 'Guardar'"
+                [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
+                [class]="['btn', 'btn-primary']"
+                [type]="'submit'"
+                [disabled]="!canSave()"
+                (clickEventButton)="guardar()"
+              ></app-button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Confirmación toggle estado -->
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  [title]="confirmTitle()"
+  [message]="confirmMsg()"
+  [confirmText]="confirmUser()?.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'"
+  [isDestructive]="confirmUser()?.estado === 'ACTIVO'"
+  (confirm)="ejecutarToggle()"
+  (cancel)="confirmVisible.set(false)"
+></app-confirm-modal>

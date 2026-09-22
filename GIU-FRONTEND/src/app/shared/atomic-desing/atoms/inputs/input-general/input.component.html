@@ -3,7 +3,10 @@
   <!-- Label -->
   @if (textLabel) {
     <label class="form-label capitalize">
-      {{ textLabel.replace('*', '') }}
+      {{ textLabel.replace('*', '').trim() }}
+      @if (textLabel.includes('*')) {
+        <span class="required-mark">*</span>
+      }
     </label>
   }
 

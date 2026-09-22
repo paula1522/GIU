@@ -1,0 +1,27 @@
+<section class="header-pages">
+  <div class="header-content">
+    <div class="header-text">
+      @if (title) {
+        <h1 class="page-title">{{ title }}</h1>
+      }
+      @if (subtitle) {
+        <p class="page-subtitle">{{ subtitle }}</p>
+      }
+    </div>
+
+    @if (buttons && buttons.length > 0) {
+      <div class="header-actions">
+        @for (btn of buttons; track btn.action) {
+          <app-button
+            [text]="btn.text"
+            [icon]="btn.icon || ''"
+            [class]="btn.class || ['btn', 'btn-primary']"
+            [type]="btn.type || 'button'"
+            [disabled]="btn.disabled || false"
+            (clickEventButton)="onButtonClick(btn.action)"
+          ></app-button>
+        }
+      </div>
+    }
+  </div>
+</section>

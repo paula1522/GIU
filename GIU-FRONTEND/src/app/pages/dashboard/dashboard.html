@@ -1,0 +1,48 @@
+<div class="dashboard">
+  <h1 class="page-title">Bienvenido, {{ usuarioRed() }}</h1>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <span class="metric-value">{{ aplicaciones().length }}</span>
+      <span class="metric-label">Aplicaciones</span>
+    </div>
+    <div class="metric-card metric-success">
+      <span class="metric-value">{{ aplicacionesActivas() }}</span>
+      <span class="metric-label">Activas</span>
+    </div>
+    <div class="metric-card metric-info">
+      <span class="metric-value">{{ isSuperAdmin() ? 'Sí' : 'No' }}</span>
+      <span class="metric-label">Super Admin</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">Aplicaciones recientes</h2>
+      <button class="btn-primary" (click)="irAAplicaciones()">Ver todas</button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">Cargando…</div>
+    } @else {
+      <div class="apps-grid">
+        @for (app of aplicaciones(); track app.id) {
+          <div class="app-card" (click)="seleccionarApp(app)" tabindex="0" (keydown.enter)="seleccionarApp(app)">
+            <div class="app-card-header">
+              <i class="bi bi-app-indicator app-icon"></i>
+              <span class="badge" [class.badge-success]="app.estado === 'ACTIVO'" [class.badge-danger]="app.estado === 'INACTIVO'">
+                {{ app.estado }}
+              </span>
+            </div>
+            <h3 class="app-name">{{ app.nombre }}</h3>
+            <p class="app-code">{{ app.codigo }}</p>
+            <p class="app-desc">{{ app.descripcion || '—' }}</p>
+            <div class="app-card-footer">
+              <span class="admin-link">Administrar <i class="bi bi-arrow-right"></i></span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

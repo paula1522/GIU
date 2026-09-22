@@ -1,0 +1,37 @@
+﻿[33m❯[39m Building...
+[32m✔[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m               [2m | [22m  [36m1.57 MB[39m[2m | [22m
+[32mchunk-CTP2AR3R.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m1.12 MB[39m[2m | [22m
+[32mchunk-MZN7U5T6.js[39m  [2m | [22m[2m-[22m                  [2m | [22m[36m375.89 kB[39m[2m | [22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m             [2m | [22m[36m115.45 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m          [2m | [22m [36m89.77 kB[39m[2m | [22m
+[32mchunk-A7JSNB56.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m3.75 kB[39m[2m | [22m
+[32mchunk-EP5326WG.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m2.41 kB[39m[2m | [22m
+[32mchunk-ZXEPFRGJ.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m1.71 kB[39m[2m | [22m
+[32mchunk-HUX7RWGB.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m1.28 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m      [2m | [22m  [1m3.28 MB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
+[32mchunk-HR4UW5PL.js[39m  [2m | [22m[2m-[22m                  [2m | [22m[36m228.40 kB[39m[2m | [22m
+[32mchunk-C323MCU5.js[39m  [2m | [22m[2musers-list[22m         [2m | [22m [36m88.91 kB[39m[2m | [22m
+[32mchunk-AA23LKPW.js[39m  [2m | [22m[2mapplications-list[22m  [2m | [22m [36m33.00 kB[39m[2m | [22m
+[32mchunk-FE7NRWMY.js[39m  [2m | [22m[2maudit[22m              [2m | [22m [36m30.24 kB[39m[2m | [22m
+[32mchunk-2XYFEV5J.js[39m  [2m | [22m[2m-[22m                  [2m | [22m [36m29.14 kB[39m[2m | [22m
+[32mchunk-NZOIAVC7.js[39m  [2m | [22m[2mroles-list[22m         [2m | [22m [36m26.60 kB[39m[2m | [22m
+[32mchunk-LIBTCVDE.js[39m  [2m | [22m[2mapplication-detail[22m [2m | [22m [36m25.12 kB[39m[2m | [22m
+[32mchunk-CSRE5V64.js[39m  [2m | [22m[2mreports[22m            [2m | [22m [36m22.28 kB[39m[2m | [22m
+[32mchunk-JKKGHPIU.js[39m  [2m | [22m[2m-[22m                  [2m | [22m [36m18.63 kB[39m[2m | [22m
+[32mchunk-H2SREQZ4.js[39m  [2m | [22m[2m-[22m                  [2m | [22m [36m17.62 kB[39m[2m | [22m
+[32mchunk-A7QYCWLF.js[39m  [2m | [22m[2mdashboard[22m          [2m | [22m [36m16.28 kB[39m[2m | [22m
+[32mchunk-VES4KJNU.js[39m  [2m | [22m[2mapp-actions[22m        [2m | [22m [36m13.80 kB[39m[2m | [22m
+[32mchunk-QQ7UFJXS.js[39m  [2m | [22m[2mhome[22m               [2m | [22m [36m12.33 kB[39m[2m | [22m
+[32mchunk-S3TPLSOG.js[39m  [2m | [22m[2musers-global[22m       [2m | [22m [36m10.78 kB[39m[2m | [22m
+[32mchunk-IYQKH4TW.js[39m  [2m | [22m[2madministrators-list[22m[2m | [22m  [36m9.78 kB[39m[2m | [22m
+[2m...and 11 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [15.554 seconds] - 2026-09-22T19:10:28.647Z
+
+Output location: C:\MILENA_AREVALO\PROYECTOS\CLARO\GIU GESTION INTEGRAL DE USUARIOS\GIU_V2\GIU\GIU-FRONTEND\dist\GIU-FRONTEND
+

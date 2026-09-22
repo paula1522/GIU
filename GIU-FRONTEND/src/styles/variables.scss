@@ -1,22 +1,135 @@
+// ============================================================
+//  GIU — Variables Globales SCSS
+//  Sistema de design tokens para toda la aplicación.
+//  Importar con: @use 'styles/variables' as *;
+// ============================================================
+
+// ---------- Colores corporativos ----------
 $primary-color: #e92012;
 $secondary-color: #ce1104;
 $item-color: #e0e0e0;
 
+// ---------- Colores de fondo ----------
+$bg-body: #f7f1f1;
+$bg-surface: #ffffff;
+$bg-surface-alt: #f5f5f5;
+$bg-header: #1a1a2e;
+$bg-sidebar: #1a1a2e;
+$bg-table-header: #1a1a2e;
+
+// ---------- Colores de texto ----------
+$text-primary: #1a1a2e;
+$text-secondary: #64748b;
+$text-muted: #94a3b8;
+$text-on-primary: #ffffff;
+$text-on-dark: #cbd5e1;
+
+// ---------- Colores de borde ----------
+$border-color: #e2e8f0;
+$border-color-light: #f1f5f9;
+$border-color-dark: #cbd5e1;
+
+// ---------- Estados (success, danger, warning, info) ----------
+$color-success: #198754;
+$color-success-bg: #d1fae5;
+$color-success-text: #065f46;
+
+$color-danger: #dc3545;
+$color-danger-bg: #fee2e2;
+$color-danger-text: #991b1b;
+
+$color-warning: #f59e0b;
+$color-warning-bg: #fef3c7;
+$color-warning-text: #92400e;
+
+$color-info: #3b82f6;
+$color-info-bg: #dbeafe;
+$color-info-text: #1e40af;
+
+// Estados hover
+$primary-hover: #ce1104;
+$primary-hover-bg: rgba(233, 32, 18, 0.15);
+$surface-hover: rgba(255, 255, 255, 0.05);
+
+// ---------- Tipografía ----------
 $font-main: 'Roboto', sans-serif;
 $font-weight: 600;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
 
-$border-radius: 8px;
+$font-size-xs: 0.7rem;
+$font-size-sm: 0.75rem;
+$font-size-base: 0.875rem;
+$font-size-md: 0.9rem;
+$font-size-lg: 1rem;
+$font-size-xl: 1.2rem;
+$font-size-2xl: 1.5rem;
+
+// ---------- Espaciado / Density ----------
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 40px;
+
 $spacing-small: 8px;
 $spacing-medium: 16px;
 $spacing-large: 24px;
 
+// ---------- Border radius ----------
+$radius-sm: 6px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+$radius-pill: 999px;
 
+$border-radius: 8px;
+$radius-card: 12px;
+$radius-button: 8px;
+$radius-badge: 999px;
+$radius-table: 12px;
 
+// ---------- Sombras ----------
+$shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+// ---------- Tabla (átomo) ----------
+$table-cell-padding-x: 12px;
+$table-cell-padding-y: 12px;
+$table-header-padding: 9px;
+$table-font-size: 0.85rem;
+$table-min-width: 150px;
+$table-max-width: 200px;
+$table-border-color: #e2e8f0;
+$table-bg: #ffffff;
+$table-header-bg: #1a1a2e;
+$table-header-color: #ffffff;
+$table-border-radius: 12px;
+
+// ---------- Layout ----------
 $page-max-width: 1250px;
 $page-padding-x: 20px;
 $page-padding-top: 28px;
 $page-padding-bottom: 70px;
 
-$radius-sm: 9px;
-$radius-md: 12px;
-$radius-lg: 16px;
+// ---------- Sidebar ----------
+$sidebar-width: 240px;
+$sidebar-collapsed-width: 64px;
+$sidebar-bg: #1a1a2e;
+$sidebar-border: #16213e;
+
+// ---------- Transiciones ----------
+$transition-fast: 0.15s ease;
+$transition-base: 0.2s ease;
+$transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+// ---------- Z-index ----------
+$z-dropdown: 100;
+$z-modal: 10000;
+$z-sidebar: 200;
+$z-overlay: 10000;

@@ -6,6 +6,8 @@ export interface ActionButton {
     styles?: string;
     title?: string;
     disabled?: boolean;
+    type?: string;
+    class?: string;
 }
 
 export interface ColumnConfig {

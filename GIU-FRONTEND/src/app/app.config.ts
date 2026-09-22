@@ -28,13 +28,13 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(),
  
     // Configura el cliente HTTP para los interceptores
-    provideHttpClient(withInterceptorsFromDi()),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeApp,
-      deps: [CryptoKeyService, GlobalTokenService],
-      multi: true,
-    },
+    // provideHttpClient(withInterceptorsFromDi()),
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: initializeApp,
+    //   deps: [CryptoKeyService, GlobalTokenService],
+    //   multi: true,
+    // },
     EncryptedHttpClient,
   ]
 };
