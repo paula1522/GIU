@@ -127,30 +127,5 @@ public class RolController {
                 return ResponseEntity.ok(RespuestaGenerica);
         }
 /* 
-        @GetMapping("/aplicaciones/roles/{rolId}")
-        public ResponseEntity<RespuestaGenerica<DetalleRolResponseDTO>> obtenerDetalleRol(
-                        @PathVariable Long rolId) {
-
-                logger.info(
-                                "obtenerDetalleRol - inicio. rolId={}",
-                                rolId);
-
-                DetalleRolResponseDTO result = rolesService.obtenerDetalleRol(rolId);
-
-                RespuestaGenerica<DetalleRolResponseDTO> respuesta = new RespuestaGenerica<>();
-
-                respuesta.setCodigoRespuesta(
-                                TipoRespuesta.EXITOSO.getCodigo());
-
-                respuesta.setDescripcionRespuesta(
-                                TipoRespuesta.EXITOSO.getDescripcion());
-
-                respuesta.setData(result);
-
-                logger.info(
-                                "obtenerDetalleRol - fin OK. rolId={}",
-                                rolId);
-
-                return ResponseEntity.ok(respuesta);
-        }*/
+        */
 }

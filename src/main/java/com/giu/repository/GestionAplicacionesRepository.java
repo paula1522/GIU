@@ -101,11 +101,12 @@ public class GestionAplicacionesRepository {
     // FN_OBTENER_ADMINISTRADOR_APLICACION
     public List<AdministradorAplicacionResponseDTO> obtenerAdministradorAplicacion(
             String usuarioRed,
-            Long apliId) {
+            Long apliId,
+            Boolean vigente) {
 
         logger.debug(
-                "obtenerAdministradorAplicacion - ejecutando FN_OBTENER_ADMINISTRADOR_APLICACION. usuarioRed={}, apliId={}",
-                usuarioRed, apliId);
+                "obtenerAdministradorAplicacion - ejecutando FN_OBTENER_ADMINISTRADOR_APLICACION. usuarioRed={}, apliId={}, vigente={}",
+                usuarioRed, apliId, vigente);
 
         String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_APLICACIONES_OBTENER_ADMIN);
 
@@ -123,6 +124,8 @@ public class GestionAplicacionesRepository {
             } else {
                 stmt.setNull(3, Types.NUMERIC);
             }
+
+            stmt.setInt(4, BooleanUtils.booleanToVigente(vigente));
 
             stmt.execute();
 
@@ -204,8 +207,8 @@ public class GestionAplicacionesRepository {
 
         } catch (Exception e) {
 
-            logger.error("obtenerAdministradorAplicacion - error. usuarioRed={}, apliId={}",
-                    usuarioRed, apliId, e);
+            logger.error("obtenerAdministradorAplicacion - error. usuarioRed={}, apliId={}, vigente={}",
+                    usuarioRed, apliId, vigente, e);
 
             throw new RuntimeException(
                     "Error consultando administrador de aplicación",

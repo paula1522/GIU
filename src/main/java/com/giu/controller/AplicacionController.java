@@ -22,8 +22,13 @@ import com.giu.model.gestionAplicaciones.AplicacionResponseDTO;
 import com.giu.model.gestionAplicaciones.CrearAplicacionRequest;
 import com.giu.model.gestionAplicaciones.GestionarAdministradorRequest;
 import com.giu.model.gestionAplicaciones.ModificarAplicacionRequest;
+import com.giu.model.gestionRecursos.RolRecursoResponseDTO;
+import com.giu.model.gestionRoles.DetalleRolResponseDTO;
 import com.giu.service.GestionAplicacionesService;
+import com.giu.service.GestionRecursosService;
+import com.giu.service.GestionRolesService;
 import com.giu.model.RespuestaGenerica;
+import com.giu.utils.Constantes;
 import com.giu.utils.TipoRespuesta;
 
 @RestController
@@ -33,14 +38,20 @@ public class AplicacionController {
         private static final Logger logger = LogManager.getLogger(AplicacionController.class);
 
         private final GestionAplicacionesService aplicacionesService;
+        private final GestionRolesService rolesService;
+        private final GestionRecursosService recursosService;
 
         public AplicacionController(
-                        GestionAplicacionesService aplicacionesService) {
+                        GestionAplicacionesService aplicacionesService,
+                        GestionRolesService rolesService,
+                        GestionRecursosService recursosService) {
 
                 this.aplicacionesService = aplicacionesService;
+                this.rolesService = rolesService;
+                this.recursosService = recursosService;
         }
 
-        /* GESTIONAR APLICACIONES  */
+        /* GESTIONAR APLICACIONES */
 
         /**
          * Consultar aplicación
@@ -141,7 +152,6 @@ public class AplicacionController {
                 return ResponseEntity.ok(respuesta);
         }
 
-
         /* GESTIONAR ASIGNACION DE ADMINISTRADORES */
 
         /**
@@ -155,14 +165,17 @@ public class AplicacionController {
         @GetMapping("/administradores")
         public ResponseEntity<RespuestaGenerica<List<AdministradorAplicacionResponseDTO>>> obtenerAdministradorAplicacion(
                         @RequestParam(required = false) String usuarioRed,
-                        @RequestParam(required = false) Long apliId) {
+                        @RequestParam(required = false) Long apliId,
+                        @RequestParam(required = false) Boolean vigente) {
 
-                logger.info("GET /aplicaciones/administradores - usuarioRed={}, apliId={}", usuarioRed, apliId);
+                logger.info("GET /aplicaciones/administradores - usuarioRed={}, apliId={}, vigente={}", usuarioRed,
+                                apliId, vigente);
 
                 List<AdministradorAplicacionResponseDTO> administradores = aplicacionesService
                                 .obtenerAdministradorAplicacion(
                                                 usuarioRed,
-                                                apliId);
+                                                apliId,
+                                                vigente);
 
                 RespuestaGenerica<List<AdministradorAplicacionResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
@@ -235,4 +248,60 @@ public class AplicacionController {
 
                 return ResponseEntity.ok(respuesta);
         }
+
+        /* GESTIONAR ROLES DE UNA APLICACIÓN */
+
+
+        /**
+         * Consultar los detalles de un rol
+         *
+         * Método: GET
+         * Ruta: /api/aplicaciones/roles/2
+         * 
+         * 
+         */
+
+        @GetMapping("/roles/{rolId}")
+        public ResponseEntity<RespuestaGenerica<DetalleRolResponseDTO>> obtenerDetalleRol(
+                        @PathVariable Long rolId) {
+
+                logger.info("obtenerDetalleRol - inicio. rolId={}",
+                                rolId);
+
+                DetalleRolResponseDTO result = rolesService.obtenerDetalleRol(rolId);
+
+                RespuestaGenerica<DetalleRolResponseDTO> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO, result);
+
+                logger.info("obtenerDetalleRol - fin OK. rolId={}",
+                                rolId);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /* GESTIONAR RECURSOS  */
+
+        /**
+         * Consultar roles que tienen asignado un recurso en especifico 
+         *
+         * Método: GET
+         * Ruta: /api/aplicaciones/recurso/2/roles
+         * 
+         * 
+         */
+        @GetMapping("/recurso/{recuId}/roles")
+        public ResponseEntity<RespuestaGenerica<List<RolRecursoResponseDTO>>> obtenerRolesRecurso(
+                        @PathVariable Long recuId) {
+
+                logger.info("GET /recursos/{}/roles ",recuId);
+
+                List<RolRecursoResponseDTO> roles = recursosService.obtenerRolesRecurso(recuId);
+
+                RespuestaGenerica<List<RolRecursoResponseDTO>> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                roles);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
 }

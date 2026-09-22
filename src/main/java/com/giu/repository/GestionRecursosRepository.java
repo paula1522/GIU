@@ -16,6 +16,7 @@ import oracle.jdbc.OracleTypes;
 import com.giu.model.gestionRecursos.CrearRecursoRequestDTO;
 import com.giu.model.gestionRecursos.ModificarRecursoRequestDTO;
 import com.giu.model.gestionRecursos.RecursoResponseDTO;
+import com.giu.model.gestionRecursos.RolRecursoResponseDTO;
 import com.giu.model.gestionRecursos.RecursoUsuarioResponseDTO;
 import com.giu.utils.Constantes;
 import com.giu.utils.Propiedades;
@@ -87,6 +88,61 @@ public class GestionRecursosRepository {
                 }
 
                 return recursos;
+        }
+
+        // Consulta los roles asociados a un recurso -> FN_ROLES_RECURSO
+        public List<RolRecursoResponseDTO> obtenerRolesRecurso(Long recuId) {
+
+                logger.debug("obtenerRolesRecurso - ejecutando FN_ROLES_RECURSO. recuId={}",
+                                recuId);
+
+                String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_ROLES_RECURSO);
+                List<RolRecursoResponseDTO> roles = new ArrayList<>();
+
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
+                                CallableStatement stmt = conn.prepareCall(sql)) {
+
+                        stmt.registerOutParameter(1, OracleTypes.CURSOR);
+
+                        if (recuId != null) {
+                                stmt.setLong(2, recuId);
+                        } else {
+                                stmt.setNull(2, Types.NUMERIC);
+                        }
+
+                        stmt.execute();
+
+                        try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+
+                                while (rs.next()) {
+
+                                        RolRecursoResponseDTO rol = new RolRecursoResponseDTO();
+
+                                        rol.setId(rs.getLong("ID"));
+                                        rol.setRecuId(rs.getLong("RECU_ID"));
+                                        rol.setRolId(rs.getLong("ROL_ID"));
+                                        rol.setApliId(rs.getLong("APLI_ID"));
+                                        rol.setRolNombre(rs.getString("ROL_NOMBRE"));
+                                        rol.setRolDescripcion(rs.getString("ROL_DESCRIPCION"));
+                                        rol.setRolEstado(rs.getString("ROL_ESTADO"));
+
+                                        roles.add(rol);
+                                }
+                        }
+
+                        logger.debug("obtenerRolesRecurso - registros mapeados. total={}",
+                                        roles.size());
+
+                } catch (Exception e) {
+
+                        logger.error("obtenerRolesRecurso - error. recuId={}",
+                                        recuId,
+                                        e);
+
+                        throw new RuntimeException("Error consultando roles del recurso", e);
+                }
+
+                return roles;
         }
 
         // Consulta los recursos asignados a un usuario -> FN_OBTENER_RECURSO_USUARIO

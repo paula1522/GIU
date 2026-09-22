@@ -22,4 +22,11 @@ public class BooleanUtils {
             return null;
         return valor ? 1 : 0;
     }
+
+    // true = 1, false = 0
+    public static Integer booleanToVigente(Boolean valor) {
+        if (valor == null)
+            return Constantes.VIGENCIA_TODOS;
+        return valor ? Constantes.VIGENCIA_ACTIVO : Constantes.VIGENCIA_TODOS;
+    }
 }

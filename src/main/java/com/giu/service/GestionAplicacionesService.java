@@ -39,11 +39,11 @@ public class GestionAplicacionesService {
         }
 
         // Método obtener los administradores de las aplicaciones
-        public List<AdministradorAplicacionResponseDTO> obtenerAdministradorAplicacion(String usuarioRed, Long apliId) {
-                logger.info("obtenerAdministradorAplicacion - inicio. usuarioRed={}, apliId={}", usuarioRed, apliId);
+        public List<AdministradorAplicacionResponseDTO> obtenerAdministradorAplicacion(String usuarioRed, Long apliId,Boolean vigente) {
+                logger.info("obtenerAdministradorAplicacion - inicio. usuarioRed={}, apliId={}, vigente={}", usuarioRed, apliId, vigente);
 
                 List<AdministradorAplicacionResponseDTO> result = gestionAplicacionesRepository
-                                .obtenerAdministradorAplicacion(usuarioRed, apliId);
+                                .obtenerAdministradorAplicacion(usuarioRed, apliId,vigente);
 
                 logger.info("obtenerAdministradorAplicacion - fin OK. total={}", result.size());
                 return result;

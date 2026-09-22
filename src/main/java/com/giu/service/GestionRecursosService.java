@@ -10,6 +10,7 @@ import com.giu.model.gestionRecursos.CrearRecursoRequestDTO;
 import com.giu.model.gestionRecursos.ModificarRecursoRequestDTO;
 import com.giu.model.gestionRecursos.RecursoResponseDTO;
 import com.giu.model.gestionRecursos.RecursoUsuarioResponseDTO;
+import com.giu.model.gestionRecursos.RolRecursoResponseDTO;
 import com.giu.repository.GestionRecursosRepository;
 
 @Service
@@ -45,6 +46,17 @@ public class GestionRecursosService {
 
                 logger.info("obtenerRecursoUsuario - fin OK. total={}", result.size());
                 return result;
+        }
+
+        public List<RolRecursoResponseDTO> obtenerRolesRecurso(Long recuId) {
+
+                logger.info("obtenerRolesRecurso - inicio. recuId={}", recuId);
+
+                List<RolRecursoResponseDTO> roles = gestionRecursosRepository.obtenerRolesRecurso(recuId);
+
+                logger.info("obtenerRolesRecurso - fin OK. total={}",roles.size());
+
+                return roles;
         }
 
         // Método para crear recurso
