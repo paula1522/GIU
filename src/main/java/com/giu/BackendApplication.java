@@ -5,9 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.giu.utils.Configurador;
 import com.giu.utils.Constantes;
-
-@SpringBootApplication
-
+import org.springframework.scheduling.annotation.EnableAsync;
+@SpringBootApplication(scanBasePackages = {"com.giu", "com.giu.eaf.library"})
+@EnableAsync
 public class BackendApplication {
 	static {
 		Configurador.configurar(Constantes.RUTA_ARCHIVO_PROPIEDADES, Constantes.APLICACION,

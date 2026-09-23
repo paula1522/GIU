@@ -89,6 +89,12 @@
 		    <artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
+		</dependency>
+
 
 
 		<dependency>
@@ -130,6 +136,14 @@
 		    <groupId>org.apache.httpcomponents</groupId>
 		    <artifactId>httpclient</artifactId>
 		</dependency>
+
+		<dependency>
+            <groupId>com.giu</groupId>
+            <artifactId>eaf-security-lib</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/eaf-security-lib-0.0.1-SNAPSHOT.jar</systemPath>
+        </dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

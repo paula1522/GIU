@@ -51,13 +51,20 @@ public class Constantes {
         public static final String WS_SER_GENERAL_CARGUE_MANUAL_PASSWORD_SFTP = "system.app.cargue.manual.puntos.contrasena.Sftp";
         public static final String WS_SER_GENERAL_CARGUE_MANUAL_PATH_SFTP = "system.app.cargue.manual.puntos.path.Sftp";
 
-        // ==================== OPERACIONES ====================
-        public static final int OPERACION_ACTIVAR = 0;
-        public static final int OPERACION_BLOQUEAR = 1;
-        public static final int OPERACION_INACTIVAR = 2;
+        // ==================== OPERACIONES ===================
         public static final int OPERACION_ASIGNAR = 0;
         public static final int OPERACION_RETIRAR = 1;
         public static final int OPERACION_VIGENCIA = 2;
+
+        // ==================== OPERACIONES ESTADO ====================
+        public static final int OPERACION_ACTIVAR = 0;
+        public static final int OPERACION_BLOQUEAR = 1;
+        public static final int OPERACION_INACTIVAR = 2;
+
+        // ==================== VIGENCIA ====================
+        public static final int VIGENCIA_ACTIVO = 1;
+        public static final int VIGENCIA_TODOS = 0;
+
 
         // ==================== ESTADOS ====================
         public static final String ESTADO_ACTIVO = "ACTIVO";
@@ -94,6 +101,7 @@ public class Constantes {
 
         // ==================== RECURSOS ====================
         public static final String SQL_RECURSOS_OBTENER = "system.pl.recursos.obtener";
+        public static final String SQL_ROLES_RECURSO = "system.pl.recuros.roles";
         public static final String SQL_RECURSOS_OBTENER_USUARIO = "system.pl.recursos.obtenerUsuario";
         public static final String SQL_RECURSOS_CREAR = "system.pl.recursos.crear";
         public static final String SQL_RECURSOS_MODIFICAR = "system.pl.recursos.modificar";

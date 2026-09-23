@@ -1,7 +1,9 @@
 package com.giu.model.gestionUsuarios;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import lombok.Data;
@@ -27,4 +29,9 @@ public class CrearUsuarioRequestDTO {
     private String numeroIdentificacion;
 
     private Boolean superAdministrador;
+
+    @Valid
+    @NotNull(message = "La información del rol es obligatoria")
+    private GestionarRolUsuarioRequestDTO rol;
+
 }
