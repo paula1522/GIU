@@ -1,4 +1,4 @@
-const baseUrlBff = '/Giu';
+const baseUrlBff = '/GIU';
 
 export const environment = {
   production: false,
