@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
@@ -120,6 +121,70 @@ public class UsuarioAplicacionController {
                 RespuestaGenerica<UsuarioResponseDTO> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
                                 usuarioCreado);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Asignar roles de usuarios de forma masiva
+         *
+         * Método: POST
+         * Ruta: /api/aplicaciones/2/usuarios/masivo
+         *
+         * Archivo Excel
+         * 
+         */
+        @PostMapping("/usuarios/masivo")
+        public ResponseEntity<RespuestaGenerica<List<UsuarioResponseDTO>>> asignarRolesMasivo(
+                        @PathVariable Long apliId,
+                        @RequestParam("archivo") MultipartFile archivo,
+                        @RequestHeader("usuarioCreacion") String usuarioCreacion) {
+
+                logger.info(
+                                "POST /aplicaciones/{}/usuarios/masivo - archivo={}",
+                                apliId,
+                                archivo.getOriginalFilename());
+
+                List<UsuarioResponseDTO> usuarios = usuarioService.asignarRolesMasivo(
+                                apliId,
+                                archivo,
+                                usuarioCreacion);
+
+                RespuestaGenerica<List<UsuarioResponseDTO>> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                usuarios);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Método para retirar roles o inactivar usuarios de forma masiva
+         *
+         * Método: POST
+         * Ruta: /api/aplicaciones/2/usuarios/masivo
+         *
+         * Archivo Excel
+         * 
+         */
+        @PutMapping("/usuario")
+        public ResponseEntity<RespuestaGenerica<Void>> gestionarUsuariosMasivo(
+                        @PathVariable Long apliId,
+                        @RequestParam("archivo") MultipartFile archivo,
+                        @RequestHeader("usuarioModificacion") String usuarioModificacion) {
+
+                logger.info(
+                                "PUT /aplicaciones/{}/usuario - archivo={}",
+                                apliId,
+                                archivo.getOriginalFilename());
+
+                usuarioService.gestionarUsuariosMasivo(
+                                apliId,
+                                archivo,
+                                usuarioModificacion);
+
+                RespuestaGenerica<Void> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                null);
 
                 return ResponseEntity.ok(respuesta);
         }

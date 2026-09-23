@@ -32,7 +32,7 @@ public class GestionUsuariosRepository {
         private static final Logger logger = LogManager.getLogger(GestionUsuariosRepository.class);
 
         // Consultar usuarios -> FN_OBTENER_USUARIO
-        public List<UsuarioResponseDTO> obtenerUsuarios(String usuarioRed, String estado) {
+        public List<UsuarioResponseDTO> obtenerUsuarios(Connection conn, String usuarioRed, String estado) {
 
                 logger.debug("obtenerUsuarios - ejecutando FN_OBTENER_USUARIO. usuarioRed={}, estado={}",
                                 usuarioRed,
@@ -42,39 +42,36 @@ public class GestionUsuariosRepository {
 
                 String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_USUARIOS_OBTENER);
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                        try (CallableStatement stmt = conn.prepareCall(sql)) {
+                        stmt.registerOutParameter(1, OracleTypes.CURSOR);
+                        stmt.setString(2, usuarioRed);
+                        stmt.setString(3, estado);
+                        stmt.setNull(4, Types.NUMERIC);
 
-                                stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                                stmt.setString(2, usuarioRed);
-                                stmt.setString(3, estado);
-                                stmt.setNull(4, Types.NUMERIC);
+                        stmt.execute();
 
-                                stmt.execute();
+                        try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
 
-                                try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                                while (rs.next()) {
 
-                                        while (rs.next()) {
+                                        UsuarioResponseDTO usuario = new UsuarioResponseDTO();
 
-                                                UsuarioResponseDTO usuario = new UsuarioResponseDTO();
+                                        usuario.setId(rs.getLong("ID"));
+                                        usuario.setUsuarioRed(rs.getString("USUARIO_RED"));
+                                        usuario.setNombre(rs.getString("NOMBRE"));
+                                        usuario.setCorreo(rs.getString("CORREO"));
+                                        usuario.setEstado(rs.getString("ESTADO"));
+                                        usuario.setNumeroIdentificacion(rs.getString("NUMERO_IDENTIFICACION"));
+                                        usuario.setSuperAdministrador(rs.getInt("SUPER_ADMINISTRADOR"));
+                                        usuario.setFechaCreacion(FechaUtils.convertirFecha(
+                                                        rs.getTimestamp("FECHA_CREACION")));
+                                        usuario.setUsuarioCreacion(rs.getString("USUARIO_CREACION"));
+                                        usuario.setFechaModificacion(FechaUtils.convertirFecha(
+                                                        rs.getTimestamp("FECHA_MODIFICACION")));
+                                        usuario.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
 
-                                                usuario.setId(rs.getLong("ID"));
-                                                usuario.setUsuarioRed(rs.getString("USUARIO_RED"));
-                                                usuario.setNombre(rs.getString("NOMBRE"));
-                                                usuario.setCorreo(rs.getString("CORREO"));
-                                                usuario.setEstado(rs.getString("ESTADO"));
-                                                usuario.setNumeroIdentificacion(rs.getString("NUMERO_IDENTIFICACION"));
-                                                usuario.setSuperAdministrador(rs.getInt("SUPER_ADMINISTRADOR"));
-                                                usuario.setFechaCreacion(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_CREACION")));
-                                                usuario.setUsuarioCreacion(rs.getString("USUARIO_CREACION"));
-                                                usuario.setFechaModificacion(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_MODIFICACION")));
-                                                usuario.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
-
-                                                usuarios.add(usuario);
-                                        }
+                                        usuarios.add(usuario);
                                 }
                         }
 
