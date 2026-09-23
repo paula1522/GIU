@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RoleMockService } from '../../../services/mock/role-mock.service';
+import { UserMockService } from '../../../services/mock/user-mock.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { Role, Resource } from '../../../models/domain/giu.models';
+import { Role, Resource, UserApplication, User } from '../../../models/domain/giu.models';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
@@ -25,6 +26,7 @@ import { minSelectedValidator } from '../validators/min-selected.validator';
 export class RolesList implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly roleService = inject(RoleMockService);
+  private readonly userService = inject(UserMockService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
@@ -64,6 +66,8 @@ export class RolesList implements OnInit {
 
   private buildRow(r: Role): ColumnConfig {
     const buttons: ActionButton[] = [];
+    // Botón ver usuarios asociados
+    buttons.push({ label: 'Usuarios', action: 'VER_USUARIOS', title: 'Ver usuarios asociados', icon: 'bi bi-people', styles: 'btn-table-view', type: 'button' });
     if (this.canEdit) {
       buttons.push({ label: 'Editar', action: 'EDITAR', title: 'Editar rol', icon: 'bi bi-pencil-square', styles: 'btn-table-edit', type: 'button' });
     }
@@ -93,6 +97,8 @@ export class RolesList implements OnInit {
       this.abrirEditar(role);
     } else if (event.action === 'TOGGLE') {
       this.toggleEstado(role);
+    } else if (event.action === 'VER_USUARIOS') {
+      this.abrirUsuariosRol(role);
     }
   }
 
@@ -302,5 +308,256 @@ export class RolesList implements OnInit {
     this.confirmVisible.set(false);
     this.roleService.actualizarRol({ id: role.id, apliId: this.apliId(), estado: role.estado !== 'ACTIVO' }, this.auth.usuarioRed())
       .subscribe(() => this.cargar());
+  }
+
+  // ==================== Modal de Usuarios por Rol ====================
+
+  readonly showUsuariosModal = signal(false);
+  readonly rolSeleccionado = signal<Role | null>(null);
+  readonly usuariosRol = signal<UserApplication[]>([]);
+  readonly usuarioBuscado = signal<User | null>(null);
+  readonly buscandoUsuario = signal(false);
+  readonly searchUsuarioError = signal('');
+
+  /** Búsqueda interna de usuarios asignados (tiempo real). */
+  readonly filtroInterno = signal('');
+
+  /** Usuarios filtrados por la búsqueda interna. */
+  readonly usuariosFiltrados = computed(() => {
+    const term = this.filtroInterno().toLowerCase().trim();
+    if (!term) return this.usuariosRol();
+    return this.usuariosRol().filter(
+      (u) =>
+        u.nombre.toLowerCase().includes(term) ||
+        u.usuarioRed.toLowerCase().includes(term) ||
+        (u.correo ?? '').toLowerCase().includes(term)
+    );
+  });
+
+  /** Paginación de la lista de usuarios asignados. */
+  readonly currentPageUsuarios = signal(1);
+  readonly itemsPerPageUsuarios = 10;
+  readonly totalPagesUsuarios = computed(() =>
+    Math.ceil(this.usuariosFiltrados().length / this.itemsPerPageUsuarios) || 1
+  );
+  readonly paginatedUsuarios = computed(() => {
+    const start = (this.currentPageUsuarios() - 1) * this.itemsPerPageUsuarios;
+    return this.usuariosFiltrados().slice(start, start + this.itemsPerPageUsuarios);
+  });
+
+  /** Indicador de rango mostrado. */
+  readonly rangoMostrado = computed(() => {
+    const total = this.usuariosFiltrados().length;
+    if (total === 0) return '0 usuarios';
+    const start = (this.currentPageUsuarios() - 1) * this.itemsPerPageUsuarios + 1;
+    const end = Math.min(this.currentPageUsuarios() * this.itemsPerPageUsuarios, total);
+    return `Mostrando ${start}-${end} de ${total.toLocaleString('es-CO')} usuario(s) asignado(s)`;
+  });
+
+  /** Set de índices globales seleccionados (persiste entre páginas). */
+  readonly selectedIndices = signal<Set<number>>(new Set());
+
+  /** Formulario de búsqueda de usuario. */
+  searchUsuarioForm!: FormGroup;
+
+  /** FormArray de selección de usuarios para desvincular. */
+  seleccionForm!: FormGroup;
+
+  /** Inicializa los formularios del modal de usuarios. */
+  private initUsuariosForms(): void {
+    this.searchUsuarioForm = this.fb.group({
+      usuarioRed: ['', [Validators.required, Validators.minLength(2)]],
+    });
+    this.seleccionForm = this.fb.group({
+      selectAll: [false],
+      usuarios: this.fb.array([]),
+    });
+  }
+
+  get seleccionArray(): FormArray {
+    return this.seleccionForm.get('usuarios') as FormArray;
+  }
+
+  /** Abre el modal de usuarios asociados a un rol. */
+  abrirUsuariosRol(role: Role): void {
+    this.rolSeleccionado.set(role);
+    this.usuarioBuscado.set(null);
+    this.searchUsuarioError.set('');
+    this.filtroInterno.set('');
+    this.currentPageUsuarios.set(1);
+    this.selectedIndices.set(new Set());
+    this.initUsuariosForms();
+    this.showUsuariosModal.set(true);
+    this.cargarUsuariosRol(role.id);
+  }
+
+  /** Carga los usuarios asignados al rol. */
+  cargarUsuariosRol(rolId: number): void {
+    this.userService.listarPorRol(this.apliId(), rolId).subscribe({
+      next: (res) => {
+        const usuarios = res.data ?? [];
+        this.usuariosRol.set(usuarios);
+        this.currentPageUsuarios.set(1);
+        this.selectedIndices.set(new Set());
+        this.seleccionForm.get('selectAll')?.setValue(false);
+      },
+      error: () => {},
+    });
+  }
+
+  /** Filtra la lista de usuarios asignados en tiempo real. */
+  filtrarUsuariosAsignados(term: string): void {
+    this.filtroInterno.set(term);
+    this.currentPageUsuarios.set(1);
+  }
+
+  /** Navegación de paginación. */
+  onPageChangeUsuarios(page: number): void {
+    this.currentPageUsuarios.set(page);
+  }
+
+  /** Verifica si un usuario (por índice global) está seleccionado. */
+  isUsuarioSelected(globalIndex: number): boolean {
+    return this.selectedIndices().has(globalIndex);
+  }
+
+  /** Alterna la selección individual de un usuario por índice global. */
+  toggleSeleccionUsuario(globalIndex: number, checked: boolean): void {
+    const current = new Set(this.selectedIndices());
+    if (checked) {
+      current.add(globalIndex);
+    } else {
+      current.delete(globalIndex);
+    }
+    this.selectedIndices.set(current);
+    this.updateSelectAllState();
+  }
+
+  /** Alterna "Seleccionar todos" — marca/desmarca solo los de la página actual. */
+  toggleSelectAll(checked: boolean): void {
+    const current = new Set(this.selectedIndices());
+    const start = (this.currentPageUsuarios() - 1) * this.itemsPerPageUsuarios;
+    const end = Math.min(start + this.itemsPerPageUsuarios, this.usuariosFiltrados().length);
+    for (let i = start; i < end; i++) {
+      if (checked) {
+        current.add(i);
+      } else {
+        current.delete(i);
+      }
+    }
+    this.selectedIndices.set(current);
+  }
+
+  /** Actualiza el estado del checkbox "Seleccionar todos" según la página actual. */
+  private updateSelectAllState(): void {
+    const start = (this.currentPageUsuarios() - 1) * this.itemsPerPageUsuarios;
+    const end = Math.min(start + this.itemsPerPageUsuarios, this.usuariosFiltrados().length);
+    let allSelected = true;
+    for (let i = start; i < end; i++) {
+      if (!this.selectedIndices().has(i)) {
+        allSelected = false;
+        break;
+      }
+    }
+    this.seleccionForm.get('selectAll')?.setValue(allSelected, { emitEvent: false });
+  }
+
+  /** Retorna true si hay al menos un usuario seleccionado. */
+  get haySeleccionados(): boolean {
+    return this.selectedIndices().size > 0;
+  }
+
+  /** Número de usuarios seleccionados. */
+  get cantidadSeleccionados(): number {
+    return this.selectedIndices().size;
+  }
+
+  /** Desvincula los usuarios seleccionados del rol. */
+  quitarSeleccionados(): void {
+    const role = this.rolSeleccionado();
+    if (!role) return;
+    const usuarios = this.usuariosFiltrados();
+    const indices = Array.from(this.selectedIndices()).sort((a, b) => a - b);
+    const usuariosAQuitar = indices
+      .map((i) => usuarios[i])
+      .filter((u): u is UserApplication => !!u);
+
+    let pendientes = usuariosAQuitar.length;
+    if (pendientes === 0) return;
+
+    usuariosAQuitar.forEach((u) => {
+      this.userService.desasignarRol(u.usuarioRed, this.apliId(), role.id).subscribe({
+        next: () => {
+          pendientes--;
+          if (pendientes === 0) {
+            this.cargarUsuariosRol(role.id);
+          }
+        },
+        error: () => { pendientes--; },
+      });
+    });
+  }
+
+  /** Busca un usuario por usuarioRed para asociarlo al rol. */
+  buscarUsuarioRol(): void {
+    const usuarioRed = this.searchUsuarioForm.get('usuarioRed')?.value?.trim();
+    if (!usuarioRed || this.searchUsuarioForm.get('usuarioRed')?.invalid) {
+      this.searchUsuarioError.set('Ingrese un usuario de red válido (mínimo 2 caracteres).');
+      return;
+    }
+    this.buscandoUsuario.set(true);
+    this.searchUsuarioError.set('');
+    this.userService.buscarPorUsuarioRed(usuarioRed).subscribe({
+      next: (res) => {
+        this.buscandoUsuario.set(false);
+        const user = res.data;
+        if (user) {
+          const yaAsignado = this.usuariosRol().some((u) => u.usuarioRed === user.usuarioRed);
+          if (yaAsignado) {
+            this.searchUsuarioError.set(`El usuario "${user.usuarioRed}" ya está asignado a este rol.`);
+            this.usuarioBuscado.set(null);
+          } else {
+            this.usuarioBuscado.set(user);
+          }
+        } else {
+          this.usuarioBuscado.set(null);
+          this.searchUsuarioError.set(`No se encontró ningún usuario con usuarioRed "${usuarioRed}".`);
+        }
+      },
+      error: () => {
+        this.buscandoUsuario.set(false);
+        this.searchUsuarioError.set('Error al buscar el usuario.');
+      },
+    });
+  }
+
+  /** Asocia el usuario buscado al rol actual. */
+  asociarUsuarioRol(): void {
+    const user = this.usuarioBuscado();
+    const role = this.rolSeleccionado();
+    if (!user || !role) return;
+    this.userService.asignarRol({
+      usuarioRed: user.usuarioRed,
+      apliId: this.apliId(),
+      rolId: role.id,
+      fechaIn: new Date().toISOString().substring(0, 10),
+    }).subscribe({
+      next: () => {
+        this.usuarioBuscado.set(null);
+        this.searchUsuarioForm.reset({ usuarioRed: '' });
+        this.cargarUsuariosRol(role.id);
+      },
+      error: () => {},
+    });
+  }
+
+  cerrarUsuariosModal(): void {
+    this.showUsuariosModal.set(false);
+    this.rolSeleccionado.set(null);
+    this.usuariosRol.set([]);
+    this.usuarioBuscado.set(null);
+    this.searchUsuarioError.set('');
+    this.filtroInterno.set('');
+    this.selectedIndices.set(new Set());
   }
 }

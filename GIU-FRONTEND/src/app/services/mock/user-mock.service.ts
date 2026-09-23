@@ -131,7 +131,48 @@ export class UserMockService extends BaseMockService {
    * Asigna un rol a un usuario con fechas de vigencia opcionales.
    */
   asignarRol(asignacion: UserRoleAssignment): Observable<ApiResponse<UserRoleAssignment>> {
-    this.roleAssignments.push(asignacion);
+    // Evitar duplicados
+    const existe = this.roleAssignments.find(
+      (a) => a.usuarioRed === asignacion.usuarioRed && a.apliId === asignacion.apliId && a.rolId === asignacion.rolId
+    );
+    if (!existe) {
+      this.roleAssignments.push(asignacion);
+    }
     return this.success(asignacion);
+  }
+
+  /**
+   * Lista los usuarios asignados a un rol específico en una aplicación.
+   */
+  listarPorRol(apliId: number, rolId: number): Observable<ApiResponse<UserApplication[]>> {
+    const asignaciones = this.roleAssignments.filter((a) => a.apliId === apliId && a.rolId === rolId);
+    const usuariosRol: UserApplication[] = asignaciones
+      .map((a) => {
+        const user = this.users.find((u) => u.usuarioRed === a.usuarioRed);
+        if (!user) return null;
+        const role = this.roleAssignments.find((ra) => ra.usuarioRed === a.usuarioRed && ra.apliId === apliId && ra.rolId === rolId);
+        return {
+          ...user,
+          idRol: rolId,
+          fechaInRol: role?.fechaIn,
+          fechaFinRol: role?.fechaFin,
+        } as UserApplication;
+      })
+      .filter((u): u is UserApplication => u !== null);
+    return this.success(usuariosRol);
+  }
+
+  /**
+   * Desasigna un usuario de un rol específico.
+   */
+  desasignarRol(usuarioRed: string, apliId: number, rolId: number): Observable<ApiResponse<string[]>> {
+    const idx = this.roleAssignments.findIndex(
+      (a) => a.usuarioRed === usuarioRed && a.apliId === apliId && a.rolId === rolId
+    );
+    if (idx >= 0) {
+      this.roleAssignments.splice(idx, 1);
+      return this.success(['Usuario desasignado del rol correctamente.']);
+    }
+    return this.error('Asignación no encontrada.');
   }
 }

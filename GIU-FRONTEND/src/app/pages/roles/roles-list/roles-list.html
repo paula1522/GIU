@@ -123,3 +123,158 @@
   (confirm)="ejecutarToggle()"
   (cancel)="confirmVisible.set(false)"
 ></app-confirm-modal>
+
+<!-- Modal de usuarios por rol -->
+@if (showUsuariosModal()) {
+  <div class="overlay" (click)="cerrarUsuariosModal()">
+    <div class="modal modal-usuarios" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Usuarios asignados al rol: {{ rolSeleccionado()?.nombre }}</h2>
+        <app-button
+          [icon]="'bi bi-x-lg'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarUsuariosModal()"
+        ></app-button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Sección A: Búsqueda y asignación -->
+        <div class="usuarios-section">
+          <div class="section-title-usuarios">
+            <i class="bi bi-person-plus"></i> Asignar nuevo usuario
+          </div>
+          <form [formGroup]="searchUsuarioForm" (ngSubmit)="buscarUsuarioRol()">
+            <div class="search-usuario-row">
+              <app-input
+                [textLabel]="'Usuario de Red'"
+                [form]="searchUsuarioForm"
+                [controlName]="'usuarioRed'"
+                [placeholder]="'ej: maria.gomez'"
+                [type]="'text'"
+                [showRequiredMark]="false"
+              ></app-input>
+              <app-button
+                [text]="buscandoUsuario() ? 'Buscando…' : 'Buscar'"
+                [icon]="buscandoUsuario() ? 'bi bi-arrow-clockwise' : 'bi bi-search'"
+                [class]="['btn', 'btn-primary']"
+                [type]="'submit'"
+                [disabled]="buscandoUsuario()"
+                (clickEventButton)="buscarUsuarioRol()"
+              ></app-button>
+            </div>
+          </form>
+
+          @if (searchUsuarioError()) {
+            <div class="search-usuario-error">{{ searchUsuarioError() }}</div>
+          }
+
+          @if (usuarioBuscado(); as user) {
+            <div class="usuario-encontrado">
+              <div class="usuario-info">
+                <i class="bi bi-person-check-fill"></i>
+                <div>
+                  <strong>{{ user.nombre }}</strong>
+                  <span class="usuario-red">{{ user.usuarioRed }}</span>
+                </div>
+              </div>
+              <app-button
+                [text]="'Asociar al rol'"
+                [icon]="'bi bi-link-45deg'"
+                [class]="['btn', 'btn-primary']"
+                [type]="'button'"
+                (clickEventButton)="asociarUsuarioRol()"
+              ></app-button>
+            </div>
+          }
+        </div>
+
+        <!-- Sección B: Listado y desvinculación -->
+        <div class="usuarios-section">
+          <div class="section-title-usuarios">
+            <i class="bi bi-people"></i> Usuarios asignados ({{ usuariosRol().length }})
+          </div>
+
+          @if (usuariosRol().length === 0) {
+            <div class="empty-usuarios">No hay usuarios asignados a este rol.</div>
+          } @else {
+            <!-- Buscador interno en tiempo real -->
+            <div class="filtro-interno-row">
+              <div class="filtro-input-wrapper">
+                <i class="bi bi-search filtro-icon"></i>
+                <input
+                  type="text"
+                  class="filtro-input"
+                  placeholder="Buscar por nombre, usuario o correo…"
+                  [ngModel]="filtroInterno()"
+                  (ngModelChange)="filtrarUsuariosAsignados($event)"
+                />
+              </div>
+            </div>
+
+            <form [formGroup]="seleccionForm">
+              <div class="usuarios-list-header">
+                <app-checkbox
+                  [id]="'select-all'"
+                  [textLabel]="'Seleccionar página actual'"
+                  [checked]="seleccionForm.get('selectAll')?.value"
+                  (checkedChange)="toggleSelectAll($event)"
+                ></app-checkbox>
+                <div class="header-right">
+                  @if (haySeleccionados) {
+                    <span class="seleccion-count">{{ cantidadSeleccionados }} seleccionado(s)</span>
+                  }
+                  <app-button
+                    [text]="'Quitar seleccionados'"
+                    [icon]="'bi bi-trash'"
+                    [class]="['btn', 'btn-primary']"
+                    [type]="'button'"
+                    [disabled]="!haySeleccionados"
+                    (clickEventButton)="quitarSeleccionados()"
+                  ></app-button>
+                </div>
+              </div>
+
+              <!-- Indicador de rango -->
+              <div class="rango-mostrado">{{ rangoMostrado() }}</div>
+
+              <!-- Lista con scroll -->
+              <div class="usuarios-list-scroll">
+                @if (paginatedUsuarios().length === 0) {
+                  <div class="empty-usuarios">No se encontraron usuarios con ese filtro.</div>
+                } @else {
+                  @for (u of paginatedUsuarios(); track u.id; let i = $index) {
+                    @let globalIndex = (currentPageUsuarios() - 1) * itemsPerPageUsuarios + i;
+                    <div class="usuario-row" [class.selected]="isUsuarioSelected(globalIndex)">
+                      <app-checkbox
+                        [id]="'chk-' + u.id"
+                        [checked]="isUsuarioSelected(globalIndex)"
+                        (checkedChange)="toggleSeleccionUsuario(globalIndex, $event)"
+                      ></app-checkbox>
+                      <div class="usuario-row-info">
+                        <span class="usuario-row-nombre">{{ u.nombre }}</span>
+                        <span class="usuario-row-red">{{ u.usuarioRed }}</span>
+                        <span class="usuario-row-correo">{{ u.correo || '—' }}</span>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            </form>
+
+            <!-- Controles de paginación -->
+            @if (totalPagesUsuarios() > 1) {
+              <div class="paginacion-usuarios">
+                <button class="page-btn" (click)="onPageChangeUsuarios(1)" [disabled]="currentPageUsuarios() === 1">«</button>
+                <button class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() - 1)" [disabled]="currentPageUsuarios() === 1">‹</button>
+                <span class="page-info">Página {{ currentPageUsuarios() }} de {{ totalPagesUsuarios() }}</span>
+                <button class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() + 1)" [disabled]="currentPageUsuarios() === totalPagesUsuarios()">›</button>
+                <button class="page-btn" (click)="onPageChangeUsuarios(totalPagesUsuarios())" [disabled]="currentPageUsuarios() === totalPagesUsuarios()">»</button>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
