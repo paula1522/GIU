@@ -248,6 +248,7 @@ public class GestionUsuariosRepository {
 
         // Crear usuario -> PRC_CREAR_USUARIO
         public UsuarioResponseDTO crearUsuario(
+                        Connection conn,
                         CrearUsuarioRequestDTO request,
                         String usuarioCreacion) {
 
@@ -257,73 +258,70 @@ public class GestionUsuariosRepository {
 
                 String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_USUARIOS_CREAR);
 
-                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU)) {
+                try (CallableStatement stmt = conn.prepareCall(sql)) {
 
-                        try (CallableStatement stmt = conn.prepareCall(sql)) {
+                        stmt.setString(1, request.getUsuarioRed());
+                        stmt.setString(2, request.getNombre());
+                        stmt.setString(3, request.getCorreo());
+                        stmt.setString(4, request.getNumeroIdentificacion());
 
-                                stmt.setString(1, request.getUsuarioRed());
-                                stmt.setString(2, request.getNombre());
-                                stmt.setString(3, request.getCorreo());
-                                stmt.setString(4, request.getNumeroIdentificacion());
+                        Integer superAdmin = BooleanUtils.booleanToSuperAdmin(
+                                        request.getSuperAdministrador());
 
-                                Integer superAdmin = BooleanUtils.booleanToSuperAdmin(
-                                                request.getSuperAdministrador());
+                        stmt.setInt(5,
+                                        superAdmin != null ? superAdmin : 0);
 
-                                stmt.setInt(5,
-                                                superAdmin != null ? superAdmin : 0);
+                        stmt.setString(6, usuarioCreacion);
 
-                                stmt.setString(6, usuarioCreacion);
+                        stmt.registerOutParameter(7, OracleTypes.CURSOR);
+                        stmt.registerOutParameter(8, OracleTypes.NUMBER);
+                        stmt.registerOutParameter(9, OracleTypes.VARCHAR);
 
-                                stmt.registerOutParameter(7, OracleTypes.CURSOR);
-                                stmt.registerOutParameter(8, OracleTypes.NUMBER);
-                                stmt.registerOutParameter(9, OracleTypes.VARCHAR);
+                        stmt.execute();
 
-                                stmt.execute();
+                        int codigoSalida = stmt.getInt(8);
+                        String mensajeSalida = stmt.getString(9);
 
-                                int codigoSalida = stmt.getInt(8);
-                                String mensajeSalida = stmt.getString(9);
+                        logger.debug("crearUsuario - PLrespondió. codigo={}, mensaje={}",
+                                        codigoSalida,
+                                        mensajeSalida);
 
-                                logger.debug("crearUsuario - PLrespondió. codigo={}, mensaje={}",
-                                                codigoSalida,
-                                                mensajeSalida);
+                        utilsBD.validarResultado(
+                                        codigoSalida,
+                                        mensajeSalida);
 
-                                utilsBD.validarResultado(
-                                                codigoSalida,
-                                                mensajeSalida);
+                        try (ResultSet rs = (ResultSet) stmt.getObject(7)) {
 
-                                try (ResultSet rs = (ResultSet) stmt.getObject(7)) {
+                                if (rs.next()) {
 
-                                        if (rs.next()) {
+                                        UsuarioResponseDTO usuario = new UsuarioResponseDTO();
 
-                                                UsuarioResponseDTO usuario = new UsuarioResponseDTO();
+                                        usuario.setId(rs.getLong("ID"));
+                                        usuario.setUsuarioRed(rs.getString("USUARIO_RED"));
+                                        usuario.setNombre(rs.getString("NOMBRE"));
+                                        usuario.setCorreo(rs.getString("CORREO"));
+                                        usuario.setEstado(rs.getString("ESTADO"));
+                                        usuario.setNumeroIdentificacion(rs.getString("NUMERO_IDENTIFICACION"));
+                                        usuario.setSuperAdministrador(rs.getInt("SUPER_ADMINISTRADOR"));
+                                        usuario.setFechaCreacion(FechaUtils.convertirFecha(
+                                                        rs.getTimestamp("FECHA_CREACION")));
+                                        usuario.setUsuarioCreacion(rs.getString("USUARIO_CREACION"));
+                                        usuario.setFechaModificacion(FechaUtils.convertirFecha(
+                                                        rs.getTimestamp("FECHA_MODIFICACION")));
+                                        usuario.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
 
-                                                usuario.setId(rs.getLong("ID"));
-                                                usuario.setUsuarioRed(rs.getString("USUARIO_RED"));
-                                                usuario.setNombre(rs.getString("NOMBRE"));
-                                                usuario.setCorreo(rs.getString("CORREO"));
-                                                usuario.setEstado(rs.getString("ESTADO"));
-                                                usuario.setNumeroIdentificacion(rs.getString("NUMERO_IDENTIFICACION"));
-                                                usuario.setSuperAdministrador(rs.getInt("SUPER_ADMINISTRADOR"));
-                                                usuario.setFechaCreacion(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_CREACION")));
-                                                usuario.setUsuarioCreacion(rs.getString("USUARIO_CREACION"));
-                                                usuario.setFechaModificacion(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_MODIFICACION")));
-                                                usuario.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
+                                        logger.debug("crearUsuario - registro mapeado. id={}, usuarioRed={}",
+                                                        usuario.getId(),
+                                                        request.getUsuarioRed());
 
-                                                logger.debug("crearUsuario - registro mapeado. id={}, usuarioRed={}",
-                                                                usuario.getId(),
-                                                                request.getUsuarioRed());
-
-                                                return usuario;
-                                        }
+                                        return usuario;
                                 }
-
-                                logger.warn("crearUsuario - el cursor vino vacío. usuarioRed={}",
-                                                request.getUsuarioRed());
-
-                                return null;
                         }
+
+                        logger.warn("crearUsuario - el cursor vino vacío. usuarioRed={}",
+                                        request.getUsuarioRed());
+
+                        return null;
 
                 } catch (Exception e) {
 
@@ -521,4 +519,5 @@ public class GestionUsuariosRepository {
                         throw new RuntimeException(e);
                 }
         }
+
 }

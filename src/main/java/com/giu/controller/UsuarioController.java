@@ -68,35 +68,6 @@ public class UsuarioController {
                 return ResponseEntity.ok(RespuestaGenerica);
         }
 
-        /**
-         * Crear usuario
-         *
-         * Método: POST
-         * Ruta: /api/usuarios
-         *
-         * Ejemplo de cuerpo de la solicitud:
-         * {
-         * "usuarioRed": "uuu111",
-         * "nombre": "DANIEL MUÑOZ",
-         * "correo": "user@gmail.com",
-         * "numeroIdentificacion": "123456789",
-         * "usuarioModificacion": "uuu00"
-         * }
-         */
-        @PostMapping
-        public ResponseEntity<RespuestaGenerica<UsuarioResponseDTO>> crearUsuario(
-                        @RequestHeader("usuarioCreacion") String usuarioCreacion,
-                        @Valid @RequestBody CrearUsuarioRequestDTO request) {
-
-                logger.info("POST /usuarios - usuarioRed={}", request.getUsuarioRed());
-
-                UsuarioResponseDTO usuario = usuarioService.crearUsuario(request, usuarioCreacion);
-
-                RespuestaGenerica<UsuarioResponseDTO> respuesta = new RespuestaGenerica<>(TipoRespuesta.EXITOSO,
-                                usuario);
-
-                return ResponseEntity.ok(respuesta);
-        }
 
         /**
          * Modificar usuario

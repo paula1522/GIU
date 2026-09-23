@@ -17,10 +17,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
+import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
 import com.giu.service.GestionRecursosService;
 import com.giu.service.GestionRolesService;
 import com.giu.service.GestionUsuariosService;
@@ -79,6 +82,44 @@ public class UsuarioAplicacionController {
                 RespuestaGenerica<List<UsuarioAplicacionResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
                                 usuarios);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Crear usuario y asignarle un rol
+         *
+         * Método: POST
+         * Ruta: /api/aplicaciones/2/usuarios
+         *
+         * Ejemplo de cuerpo de la solicitud:
+         * {
+         * "usuarioRed": "uuu111",
+         * "nombre": "DANIEL MUÑOZ",
+         * "correo": "user@gmail.com",
+         * "numeroIdentificacion": "123456789",
+         * "usuarioModificacion": "uuu00"
+         * }
+         */
+        @PostMapping("/usuarios")
+        public ResponseEntity<RespuestaGenerica<UsuarioResponseDTO>> crearUsuario(
+                        @PathVariable Long apliId,
+                        @RequestHeader("usuarioModificacion") String usuario,
+                        @Valid @RequestBody CrearUsuarioRequestDTO request) {
+
+                logger.info("POST /aplicaciones/{}/usuarios - usuarioRed={}, apliId={}",
+                                apliId,
+                                request.getUsuarioRed(),
+                                apliId);
+
+                UsuarioResponseDTO usuarioCreado = usuarioService.crearUsuario(
+                                apliId,
+                                request,
+                                usuario);
+
+                RespuestaGenerica<UsuarioResponseDTO> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                usuarioCreado);
 
                 return ResponseEntity.ok(respuesta);
         }
@@ -172,7 +213,8 @@ public class UsuarioAplicacionController {
         }
 
         /**
-         * Consultar roles de una aplicación -> GESTIONAR ROLES DE UNA APLICACIÓN y GESTIONAR USUARIOS
+         * Consultar roles de una aplicación -> GESTIONAR ROLES DE UNA APLICACIÓN y
+         * GESTIONAR USUARIOS
          *
          * Método: GET
          * Ruta: /api/aplicaciones/{apliId}/roles

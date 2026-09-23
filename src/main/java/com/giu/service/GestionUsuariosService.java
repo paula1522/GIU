@@ -1,5 +1,6 @@
 package com.giu.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,17 +97,60 @@ public class GestionUsuariosService {
         }
 
         // Método para crear un nuevo usuario en el sistema
-        public UsuarioResponseDTO crearUsuario(CrearUsuarioRequestDTO request, String usuarioCreacion) {
-                logger.info("crearUsuario - inicio. usuarioRed={}", request.getUsuarioRed());
+        public UsuarioResponseDTO crearUsuario(
+                        Long apliId,
+                        CrearUsuarioRequestDTO request,
+                        String usuarioCreacion) {
 
-                UsuarioResponseDTO result = gestionUsuariosRepository.crearUsuario(
-                                request,
-                                usuarioCreacion);
+                logger.info("crearUsuario - inicio. usuarioRed={}, apliId={}, rolId={}",
+                                request.getUsuarioRed(),
+                                apliId,
+                                request.getRol() != null ? request.getRol().getRolId() : null);
+
+                UsuarioResponseDTO result = TransaccionUtils.ejecutar(conn -> {
+
+                        // Crear usuario -> PRC_CREAR_USUARIO
+                        UsuarioResponseDTO usuarioCreado = gestionUsuariosRepository.crearUsuario(
+                                        conn,
+                                        request,
+                                        usuarioCreacion);
+
+                        logger.info("crearUsuario - usuario creado. usuarioRed={}, id={}",
+                                        request.getUsuarioRed(),
+                                        usuarioCreado != null ? usuarioCreado.getId() : null);
+
+                        // Gestionar rol de usuario -> PRC_GESTIONAR_ROL_USUARIO
+                        GestionarRolUsuarioRequestDTO requestRol = request.getRol();
+
+                        requestRol.setUsuarioRed(request.getUsuarioRed());
+                        requestRol.setFechaIn(LocalDateTime.now());
+                        requestRol.setFechaFin(null);
+
+                        UsuarioRolResponseDTO rolAsignado = gestionUsuariosRepository.gestionarRolUsuario(
+                                        conn,
+                                        apliId,
+                                        requestRol,
+                                        usuarioCreacion,
+                                        Constantes.OPERACION_ASIGNAR);
+
+                        logger.info("crearUsuario - rol asignado. usuarioRed={}, apliId={}, rolId={}",
+                                        request.getUsuarioRed(),
+                                        apliId,
+                                        requestRol.getRolId());
+
+                        usuarioCreado.setRol(rolAsignado);
+
+                        return usuarioCreado;
+                });
 
                 logger.info("crearUsuario - fin OK. usuarioRed={}, id={}",
-                                request.getUsuarioRed(), result != null ? result.getId() : null);
+                                request.getUsuarioRed(),
+                                result != null ? result.getId() : null);
+
                 return result;
         }
+
+        
 
         // Método para modificar la información de un usuario existente en el sistema
         public UsuarioResponseDTO modificarUsuario(ModificarUsuarioRequestDTO request, String usuarioModificacion) {

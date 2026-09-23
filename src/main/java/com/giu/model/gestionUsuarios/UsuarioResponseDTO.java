@@ -16,4 +16,6 @@ public class UsuarioResponseDTO {
     private String usuarioCreacion;
     private LocalDateTime fechaModificacion;
     private String usuarioModificacion;
+
+    private UsuarioRolResponseDTO rol;
 }
