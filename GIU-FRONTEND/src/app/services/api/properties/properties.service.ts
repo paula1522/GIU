@@ -4,7 +4,7 @@ import { catchError, EMPTY, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { EncryptedHttpClient } from '../../../shared/encrypted-http-client';
 import { PropertiesResponse } from '../../../models/domain/properties/properties.interface';
-import { NotificationMessageService } from '../../../shared/molecule/notification-message/notification-message.service';
+import { NotificationMessageService } from '../../../shared/atomic-desing/molecule/notification-message/notification-message.service';
 import { Constantes } from '../../../utils/constants/Constantes';
 
 @Injectable({

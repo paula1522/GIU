@@ -22,12 +22,32 @@
       <div><strong>Descripción:</strong> {{ app()?.descripcion || '—' }}</div>
       <div><strong>Administración:</strong> {{ app()?.administracion }}</div>
     </div>
-    <h2 class="section-title">Módulos</h2>
-    <div class="modules">
-      <a [routerLink]="['/aplicaciones', apliId(), 'usuarios']" class="module"><i class="bi bi-people"></i> Usuarios</a>
-      <a [routerLink]="['/aplicaciones', apliId(), 'roles']" class="module"><i class="bi bi-person-badge"></i> Roles</a>
-      <a [routerLink]="['/aplicaciones', apliId(), 'permisos']" class="module"><i class="bi bi-key"></i> Permisos</a>
-      <a [routerLink]="['/aplicaciones', apliId(), 'administradores']" class="module"><i class="bi bi-shield-check"></i> Administradores</a>
+    <h2 class="actions-heading">MÓDULOS</h2>
+    <div class="actions-grid">
+      <a [routerLink]="['/aplicaciones', apliId(), 'usuarios']" class="action-card">
+        <div class="action-icon">
+          <i class="bi bi-people"></i>
+        </div>
+        <span class="action-label">Gestionar<br>usuarios</span>
+      </a>
+      <a [routerLink]="['/aplicaciones', apliId(), 'roles']" class="action-card">
+        <div class="action-icon">
+          <i class="bi bi-person-badge"></i>
+        </div>
+        <span class="action-label">Gestionar<br>roles</span>
+      </a>
+      <a [routerLink]="['/aplicaciones', apliId(), 'permisos']" class="action-card">
+        <div class="action-icon">
+          <i class="bi bi-key"></i>
+        </div>
+        <span class="action-label">Gestionar<br>permisos</span>
+      </a>
+      <a [routerLink]="['/aplicaciones', apliId(), 'administradores']" class="action-card">
+        <div class="action-icon">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <span class="action-label">Gestionar<br>administradores</span>
+      </a>
     </div>
   }
 </div>

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../../atomic-desing/atoms/button/button.component';
+import { ButtonComponent } from '../../atoms/button/button.component';
 
 /** Configuración de un botón para el header. */
 export interface HeaderButton {

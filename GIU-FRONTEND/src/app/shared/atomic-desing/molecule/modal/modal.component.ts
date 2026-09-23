@@ -1,6 +1,6 @@
 import { CommonModule, NgIf } from '@angular/common';
 import { Component, ElementRef, Input, ViewChild, Output, EventEmitter } from '@angular/core';
-import { ButtonComponent } from '../../atomic-desing/atoms/button/button.component';
+import { ButtonComponent } from '../../atoms/button/button.component';
 
 /**
  * @autor Janel Góngora

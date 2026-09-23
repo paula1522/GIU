@@ -60,6 +60,37 @@
             [showRequiredMark]="false"
           ></app-input>
 
+          <!-- Sección de permisos obligatorios -->
+          <div class="permisos-section" formArrayName="permisos">
+            <div class="permisos-header">
+              <span class="permisos-title">
+                <i class="bi bi-key"></i>
+                Permisos de la aplicación
+              </span>
+              <span class="permisos-hint">Seleccione al menos un permiso</span>
+            </div>
+
+            <div class="permisos-grid">
+              @for (recurso of recursos(); track recurso.id; let i = $index) {
+                <div class="permiso-item">
+                  <app-checkbox
+                    [id]="'permiso-' + recurso.id"
+                    [textLabel]="recurso.nombre + ' (' + recurso.tipo + ')'"
+                    [checked]="permisosArray.at(i).value"
+                    (checkedChange)="togglePermiso(i, $event)"
+                  ></app-checkbox>
+                </div>
+              }
+            </div>
+
+            @if (permisosInvalid) {
+              <div class="permisos-error">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                Debe seleccionar al menos un permiso para este rol.
+              </div>
+            }
+          </div>
+
           <div class="modal-actions">
             <app-button
               [text]="'Cancelar'"
@@ -72,7 +103,7 @@
               [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
               [class]="['btn', 'btn-primary']"
               [type]="'submit'"
-              [disabled]="saving()"
+              [disabled]="saving() || roleForm.invalid"
               (clickEventButton)="guardar()"
             ></app-button>
           </div>

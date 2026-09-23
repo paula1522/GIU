@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { DatePipe, NgFor, NgIf , CommonModule} from '@angular/common';
 import { EventEmitter, Input, Output } from '@angular/core';
 import { ModalComponent } from '../modal/modal.component';
-import { ButtonComponent } from '../../atomic-desing/atoms/button/button.component';
+import { ButtonComponent } from '../../atoms/button/button.component';
 
 /**
  * @autor   

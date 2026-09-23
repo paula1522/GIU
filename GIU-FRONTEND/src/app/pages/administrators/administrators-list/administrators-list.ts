@@ -5,8 +5,8 @@ import { ApplicationMockService } from '../../../services/mock/application-mock.
 import { ApplicationAdministrator } from '../../../models/domain/giu.models';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
-import { ConfirmModalComponent } from '../../../shared/molecule/confirm-modal/confirm-modal.component';
-import { HeaderPagesComponent } from '../../../shared/molecule/header-pages/header-pages.component';
+import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
+import { HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
 
 @Component({
   selector: 'app-administrators-list',

@@ -11,8 +11,8 @@ import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
 import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input-general/input.component';
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
-import { HeaderPagesComponent, HeaderButton } from '../../../shared/molecule/header-pages/header-pages.component';
-import { ConfirmModalComponent } from '../../../shared/molecule/confirm-modal/confirm-modal.component';
+import { HeaderPagesComponent, HeaderButton } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
+import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-applications-list',

@@ -3,7 +3,7 @@ import { HttpParams } from '@angular/common/http';
 import { EMPTY, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { EncryptedHttpClient } from '../../../shared/encrypted-http-client';
-import { NotificationMessageService } from '../../../shared/molecule/notification-message/notification-message.service';
+import { NotificationMessageService } from '../../../shared/atomic-desing/molecule/notification-message/notification-message.service';
 import { environment } from '../../../../environments/environment';
 import { Constantes } from '../../../utils/constants/Constantes';
 import { AuthResponse } from '../../../models/api/api-auth.model';

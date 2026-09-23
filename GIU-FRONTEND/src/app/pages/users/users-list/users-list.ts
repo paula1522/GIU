@@ -13,8 +13,8 @@ import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input
 import { SelectComponent } from '../../../shared/atomic-desing/atoms/select/select.component';
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';
-import { HeaderPagesComponent, HeaderButton } from '../../../shared/molecule/header-pages/header-pages.component';
-import { ConfirmModalComponent } from '../../../shared/molecule/confirm-modal/confirm-modal.component';
+import { HeaderPagesComponent, HeaderButton } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
+import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-users-list',

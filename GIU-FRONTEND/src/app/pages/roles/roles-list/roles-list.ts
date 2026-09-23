@@ -1,22 +1,24 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RoleMockService } from '../../../services/mock/role-mock.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { Role } from '../../../models/domain/giu.models';
+import { Role, Resource } from '../../../models/domain/giu.models';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
 import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input-general/input.component';
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
-import { ConfirmModalComponent } from '../../../shared/molecule/confirm-modal/confirm-modal.component';
-import { HeaderButton, HeaderPagesComponent } from '../../../shared/molecule/header-pages/header-pages.component';
+import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';
+import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
+import { HeaderButton, HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
+import { minSelectedValidator } from '../validators/min-selected.validator';
 
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent, ConfirmModalComponent, HeaderPagesComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent, CheckboxComponent, ConfirmModalComponent, HeaderPagesComponent],
   templateUrl: './roles-list.html',
   styleUrl: './roles-list.scss',
 })
@@ -31,6 +33,9 @@ export class RolesList implements OnInit {
   readonly searchTerm = signal('');
   readonly filteredRoles = signal<Role[]>([]);
   readonly apliId = signal(0);
+
+  /** Recursos/permisos disponibles para la aplicación. */
+  readonly recursos = signal<Resource[]>([]);
 
   // ---------- Configuración del átomo de Tabla ----------
   readonly tableColumnTitle = ['Nombre', 'Descripción', 'Estado', 'Acciones'];
@@ -114,10 +119,69 @@ export class RolesList implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('apliId'));
     this.apliId.set(id);
     this.cargar();
+    this.cargarRecursos();
     this.roleForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(50)]],
       descripcion: ['', [Validators.maxLength(200)]],
+      permisos: this.fb.array([], minSelectedValidator()),
     });
+  }
+
+  /** Acceso al FormArray de permisos desde el template. */
+  get permisosArray(): FormArray {
+    return this.roleForm.get('permisos') as FormArray;
+  }
+
+  /** Carga los recursos de la aplicación y construye los checkboxes. */
+  cargarRecursos(): void {
+    this.roleService.listarRecursos(this.apliId()).subscribe({
+      next: (res) => {
+        this.recursos.set(res.data ?? []);
+        this.buildPermisosCheckboxes();
+      },
+      error: () => {},
+    });
+  }
+
+  /** Construye los controles checkbox del FormArray según los recursos. */
+  private buildPermisosCheckboxes(selectedIds: number[] = []): void {
+    const array = this.permisosArray;
+    array.clear();
+    this.recursos().forEach(() => {
+      array.push(this.fb.control(false));
+    });
+    // Marcar los que ya están asignados
+    if (selectedIds.length > 0) {
+      this.recursos().forEach((r, i) => {
+        if (selectedIds.includes(r.id)) {
+          array.at(i).setValue(true);
+        }
+      });
+    }
+    array.updateValueAndValidity();
+  }
+
+  /** Alterna un permiso y actualiza la validez del FormArray. */
+  togglePermiso(index: number, checked: boolean): void {
+    this.permisosArray.at(index).setValue(checked);
+    this.permisosArray.at(index).markAsTouched();
+    this.permisosArray.updateValueAndValidity();
+  }
+
+  /** Retorna los IDs de los recursos seleccionados. */
+  private getSelectedPermisosIds(): number[] {
+    const ids: number[] = [];
+    this.permisosArray.value.forEach((v: boolean, i: number) => {
+      if (v && this.recursos()[i]) {
+        ids.push(this.recursos()[i].id);
+      }
+    });
+    return ids;
+  }
+
+  /** True si el FormArray de permisos tiene error de minSelected. */
+  get permisosInvalid(): boolean {
+    return this.permisosArray.hasError('minSelected') && this.permisosArray.touched;
   }
 
   cargar(): void {
@@ -136,12 +200,21 @@ export class RolesList implements OnInit {
   abrirCrear(): void {
     this.editingRole.set(null);
     this.roleForm?.reset({ nombre: '', descripcion: '' });
+    this.buildPermisosCheckboxes([]);
     this.showForm.set(true);
   }
 
   abrirEditar(role: Role): void {
     this.editingRole.set(role);
     this.roleForm?.patchValue({ nombre: role.nombre, descripcion: role.descripcion ?? '' });
+    // Cargar los permisos ya asignados al rol
+    this.roleService.obtenerRecursosPorRol(this.apliId(), role.id).subscribe({
+      next: (res) => {
+        const assignedIds = (res.data ?? []).map((rr) => rr.recuId);
+        this.buildPermisosCheckboxes(assignedIds);
+      },
+      error: () => this.buildPermisosCheckboxes([]),
+    });
     this.showForm.set(true);
   }
 
@@ -152,13 +225,64 @@ export class RolesList implements OnInit {
     this.saving.set(true);
     const formValue = this.roleForm.getRawValue();
     const role = this.editingRole();
+    const selectedIds = this.getSelectedPermisosIds();
+
+    // Regla de inactivación automática: si no hay permisos, el rol queda inactivo
+    const shouldDeactivate = selectedIds.length === 0;
+
     if (role) {
-      this.roleService.actualizarRol({ id: role.id, apliId: this.apliId(), nombre: formValue.nombre, descripcion: formValue.descripcion }, this.auth.usuarioRed())
-        .subscribe({ next: () => { this.saving.set(false); this.showForm.set(false); this.cargar(); }, error: () => this.saving.set(false) });
+      this.roleService.actualizarRol({
+        id: role.id,
+        apliId: this.apliId(),
+        nombre: formValue.nombre,
+        descripcion: formValue.descripcion,
+        estado: shouldDeactivate ? false : undefined,
+      }, this.auth.usuarioRed())
+        .subscribe({
+          next: () => this.syncPermisos(role.id, selectedIds),
+          error: () => this.saving.set(false),
+        });
     } else {
       this.roleService.crearRol({ apliId: this.apliId(), nombre: formValue.nombre, descripcion: formValue.descripcion }, this.auth.usuarioRed())
-        .subscribe({ next: () => { this.saving.set(false); this.showForm.set(false); this.cargar(); }, error: () => this.saving.set(false) });
+        .subscribe({
+          next: (res) => {
+            const newRoleId = res.data.id;
+            this.syncPermisos(newRoleId, selectedIds);
+          },
+          error: () => this.saving.set(false),
+        });
     }
+  }
+
+  /** Sincroniza los permisos asignados al rol y finaliza el guardado. */
+  private syncPermisos(rolId: number, selectedIds: number[]): void {
+    // Primero retirar los que ya no están seleccionados
+    const retirarPromises: any[] = [];
+    this.roleService.obtenerRecursosPorRol(this.apliId(), rolId).subscribe({
+      next: (res) => {
+        const currentAssigned = res.data ?? [];
+        currentAssigned.forEach((rr) => {
+          if (!selectedIds.includes(rr.recuId)) {
+            this.roleService.retirarRecursoRol(this.apliId(), rr.recuId, rolId).subscribe();
+          }
+        });
+        // Luego asignar los nuevos que no estaban
+        const currentIds = currentAssigned.map((rr) => rr.recuId);
+        selectedIds.forEach((recuId) => {
+          if (!currentIds.includes(recuId)) {
+            this.roleService.asignarRecursoRol(this.apliId(), recuId, rolId).subscribe();
+          }
+        });
+        this.saving.set(false);
+        this.showForm.set(false);
+        this.cargar();
+      },
+      error: () => {
+        this.saving.set(false);
+        this.showForm.set(false);
+        this.cargar();
+      },
+    });
   }
 
   toggleEstado(role: Role): void {

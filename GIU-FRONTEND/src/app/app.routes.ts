@@ -15,18 +15,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),
   },
   {
-    path: APP_ROUTES.HOME,
-    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
-  },
-  {
-    path: APP_ROUTES.APP_ACTIONS,
-    loadComponent: () => import('./pages/app-actions/app-actions').then((m) => m.AppActions),
-  },
-  {
-    path: APP_ROUTES.MANAGE_USERS,
-    loadComponent: () => import('./pages/manage-users/manage-users').then((m) => m.ManageUsers),
-  },
-  {
     path: APP_ROUTES.DASHBOARD,
     canActivate: [authGuard],
     loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard),

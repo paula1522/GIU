@@ -3,10 +3,8 @@ export const APP_ROUTES = {
     INIT: '',
     LOGIN: 'login',
     ERROR: 'error',
-    HOME: 'home',
     MIGRACION: 'migracion',
-    APP_ACTIONS: 'AppActions',
-    MANAGE_USERS: 'mangeUsers',
+ 
     // Nuevas rutas
     DASHBOARD: 'dashboard',
     APPLICATIONS: 'aplicaciones',

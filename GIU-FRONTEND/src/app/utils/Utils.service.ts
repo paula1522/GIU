@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { AbstractControl, FormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Constantes } from './constants/Constantes';
-import { NotificationMessageService } from '../shared/molecule/notification-message/notification-message.service';
+import { NotificationMessageService } from '../shared/atomic-desing/molecule/notification-message/notification-message.service';
 
 @Injectable({
   providedIn: 'root',

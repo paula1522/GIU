@@ -1,4 +1,4 @@
-@if (type === 'button'){
+@if (type === 'button' || type === 'submit'){
 <button (click)="emitClick()" [attr.aria-label]="text" [attr.title]="title" [ngClass]="class " class="m-0 w-100"
   [style]="styles" [attr.type]="type" [disabled]="disabled" [style.color]="textColor">
 

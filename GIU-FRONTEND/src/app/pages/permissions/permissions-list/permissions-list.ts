@@ -6,7 +6,7 @@ import { RoleMockService } from '../../../services/mock/role-mock.service';
 import { Resource } from '../../../models/domain/giu.models';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
-import { HeaderButton, HeaderPagesComponent } from '../../../shared/molecule/header-pages/header-pages.component';
+import { HeaderButton, HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
 
 @Component({
   selector: 'app-permissions-list',
