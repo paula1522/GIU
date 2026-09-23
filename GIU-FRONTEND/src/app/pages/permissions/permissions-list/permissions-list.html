@@ -1,6 +1,8 @@
 <app-header-pages
   [title]="'Permisos / Recursos'"
   [subtitle]="'Listado de todos los permisos que pueden ser asignados a un rol para la aplicación seleccionada'"
+  [buttons]="headerButtons()"
+  (buttonClick)="onHeaderButtonClick($event)"
 ></app-header-pages>
 
 
@@ -18,6 +20,94 @@
       [showPaginator]="true"
       [totalItemsPerPag]="10"
       [idTable]="'permissions-list'"
+      (clickEventButton)="onTableAction($event)"
     ></app-table>
   }
 </div>
+
+<!-- Modal crear/editar -->
+@if (showForm()) {
+  <div class="overlay" (click)="cerrarForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingResource() ? 'Editar permiso' : 'Nuevo permiso' }}</h2>
+        <app-button
+          [icon]="'bi bi-x-lg'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarForm()"
+        ></app-button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="resourceForm" (ngSubmit)="guardar()">
+          <app-input
+            [textLabel]="'Código'"
+            [form]="resourceForm"
+            [controlName]="'codigo'"
+            [validationMessages]="validationMessages"
+            [placeholder]="'Código único del permiso'"
+            [type]="'text'"
+          ></app-input>
+
+          <app-input
+            [textLabel]="'Nombre'"
+            [form]="resourceForm"
+            [controlName]="'nombre'"
+            [validationMessages]="validationMessages"
+            [placeholder]="'Nombre del permiso'"
+            [type]="'text'"
+          ></app-input>
+
+          <app-input
+            [textLabel]="'Descripción'"
+            [form]="resourceForm"
+            [controlName]="'descripcion'"
+            [placeholder]="'Descripción opcional'"
+            [isTextArea]="true"
+            [showRequiredMark]="false"
+          ></app-input>
+
+          <div class="form-field">
+            <label class="form-label">Tipo *</label>
+            <select class="input" formControlName="tipo">
+              @for (tipo of tipoOptions; track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+            @if (resourceForm.get('tipo')?.touched && resourceForm.get('tipo')?.invalid) {
+              <span class="field-error">El tipo es obligatorio.</span>
+            }
+          </div>
+
+          <div class="modal-actions">
+            <app-button
+              [text]="'Cancelar'"
+              [class]="['btn', 'btn-primary-secondary']"
+              [type]="'button'"
+              (clickEventButton)="cerrarForm()"
+            ></app-button>
+            <app-button
+              [text]="saving() ? 'Guardando…' : 'Guardar'"
+              [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
+              [class]="['btn', 'btn-primary']"
+              [type]="'submit'"
+              [disabled]="saving() || resourceForm.invalid"
+              (clickEventButton)="guardar()"
+            ></app-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Confirmación de eliminación -->
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  title="Eliminar permiso"
+  [message]="confirmMsg()"
+  confirmText="Eliminar"
+  [isDestructive]="true"
+  (confirm)="ejecutarEliminar()"
+  (cancel)="confirmVisible.set(false)"
+></app-confirm-modal>

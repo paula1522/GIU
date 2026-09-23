@@ -119,4 +119,47 @@ export class RoleMockService extends BaseMockService {
       });
     }
   }
+
+  // ==================== CRUD de Recursos / Permisos ====================
+
+  crearRecurso(recurso: Partial<Resource> & { codigo: string; nombre: string; tipo: Resource['tipo'] }, usuarioCreacion: string): Observable<ApiResponse<Resource>> {
+    const nuevo: Resource = {
+      id: this.nextRecId++,
+      apliId: recurso.apliId ?? 0,
+      codigo: recurso.codigo,
+      nombre: recurso.nombre,
+      descripcion: recurso.descripcion,
+      tipo: recurso.tipo,
+      estado: recurso.estado ?? 'ACTIVO',
+    };
+    this.recursos.push(nuevo);
+    return this.success(nuevo);
+  }
+
+  actualizarRecurso(id: number, cambios: Partial<Resource>, usuarioModificacion: string): Observable<ApiResponse<Resource>> {
+    const idx = this.recursos.findIndex((r) => r.id === id);
+    if (idx >= 0) {
+      this.recursos[idx] = {
+        ...this.recursos[idx],
+        nombre: cambios.nombre ?? this.recursos[idx].nombre,
+        codigo: cambios.codigo ?? this.recursos[idx].codigo,
+        descripcion: cambios.descripcion ?? this.recursos[idx].descripcion,
+        tipo: cambios.tipo ?? this.recursos[idx].tipo,
+        estado: cambios.estado !== undefined ? (cambios.estado ? 'ACTIVO' : 'INACTIVO') : this.recursos[idx].estado,
+      };
+      return this.success(this.recursos[idx]);
+    }
+    return this.error('Recurso no encontrado.');
+  }
+
+  eliminarRecurso(id: number): Observable<ApiResponse<string[]>> {
+    const idx = this.recursos.findIndex((r) => r.id === id);
+    if (idx >= 0) {
+      this.recursos.splice(idx, 1);
+      // También retirar de todas las asignaciones de rol
+      this.recursosPorRol = this.recursosPorRol.filter((r) => r.recuId !== id);
+      return this.success(['Recurso eliminado correctamente.']);
+    }
+    return this.error('Recurso no encontrado.');
+  }
 }

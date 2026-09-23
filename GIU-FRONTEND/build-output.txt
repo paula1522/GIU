@@ -1,36 +1,29 @@
 ﻿[33m❯[39m Building...
 [32m✔[39m Building...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m               [2m | [22m  [36m1.57 MB[39m[2m | [22m
-[32mchunk-3PBZIHI7.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m1.12 MB[39m[2m | [22m
-[32mchunk-2NZ3YMFX.js[39m  [2m | [22m[2m-[22m                  [2m | [22m[36m375.89 kB[39m[2m | [22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m             [2m | [22m[36m115.45 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m          [2m | [22m [36m89.77 kB[39m[2m | [22m
-[32mchunk-J5EJIAAM.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m4.84 kB[39m[2m | [22m
-[32mchunk-NC6E3S3L.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m2.41 kB[39m[2m | [22m
-[32mchunk-TIYZDZ2U.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m1.71 kB[39m[2m | [22m
+Application bundle generation failed. [41.158 seconds] - 2026-09-23T21:54:15.594Z
 
-[1m [22m                  [2m | [22m[1mInitial total[22m      [2m | [22m  [1m3.28 MB[22m
+npx : [1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2353: Object 
+literal may only specify known properties, and 'apliId' does not exist in type 
+'Omit<Resource, "apliId" | "id">'.[0m [1m[35m[plugin angular-compiler][0m
+En línea: 1 Carácter: 99
++ ... GIU-FRONTEND" ; npx ng build --configuration development 2>&1 | Out-F ...
++                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1m[31m[31mX...r-compiler][0m 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
 
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
-[32mchunk-CMPEZWUY.js[39m  [2m | [22m[2m-[22m                  [2m | [22m[36m228.42 kB[39m[2m | [22m
-[32mchunk-7DEWZZWF.js[39m  [2m | [22m[2musers-list[22m         [2m | [22m [36m81.31 kB[39m[2m | [22m
-[32mchunk-IJU2WCRB.js[39m  [2m | [22m[2mroles-list[22m         [2m | [22m [36m80.58 kB[39m[2m | [22m
-[32mchunk-OHJWYCPE.js[39m  [2m | [22m[2mapplications-list[22m  [2m | [22m [36m34.71 kB[39m[2m | [22m
-[32mchunk-A3Y2KOJE.js[39m  [2m | [22m[2maudit[22m              [2m | [22m [36m31.23 kB[39m[2m | [22m
-[32mchunk-IRNACZNF.js[39m  [2m | [22m[2m-[22m                  [2m | [22m [36m29.40 kB[39m[2m | [22m
-[32mchunk-WJ4WI7DS.js[39m  [2m | [22m[2mapplication-detail[22m [2m | [22m [36m29.22 kB[39m[2m | [22m
-[32mchunk-Z7YZTJOW.js[39m  [2m | [22m[2mreports[22m            [2m | [22m [36m22.72 kB[39m[2m | [22m
-[32mchunk-4STGOYBG.js[39m  [2m | [22m[2m-[22m                  [2m | [22m [36m19.05 kB[39m[2m | [22m
-[32mchunk-RUWM4RIC.js[39m  [2m | [22m[2m-[22m                  [2m | [22m [36m18.63 kB[39m[2m | [22m
-[32mchunk-KJVI7VRK.js[39m  [2m | [22m[2mdashboard[22m          [2m | [22m [36m16.25 kB[39m[2m | [22m
-[32mchunk-EHPWFL64.js[39m  [2m | [22m[2musers-global[22m       [2m | [22m [36m10.75 kB[39m[2m | [22m
-[32mchunk-CBESTC3E.js[39m  [2m | [22m[2madministrators-list[22m[2m | [22m [36m10.14 kB[39m[2m | [22m
-[32mchunk-N2SBCNVG.js[39m  [2m | [22m[2m-[22m                  [2m | [22m  [36m9.81 kB[39m[2m | [22m
-[32mchunk-MVJJ3VLQ.js[39m  [2m | [22m[2mpermissions-list[22m   [2m | [22m  [36m9.78 kB[39m[2m | [22m
-[2m...and 9 more lazy chunks files. Use "--verbose" to show all the files.[22m
+    src/app/pages/permissions/permissions-list/permissions-list.ts:182:8:
+[37m      182 │         [32mapliId[37m: this.apliId(),
+          ╵         [32m~~~~~~[0m
 
-Application bundle generation complete. [29.004 seconds] - 2026-09-23T21:33:20.119Z
 
-Output location: C:\MILENA_AREVALO\PROYECTOS\CLARO\GIU GESTION INTEGRAL DE USUARIOS\GIU_V2\GIU\GIU-FRONTEND\dist\GIU-FRONTEND
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'apliId' does 
+not exist on type 'Omit<Resource, "id" | "apliId">'.[0m [1m[35m[plugin 
+angular-compiler][0m
 
+    src/app/services/mock/role-mock.service.ts:129:22:
+[37m      129 │       apliId: recurso.[32mapliId[37m ?? 0,
+          ╵                       [32m~~~~~~[0m
+
+[39m[22m
