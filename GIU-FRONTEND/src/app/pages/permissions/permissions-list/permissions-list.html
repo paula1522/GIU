@@ -79,6 +79,28 @@
             }
           </div>
 
+          <!-- Sección de roles asociados (solo en modo edición) -->
+          @if (editingResource()) {
+            <div class="roles-asociados-section">
+              <div class="roles-asociados-title">
+                <i class="bi bi-person-badge"></i>
+                Roles asociados a este permiso
+              </div>
+              @if (rolesAsociados().length === 0) {
+                <div class="roles-empty">Este permiso no está asociado a ningún rol actualmente.</div>
+              } @else {
+                <div class="roles-chips">
+                  @for (rol of rolesAsociados(); track rol.id) {
+                    <span class="role-chip" [class.inactive]="rol.estado === 'INACTIVO'">
+                      <i class="bi bi-person-badge"></i>
+                      {{ rol.nombre }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          }
+
           <div class="modal-actions">
             <app-button
               [text]="'Cancelar'"

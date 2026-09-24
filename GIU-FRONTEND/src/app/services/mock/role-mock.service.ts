@@ -30,6 +30,18 @@ export class RoleMockService extends BaseMockService {
     return this.success(result);
   }
 
+  /**
+   * Obtiene los roles que tienen asignado un recurso/permiso específico.
+   */
+  obtenerRolesPorRecurso(apliId: number, recuId: number): Observable<ApiResponse<Role[]>> {
+    this.ensureRecursos(apliId);
+    const rolIds = this.recursosPorRol
+      .filter((rr) => rr.recuId === recuId)
+      .map((rr) => rr.rolId);
+    const rolesAsignados = this.roles.filter((r) => rolIds.includes(r.id));
+    return this.success(rolesAsignados);
+  }
+
   crearRol(request: CreateRoleRequest, usuarioCreacion: string): Observable<ApiResponse<Role>> {
     const newRole: Role = {
       id: this.nextRoleId++,

@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { ActivatedRoute } from '@angular/router';
 import { RoleMockService } from '../../../services/mock/role-mock.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { Resource } from '../../../models/domain/giu.models';
+import { Resource, Role } from '../../../models/domain/giu.models';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
@@ -101,6 +101,9 @@ export class PermissionsList implements OnInit {
   readonly saving = signal(false);
   resourceForm!: FormGroup;
 
+  /** Roles asociados al permiso en edición (solo lectura). */
+  readonly rolesAsociados = signal<Role[]>([]);
+
   readonly validationMessages: Record<string, { type: string; message: string }[]> = {
     codigo: [{ type: 'required', message: 'El código es obligatorio.' }],
     nombre: [{ type: 'required', message: 'El nombre es obligatorio.' }],
@@ -144,17 +147,24 @@ export class PermissionsList implements OnInit {
 
   abrirCrear(): void {
     this.editingResource.set(null);
+    this.rolesAsociados.set([]);
     this.resourceForm?.reset({ codigo: '', nombre: '', descripcion: '', tipo: 'MENU' });
     this.showForm.set(true);
   }
 
   abrirEditar(resource: Resource): void {
     this.editingResource.set(resource);
+    this.rolesAsociados.set([]);
     this.resourceForm?.patchValue({
       codigo: resource.codigo,
       nombre: resource.nombre,
       descripcion: resource.descripcion ?? '',
       tipo: resource.tipo,
+    });
+    // Cargar los roles asociados a este permiso
+    this.roleService.obtenerRolesPorRecurso(this.apliId(), resource.id).subscribe({
+      next: (res) => this.rolesAsociados.set(res.data ?? []),
+      error: () => this.rolesAsociados.set([]),
     });
     this.showForm.set(true);
   }
