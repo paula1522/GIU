@@ -25,7 +25,6 @@ export const appConfig: ApplicationConfig = {
     // Proporciona el enrutador con las rutas definidas
     provideRouter(routes, withHashLocation(), withPreloading(NoPreloading)),
     // Habilita la hidratación del cliente
-    provideClientHydration(),
  
     // Configura el cliente HTTP para los interceptores
     // provideHttpClient(withInterceptorsFromDi()),
@@ -36,6 +35,7 @@ export const appConfig: ApplicationConfig = {
     //   multi: true,
     // },
     EncryptedHttpClient,
+    provideHttpClient(),
   ]
 };
  

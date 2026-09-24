@@ -63,17 +63,20 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "GIU-FRONTEND:build:production"
-            },
-            "development": {
-              "buildTarget": "GIU-FRONTEND:build:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
+  "builder": "@angular/build:dev-server",
+  "options": {
+    "proxyConfig": "proxy.conf.json"
+  },
+  "configurations": {
+    "production": {
+      "buildTarget": "GIU-FRONTEND:build:production"
+    },
+    "development": {
+      "buildTarget": "GIU-FRONTEND:build:development"
+    }
+  },
+  "defaultConfiguration": "development"
+},
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"
         },

@@ -1,0 +1,446 @@
+[1mdiff --git a/GIU-FRONTEND/src/app/pages/roles/roles-list/roles-list.ts b/GIU-FRONTEND/src/app/pages/roles/roles-list/roles-list.ts[m
+[1mindex b9f36334..1d2db6a3 100644[m
+[1m--- a/GIU-FRONTEND/src/app/pages/roles/roles-list/roles-list.ts[m
+[1m+++ b/GIU-FRONTEND/src/app/pages/roles/roles-list/roles-list.ts[m
+[36m@@ -1,12 +1,14 @@[m
+ import { Component, inject, signal, computed, OnInit } from '@angular/core';[m
+ import { CommonModule } from '@angular/common';[m
+[31m-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';[m
+[32m+[m[32mimport { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';[m
+ import { ActivatedRoute } from '@angular/router';[m
+[31m-import { RoleMockService } from '../../../services/mock/role-mock.service';[m
+[32m+[m[32mimport { toSignal } from '@angular/core/rxjs-interop';[m
+[32m+[m
+ import { UserMockService } from '../../../services/mock/user-mock.service';[m
+ import { AuthService } from '../../../services/logic/auth.service';[m
+[31m-import { Role, Resource, UserApplication, User } from '../../../models/domain/giu.models';[m
+[32m+[m[32mimport { Role, UserApplication, User } from '../../../models/domain/giu.models';[m
+ import { PERMISSIONS } from '../../../utils/constants/permissions.constants';[m
+[32m+[m
+ import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';[m
+ import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';[m
+ import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input-general/input.component';[m
+[36m@@ -14,64 +16,140 @@[m [mimport { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/butt[m
+ import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';[m
+ import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';[m
+ import { HeaderButton, HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';[m
+[32m+[m[32mimport { SelectComponent } from '../../../shared/atomic-desing/atoms/select/select.component';[m
+[32m+[m
+ import { minSelectedValidator } from '../validators/min-selected.validator';[m
+[32m+[m[32mimport { RoleService } from '../../../services/api/roles.service';[m
+[32m+[m[32mimport { CrearRolRequest, ModificarRolRequest, RecursoResponseDTO } from '../../../models/api/roles.model';[m
+[32m+[m
+[32m+[m[32mimport { forkJoin, of, Observable } from 'rxjs';[m
+[32m+[m[32mimport { switchMap } from 'rxjs/operators';[m
+ [m
+ @Component({[m
+   selector: 'app-roles-list',[m
+   standalone: true,[m
+[31m-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent, CheckboxComponent, ConfirmModalComponent, HeaderPagesComponent],[m
+[32m+[m[32m  imports: [[m
+[32m+[m[32m    CommonModule,[m
+[32m+[m[32m    FormsModule,[m
+[32m+[m[32m    ReactiveFormsModule,[m
+[32m+[m[32m    TableComponent,[m
+[32m+[m[32m    InputComponent,[m
+[32m+[m[32m    ButtonComponent,[m
+[32m+[m[32m    CheckboxComponent,[m
+[32m+[m[32m    ConfirmModalComponent,[m
+[32m+[m[32m    HeaderPagesComponent,[m
+[32m+[m[32m    SelectComponent,[m
+[32m+[m[32m  ],[m
+   templateUrl: './roles-list.html',[m
+   styleUrl: './roles-list.scss',[m
+ })[m
+ export class RolesList implements OnInit {[m
+   private readonly route = inject(ActivatedRoute);[m
+[31m-  private readonly roleService = inject(RoleMockService);[m
+[32m+[m[32m  private readonly roleService = inject(RoleService);[m
+   private readonly userService = inject(UserMockService);[m
+   private readonly auth = inject(AuthService);[m
+   private readonly fb = inject(FormBuilder);[m
+ [m
+[32m+[m[32m  // ==================== Estado general ====================[m
+[32m+[m
+   readonly loading = signal(false);[m
+   readonly roles = signal<Role[]>([]);[m
+[31m-  readonly searchTerm = signal('');[m
+[31m-  readonly filteredRoles = signal<Role[]>([]);[m
+   readonly apliId = signal(0);[m
+ [m
+   /** Recursos/permisos disponibles para la aplicación. */[m
+[31m-  readonly recursos = signal<Resource[]>([]);[m
+[32m+[m[32m  readonly recursos = signal<RecursoResponseDTO[]>([]);[m
+ [m
+[31m-  // ---------- Configuración del átomo de Tabla ----------[m
+[31m-  readonly tableColumnTitle = ['Nombre', 'Descripción', 'Estado', 'Acciones'];[m
+[31m-  readonly columnsToDisplay = ['nombre', 'descripcion', 'estado', 'acciones'];[m
+[32m+[m[32m  /** Cache de recursos asignados por rol (evita repetir obtenerDetalleRol). */[m
+[32m+[m[32m  private readonly roleDetalleCache = signal<Record<number, number[]>>({});[m
+ [m
+[32m+[m[32m  // ==================== Filtros ====================[m
+ [m
+[31m-    /** Botones dinámicos para el header-pages. */[m
+[31m-    readonly headerButtons = computed<HeaderButton[]>(() => {[m
+[31m-      const btns: HeaderButton[] = [];[m
+[31m-      if (this.canCreate) {[m
+[31m-        btns.push({[m
+[31m-          text: 'Nuevo rol',[m
+[31m-          icon: 'bi bi-app-indicator',[m
+[31m-          class: ['btn', 'btn-primary'],[m
+[31m-          type: 'button',[m
+[31m-          action: 'NUEVA',[m
+[31m-        });[m
+[31m-      }[m
+[31m-      return btns;[m
+[32m+[m[32m   readonly searchForm = this.fb.nonNullable.group({[m
+[32m+[m[32m  search: [''],[m
+[32m+[m[32m});[m
+[32m+[m
+[32m+[m[32mreadonly searchSignal = toSignal([m
+[32m+[m[32m  this.searchForm.get('search')!.valueChanges,[m
+[32m+[m[32m  { initialValue: '' }[m
+[32m+[m[32m);[m
+[32m+[m
+[32m+[m[32m  readonly estadoOptions = [[m
+[32m+[m[32m    { id: 'ACTIVO',   nombre: 'Activo'   },[m
+[32m+[m[32m    { id: 'INACTIVO', nombre: 'Inactivo' },[m
+[32m+[m[32m  ];[m
+[32m+[m[32mreadonly estadoFiltro = new FormControl('', { nonNullable: true });[m
+[32m+[m
+[32m+[m[32mreadonly estadoFiltroSignal = toSignal(this.estadoFiltro.valueChanges, {[m
+[32m+[m[32m  initialValue: '',[m
+[32m+[m[32m});[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m  /** Roles filtrados reactivamente por texto y estado. */[m
+[32m+[m[32m  readonly filteredRoles = computed(() => {[m
+[32m+[m[32m    const term = this.searchSignal().toLowerCase().trim();[m
+[32m+[m[32m    const estado = this.estadoFiltroSignal();[m
+[32m+[m
+[32m+[m[32m    return this.roles().filter((r) => {[m
+[32m+[m[32m      const coincideTexto =[m
+[32m+[m[32m        !term ||[m
+[32m+[m[32m        r.nombre.toLowerCase().includes(term) ||[m
+[32m+[m[32m        (r.descripcion ?? '').toLowerCase().includes(term);[m
+[32m+[m
+[32m+[m[32m      const coincideEstado = !estado || r.estado === estado;[m
+[32m+[m
+[32m+[m[32m      return coincideTexto && coincideEstado;[m
+     });[m
+[32m+[m[32m  });[m
+[32m+[m
+[32m+[m[32m  // ==================== Configuración de la tabla ====================[m
+[32m+[m
+[32m+[m[32m  readonly tableColumnTitle = ['Nombre', 'Descripción', 'Estado', 'Acciones'];[m
+[32m+[m[32m  readonly columnsToDisplay = ['nombre', 'descripcion', 'estado', 'acciones'];[m
+ [m
+[32m+[m[32m  readonly canCreate = this.auth.hasPermission(PERMISSIONS.ROLES_CREAR);[m
+[32m+[m[32m  readonly canEdit = this.auth.hasPermission(PERMISSIONS.ROLES_EDITAR);[m
+ [m
+[31m-  readonly tableData = computed<ColumnConfig[]>(() => {[m
+[31m-    return this.filteredRoles().map((r) => this.buildRow(r));[m
+[32m+[m[32m  readonly headerButtons = computed<HeaderButton[]>(() => {[m
+[32m+[m[32m    const btns: HeaderButton[] = [];[m
+[32m+[m[32m    if (this.canCreate) {[m
+[32m+[m[32m      btns.push({[m
+[32m+[m[32m        text: 'Nuevo rol',[m
+[32m+[m[32m        icon: 'bi bi-app-indicator',[m
+[32m+[m[32m        class: ['btn', 'btn-primary'],[m
+[32m+[m[32m        type: 'button',[m
+[32m+[m[32m        action: 'NUEVA',[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return btns;[m
+   });[m
+ [m
+[32m+[m[32m  readonly tableData = computed<ColumnConfig[]>(() =>[m
+[32m+[m[32m    this.filteredRoles().map((r) => this.buildRow(r))[m
+[32m+[m[32m  );[m
+[32m+[m
+   private buildRow(r: Role): ColumnConfig {[m
+     const buttons: ActionButton[] = [];[m
+[31m-    // Botón ver usuarios asociados[m
+[31m-    buttons.push({ label: 'Usuarios', action: 'VER_USUARIOS', title: 'Ver usuarios asociados', icon: 'bi bi-people', styles: 'btn-table-view', type: 'button' });[m
+[31m-    if (this.canEdit) {[m
+[31m-      buttons.push({ label: 'Editar', action: 'EDITAR', title: 'Editar rol', icon: 'bi bi-pencil-square', styles: 'btn-table-edit', type: 'button' });[m
+[31m-    }[m
+[32m+[m
+[32m+[m[32m    buttons.push({[m
+[32m+[m[32m      label: 'Usuarios',[m
+[32m+[m[32m      action: 'VER_USUARIOS',[m
+[32m+[m[32m      title: 'Ver usuarios asociados',[m
+[32m+[m[32m      icon: 'bi bi-people',[m
+[32m+[m[32m      styles: 'btn-table-view',[m
+[32m+[m[32m      type: 'button',[m
+[32m+[m[32m    });[m
+[32m+[m
+     if (this.canEdit) {[m
+[32m+[m[32m      buttons.push({[m
+[32m+[m[32m        label: 'Editar',[m
+[32m+[m[32m        action: 'EDITAR',[m
+[32m+[m[32m        title: 'Editar rol',[m
+[32m+[m[32m        icon: 'bi bi-pencil-square',[m
+[32m+[m[32m        styles: 'btn-table-edit',[m
+[32m+[m[32m        type: 'button',[m
+[32m+[m[32m      });[m
+[32m+[m
+       buttons.push({[m
+         label: r.estado === 'ACTIVO' ? 'Inactivar' : 'Activar',[m
+         action: 'TOGGLE',[m
+[36m@@ -102,10 +180,8 @@[m [mexport class RolesList implements OnInit {[m
+     }[m
+   }[m
+ [m
+[31m-  readonly canCreate = this.auth.hasPermission(PERMISSIONS.ROLES_CREAR);[m
+[31m-  readonly canEdit = this.auth.hasPermission(PERMISSIONS.ROLES_EDITAR);[m
+[32m+[m[32m  // ==================== Formulario de rol ====================[m
+ [m
+[31m-  // Modal[m
+   readonly showForm = signal(false);[m
+   readonly editingRole = signal<Role | null>(null);[m
+   readonly saving = signal(false);[m
+[36m@@ -115,22 +191,27 @@[m [mexport class RolesList implements OnInit {[m
+     nombre: [{ type: 'required', message: 'El nombre del rol es obligatorio.' }],[m
+   };[m
+ [m
+[31m-  // Confirmación[m
+[32m+[m[32m  // ==================== Confirmación toggle ====================[m
+[32m+[m
+   readonly confirmVisible = signal(false);[m
+   readonly confirmRole = signal<Role | null>(null);[m
+   readonly confirmTitle = signal('');[m
+   readonly confirmMsg = signal('');[m
+ [m
+[32m+[m[32m  // ==================== Ciclo de vida ====================[m
+[32m+[m
+   ngOnInit(): void {[m
+     const id = Number(this.route.snapshot.paramMap.get('apliId'));[m
+     this.apliId.set(id);[m
+[31m-    this.cargar();[m
+[31m-    this.cargarRecursos();[m
+[32m+[m
+     this.roleForm = this.fb.group({[m
+       nombre: ['', [Validators.required, Validators.maxLength(50)]],[m
+       descripcion: ['', [Validators.maxLength(200)]],[m
+       permisos: this.fb.array([], minSelectedValidator()),[m
+     });[m
+[32m+[m
+[32m+[m[32m    this.cargar();[m
+[32m+[m[32m    this.cargarRecursos();[m
+   }[m
+ [m
+   /** Acceso al FormArray de permisos desde el template. */[m
+[36m@@ -138,25 +219,48 @@[m [mexport class RolesList implements OnInit {[m
+     return this.roleForm.get('permisos') as FormArray;[m
+   }[m
+ [m
+[31m-  /** Carga los recursos de la aplicación y construye los checkboxes. */[m
+[32m+[m[32m  // ==================== Carga de datos ====================[m
+[32m+[m
+[32m+[m[32m  cargar(): void {[m
+[32m+[m[32m    this.loading.set(true);[m
+[32m+[m
+[32m+[m[32m    this.roleService.listarRoles(this.apliId()).subscribe({[m
+[32m+[m[32m      next: (res) => {[m
+[32m+[m[32m        this.roles.set(res.data);[m
+[32m+[m[32m        this.loading.set(false);[m
+[32m+[m[32m      },[m
+[32m+[m[32m      error: (error) => {[m
+[32m+[m[32m        console.error('ERROR API ROLES:', error);[m
+[32m+[m[32m        this.roles.set([]);[m
+[32m+[m[32m        this.loading.set(false);[m
+[32m+[m[32m      },[m
+[32m+[m[32m    });[m
+[32m+[m[32m  }[m
+[32m+[m
+   cargarRecursos(): void {[m
+     this.roleService.listarRecursos(this.apliId()).subscribe({[m
+       next: (res) => {[m
+         this.recursos.set(res.data ?? []);[m
+         this.buildPermisosCheckboxes();[m
+       },[m
+[31m-      error: () => {},[m
+[32m+[m[32m      error: (error) => {[m
+[32m+[m[32m        console.error('ERROR API RECURSOS:', error);[m
+[32m+[m[32m        this.recursos.set([]);[m
+[32m+[m[32m        this.buildPermisosCheckboxes();[m
+[32m+[m[32m      },[m
+     });[m
+   }[m
+ [m
+[31m-  /** Construye los controles checkbox del FormArray según los recursos. */[m
+[32m+[m[32m  // ==================== Permisos (checkboxes) ====================[m
+[32m+[m
+   private buildPermisosCheckboxes(selectedIds: number[] = []): void {[m
+     const array = this.permisosArray;[m
+     array.clear();[m
+[32m+[m
+     this.recursos().forEach(() => {[m
+       array.push(this.fb.control(false));[m
+     });[m
+[31m-    // Marcar los que ya están asignados[m
+[32m+[m
+     if (selectedIds.length > 0) {[m
+       this.recursos().forEach((r, i) => {[m
+         if (selectedIds.includes(r.id)) {[m
+[36m@@ -164,17 +268,16 @@[m [mexport class RolesList implements OnInit {[m
+         }[m
+       });[m
+     }[m
+[32m+[m
+     array.updateValueAndValidity();[m
+   }[m
+ [m
+[31m-  /** Alterna un permiso y actualiza la validez del FormArray. */[m
+   togglePermiso(index: number, checked: boolean): void {[m
+     this.permisosArray.at(index).setValue(checked);[m
+     this.permisosArray.at(index).markAsTouched();[m
+     this.permisosArray.updateValueAndValidity();[m
+   }[m
+ [m
+[31m-  /** Retorna los IDs de los recursos seleccionados. */[m
+   private getSelectedPermisosIds(): number[] {[m
+     const ids: number[] = [];[m
+     this.permisosArray.value.forEach((v: boolean, i: number) => {[m
+[36m@@ -185,23 +288,11 @@[m [mexport class RolesList implements OnInit {[m
+     return ids;[m
+   }[m
+ [m
+[31m-  /** True si el FormArray de permisos tiene error de minSelected. */[m
+   get permisosInvalid(): boolean {[m
+     return this.permisosArray.hasError('minSelected') && this.permisosArray.touched;[m
+   }[m
+ [m
+[31m-  cargar(): void {[m
+[31m-    this.loading.set(true);[m
+[31m-    this.roleService.listarRoles(this.apliId()).subscribe({[m
+[31m-      next: (res) => { this.roles.set(res.data ?? []); this.filtrar(); this.loading.set(false); },[m
+[31m-      error: () => this.loading.set(false),[m
+[31m-    });[m
+[31m-  }[m
+[31m-[m
+[31m-  filtrar(): void {[m
+[31m-    const term = this.searchTerm().toLowerCase();[m
+[31m-    this.filteredRoles.set(this.roles().filter((r) => !term || r.nombre.toLowerCase().includes(term) || (r.descripcion ?? '').toLowerCase().includes(term)));[m
+[31m-  }[m
+[32m+[m[32m  // ==================== Abrir / cerrar modal ====================[m
+ [m
+   abrirCrear(): void {[m
+     this.editingRole.set(null);[m
+[36m@@ -212,85 +303,161 @@[m [mexport class RolesList implements OnInit {[m
+ [m
+   abrirEditar(role: Role): void {[m
+     this.editingRole.set(role);[m
+[31m-    this.roleForm?.patchValue({ nombre: role.nombre, descripcion: role.descripcion ?? '' });[m
+[31m-    // Cargar los permisos ya asignados al rol[m
+[31m-    this.roleService.obtenerRecursosPorRol(this.apliId(), role.id).subscribe({[m
+[32m+[m
+[32m+[m[32m    this.roleForm?.patchValue({[m
+[32m+[m[32m      nombre: role.nombre,[m
+[32m+[m[32m      descripcion: role.descripcion ?? '',[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    this.roleService.obtenerDetalleRol(role.id).subscribe({[m
+       next: (res) => {[m
+[31m-        const assignedIds = (res.data ?? []).map((rr) => rr.recuId);[m
+[32m+[m[32m        const assignedIds = (res.data?.recursos ?? []).map((recurso) => recurso.recuId);[m
+[32m+[m
+[32m+[m[32m        this.roleDetalleCache.update((cache) => ({ ...cache, [role.id]: assignedIds }));[m
+         this.buildPermisosCheckboxes(assignedIds);[m
+       },[m
+[31m-      error: () => this.buildPermisosCheckboxes([]),[m
+[32m+[m[32m      error: (error) => {[m
+[32m+[m[32m        console.error('ERROR AL OBTENER DETALLE DEL ROL:', error);[m
+[32m+[m[32m        this.roleDetalleCache.update((cache) => ({ ...cache, [role.id]: [] }));[m
+[32m+[m[32m        this.buildPermisosCheckboxes([]);[m
+[32m+[m[32m      },[m
+     });[m
+[32m+[m
+     this.showForm.set(true);[m
+   }[m
+ [m
+[31m-  cerrarForm(): void { this.showForm.set(false); }[m
+[32m+[m[32m  cerrarForm(): void {[m
+[32m+[m[32m    this.showForm.set(false);[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  // ==================== Guardar (crear / editar) ====================[m
+ [m
+   guardar(): void {[m
+[31m-    if (this.roleForm.invalid) return;[m
+[32m+[m[32m    // Guard de reentrada: evita doble envío[m
+[32m+[m[32m    if (this.saving()) return;[m
+[32m+[m
+[32m+[m[32m    if (this.roleForm.invalid) {[m
+[32m+[m[32m      this.roleForm.markAllAsTouched();[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m
+     this.saving.set(true);[m
+[32m+[m
+     const formValue = this.roleForm.getRawValue();[m
+     const role = this.editingRole();[m
+     const selectedIds = this.getSelectedPermisosIds();[m
+ [m
+[31m-    // Regla de inactivación automática: si no hay permisos, el rol queda inactivo[m
+[31m-    const shouldDeactivate = selectedIds.length === 0;[m
+[31m-[m
+[31m-    if (role) {[m
+[31m-      this.roleService.actualizarRol({[m
+[31m-        id: role.id,[m
+[31m-        apliId: this.apliId(),[m
+[32m+[m[32m    if (!role) {[m
+[32m+[m[32m      // CREAR[m
+[32m+[m[32m      const request: CrearRolRequest = {[m
+         nombre: formValue.nombre,[m
+         descripcion: formValue.descripcion,[m
+[31m-        estado: shouldDeactivate ? false : undefined,[m
+[31m-      }, this.auth.usuarioRed())[m
+[31m-        .subscribe({[m
+[31m-          next: () => this.syncPermisos(role.id, selectedIds),[m
+[31m-          error: () => this.saving.set(false),[m
+[31m-        });[m
+[31m-    } else {[m
+[31m-      this.roleService.crearRol({ apliId: this.apliId(), nombre: formValue.nombre, descripcion: formValue.descripcion }, this.auth.usuarioRed())[m
+[31m-        .subscribe({[m
+[31m-          next: (res) => {[m
+[31m-            const newRoleId = res.data.id;[m
+[31m-            this.syncPermisos(newRoleId, selectedIds);[m
+[31m-          },[m
+[31m-          error: () => this.saving.set(false),[m
+[31m-        });[m
+[32m+[m[32m        recursos: selectedIds,[m
+[32m+[m[32m      };[m
+[32m+[m
+[32m+[m[32m      this.roleService.crearRol(this.apliId(), request, this.auth.usuarioRed()).subscribe({[m
+[32m+[m[32m        next: () => {[m
+[32m+[m[32m          this.saving.set(false);[m
+[32m+[m[32m          this.showForm.set(false);[m
+[32m+[m[32m          this.cargar();[m
+[32m+[m[32m        },[m
+[32m+[m[32m        error: (error) => {[m
+[32m+[m[32m          console.error('ERROR AL CREAR ROL:', error);[m
+[32m+[m[32m          this.saving.set(false);[m
+[32m+[m[32m        },[m
+[32m+[m[32m      });[m
+[32m+[m
+[32m+[m[32m      return;[m
+     }[m
+[31m-  }[m
+ [m
+[31m-  /** Sincroniza los permisos asignados al rol y finaliza el guardado. */[m
+[31m-  private syncPermisos(rolId: number, selectedIds: number[]): void {[m
+[31m-    // Primero retirar los que ya no están seleccionados[m
+[31m-    const retirarPromises: any[] = [];[m
+[31m-    this.roleService.obtenerRecursosPorRol(this.apliId(), rolId).subscribe({[m
+[31m-      next: (res) => {[m
+[31m-        const currentAssigned = res.data ?? [];[m
+[31m-        currentAssigned.forEach((rr) => {[m
+[31m-          if (!selectedIds.includes(rr.recuId)) {[m
+[31m-            this.roleService.retirarRecursoRol(this.apliId(), rr.recuId, rolId).subscribe();[m
+[31m-          }[m
+[31m-        });[m
+[31m-        // Luego asignar los nuevos que no estaban[m
+[31m-        const currentIds = curre

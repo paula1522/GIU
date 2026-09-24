@@ -126,7 +126,7 @@ export class PermissionsList implements OnInit {
       codigo: ['', [Validators.required, Validators.maxLength(50)]],
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
       descripcion: ['', [Validators.maxLength(200)]],
-      tipo: ['MENU', [Validators.required]],
+      tipo: ['', [Validators.required]],
     });
   }
 
@@ -145,7 +145,7 @@ export class PermissionsList implements OnInit {
     );
   }
 
-  abrirCrear(): void {
+    abrirCrear(): void {
     this.editingResource.set(null);
     this.rolesAsociados.set([]);
     this.resourceForm?.reset({ codigo: '', nombre: '', descripcion: '', tipo: 'MENU' });
