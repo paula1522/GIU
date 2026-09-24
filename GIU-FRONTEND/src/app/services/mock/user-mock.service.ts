@@ -175,4 +175,34 @@ export class UserMockService extends BaseMockService {
     }
     return this.error('Asignación no encontrada.');
   }
+
+  /**
+   * Obtiene todas las aplicaciones y roles asignados a un usuario.
+   */
+  aplicacionesPorUsuario(usuarioRed: string): Observable<ApiResponse<UserApplication[]>> {
+    const asignaciones = this.roleAssignments.filter((a) => a.usuarioRed === usuarioRed);
+    const appMap: Record<number, { codigo: string; nombre: string }> = {
+      1: { codigo: 'PORTAL_CLI', nombre: 'Portal Clientes' },
+      2: { codigo: 'PORTAL_PAG', nombre: 'Portal Pagos' },
+      3: { codigo: 'PORTAL_REP', nombre: 'Portal Reportes' },
+    };
+    const rolMap: Record<number, string> = {
+      1: 'Administrador', 2: 'Consulta', 3: 'Auditor', 4: 'Supervisor', 5: 'Administrador', 6: 'Consulta',
+    };
+    const result: UserApplication[] = asignaciones.map((a) => {
+      const user = this.users.find((u) => u.usuarioRed === a.usuarioRed);
+      const app = appMap[a.apliId] ?? { codigo: 'DESCONOCIDO', nombre: 'Desconocida' };
+      return {
+        ...(user as User),
+        codigoApli: app.codigo,
+        nombreApli: app.nombre,
+        estadoApli: 'ACTIVO',
+        idRol: a.rolId,
+        nombreRol: rolMap[a.rolId] ?? 'Sin rol',
+        fechaInRol: a.fechaIn,
+        fechaFinRol: a.fechaFin,
+      } as UserApplication;
+    });
+    return this.success(result);
+  }
 }

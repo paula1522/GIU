@@ -1,7 +1,9 @@
-<div class="page">
-  <h1 class="page-title">Usuarios del Sistema</h1>
-  <p class="page-subtitle">Listado general de todos los usuarios registrados y sus aplicaciones asociadas</p>
+<app-header-pages
+  [title]="'Usuarios del Sistema'"
+  [subtitle]="'Listado general de todos los usuarios registrados y sus aplicaciones asociadas'"
+></app-header-pages>
 
+<div class="page">
   <div class="filters-bar">
     <input type="text" class="input" placeholder="Buscar por usuario, nombre o correo…" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); filtrar()" />
   </div>
@@ -17,6 +19,129 @@
       [showPaginator]="true"
       [totalItemsPerPag]="10"
       [idTable]="'users-global'"
+      (clickEventButton)="onTableAction($event)"
     ></app-table>
   }
 </div>
+
+<!-- Modal de detalle de usuario -->
+@if (showDetalle()) {
+  <div class="overlay" (click)="cerrarDetalle()">
+    <div class="modal modal-detalle" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Detalle del usuario</h2>
+        <app-button
+          [icon]="'bi bi-x-lg'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarDetalle()"
+        ></app-button>
+      </div>
+      <div class="modal-body">
+
+        @if (usuarioDetalle(); as u) {
+          <!-- Sección A: Datos Personales / Cuenta -->
+          <div class="detalle-section">
+            <div class="detalle-section-title">
+              <i class="bi bi-person-vcard"></i> Datos Personales / Cuenta
+            </div>
+            <div class="detalle-grid">
+              <div class="detalle-item">
+                <span class="detalle-label">Nombre completo</span>
+                <span class="detalle-value">{{ u.nombre }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="detalle-label">Usuario de Red</span>
+                <span class="detalle-value">{{ u.usuarioRed }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="detalle-label">Correo electrónico</span>
+                <span class="detalle-value">{{ u.correo || '—' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="detalle-label">Identificación</span>
+                <span class="detalle-value">{{ u.numeroIdentificacion }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="detalle-label">Estado de la cuenta</span>
+                <span class="badge" [class.badge-success]="u.estado === 'ACTIVO'" [class.badge-danger]="u.estado === 'INACTIVO'" [class.badge-warning]="u.estado === 'BLOQUEADO'">{{ u.estado }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="detalle-label">Super Administrador</span>
+                <span class="badge" [class.badge-success]="u.superAdministrador === 1" [class.badge-info]="u.superAdministrador !== 1">{{ u.superAdministrador === 1 ? 'Sí' : 'No' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="detalle-label">Perfil</span>
+                <span class="detalle-value">{{ u.perfilNombre || '—' }}</span>
+              </div>
+              <div class="detalle-item">
+                <span class="detalle-label">Fecha de creación</span>
+                <span class="detalle-value">{{ u.fechaCreacion ? (u.fechaCreacion | date: 'short') : '—' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección B: Aplicaciones y Roles Asignados -->
+          <div class="detalle-section">
+            <div class="detalle-section-title">
+              <i class="bi bi-app-indicator"></i> Aplicaciones y Roles Asignados
+            </div>
+
+            @if (cargandoDetalle()) {
+              <div class="detalle-loading">Cargando aplicaciones…</div>
+            } @else if (aplicacionesUsuario().length === 0) {
+              <div class="detalle-empty">Este usuario no tiene aplicaciones asignadas actualmente.</div>
+            } @else {
+              <div class="apps-table-wrapper">
+                <table class="apps-table">
+                  <thead>
+                    <tr>
+                      <th>Aplicación</th>
+                      <th>Rol</th>
+                      <th>Fecha Asignación</th>
+                      <th>Fecha Vencimiento</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (app of aplicacionesUsuario(); track app.id) {
+                      <tr>
+                        <td>
+                          <div class="app-cell">
+                            <i class="bi bi-app-indicator"></i>
+                            <span>{{ app.nombreApli || '—' }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="role-chip">
+                            <i class="bi bi-person-badge"></i>
+                            {{ app.nombreRol || '—' }}
+                          </span>
+                        </td>
+                        <td>{{ app.fechaInRol ? (app.fechaInRol | date: 'shortDate') : '—' }}</td>
+                        <td>{{ app.fechaFinRol ? (app.fechaFinRol | date: 'shortDate') : 'Sin vencimiento' }}</td>
+                        <td>
+                          <span class="badge" [class.badge-success]="app.estadoApli === 'ACTIVO'" [class.badge-danger]="app.estadoApli !== 'ACTIVO'">{{ app.estadoApli || '—' }}</span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="modal-actions">
+          <app-button
+            [text]="'Cerrar'"
+            [icon]="'bi bi-x-lg'"
+            [class]="['btn', 'btn-primary-secondary']"
+            [type]="'button'"
+            (clickEventButton)="cerrarDetalle()"
+          ></app-button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
