@@ -39,6 +39,37 @@ export class RolesList implements OnInit {
   /** Recursos/permisos disponibles para la aplicación. */
   readonly recursos = signal<Resource[]>([]);
 
+  /** Búsqueda interna de permisos en tiempo real. */
+  readonly filtroPermisos = signal('');
+
+  /** Permisos filtrados por la búsqueda interna. */
+  readonly recursosFiltrados = computed(() => {
+    const term = this.filtroPermisos().toLowerCase().trim();
+    if (!term) return this.recursos();
+    return this.recursos().filter(
+      (r) =>
+        r.nombre.toLowerCase().includes(term) ||
+        r.codigo.toLowerCase().includes(term) ||
+        (r.descripcion ?? '').toLowerCase().includes(term) ||
+        r.tipo.toLowerCase().includes(term)
+    );
+  });
+
+  /** Índices globales de los permisos filtrados (para mapear al FormArray). */
+  readonly recursosFiltradosIndices = computed(() => {
+    const term = this.filtroPermisos().toLowerCase().trim();
+    if (!term) return this.recursos().map((_, i) => i);
+    return this.recursos()
+      .map((r, i) => ({ r, i }))
+      .filter(({ r }) =>
+        r.nombre.toLowerCase().includes(term) ||
+        r.codigo.toLowerCase().includes(term) ||
+        (r.descripcion ?? '').toLowerCase().includes(term) ||
+        r.tipo.toLowerCase().includes(term)
+      )
+      .map(({ i }) => i);
+  });
+
   // ---------- Configuración del átomo de Tabla ----------
   readonly tableColumnTitle = ['Nombre', 'Descripción', 'Estado', 'Acciones'];
   readonly columnsToDisplay = ['nombre', 'descripcion', 'estado', 'acciones'];
@@ -174,6 +205,42 @@ export class RolesList implements OnInit {
     this.permisosArray.updateValueAndValidity();
   }
 
+  /** Filtra los permisos en tiempo real. */
+  filtrarPermisos(term: string): void {
+    this.filtroPermisos.set(term);
+  }
+
+  /** Selecciona/deselecciona todos los permisos (los visibles si hay filtro). */
+  toggleSelectAllPermisos(checked: boolean): void {
+    const indices = this.recursosFiltradosIndices();
+    indices.forEach((i) => {
+      this.permisosArray.at(i).setValue(checked);
+    });
+    this.permisosArray.updateValueAndValidity();
+  }
+
+  /** Estado del checkbox "Seleccionar todos": true, false, o null (parcial). */
+  get selectAllPermisosState(): boolean | null {
+    const indices = this.recursosFiltradosIndices();
+    if (indices.length === 0) return false;
+    const values = indices.map((i) => this.permisosArray.at(i).value);
+    const allTrue = values.every((v) => v === true);
+    const allFalse = values.every((v) => v === false);
+    if (allTrue) return true;
+    if (allFalse) return false;
+    return null; // indeterminado/parcial
+  }
+
+  /** True si todos los permisos visibles están seleccionados. */
+  get allPermisosSelected(): boolean {
+    return this.selectAllPermisosState === true;
+  }
+
+  /** Cantidad de permisos seleccionados. */
+  get cantidadSeleccionadosPermisos(): number {
+    return this.permisosArray.value.filter((v: boolean) => v).length;
+  }
+
   /** Retorna los IDs de los recursos seleccionados. */
   private getSelectedPermisosIds(): number[] {
     const ids: number[] = [];
@@ -205,6 +272,7 @@ export class RolesList implements OnInit {
 
   abrirCrear(): void {
     this.editingRole.set(null);
+    this.filtroPermisos.set('');
     this.roleForm?.reset({ nombre: '', descripcion: '' });
     this.buildPermisosCheckboxes([]);
     this.showForm.set(true);
@@ -212,6 +280,7 @@ export class RolesList implements OnInit {
 
   abrirEditar(role: Role): void {
     this.editingRole.set(role);
+    this.filtroPermisos.set('');
     this.roleForm?.patchValue({ nombre: role.nombre, descripcion: role.descripcion ?? '' });
     // Cargar los permisos ya asignados al rol
     this.roleService.obtenerRecursosPorRol(this.apliId(), role.id).subscribe({

@@ -70,16 +70,51 @@
               <span class="permisos-hint">Seleccione al menos un permiso</span>
             </div>
 
+            <!-- Buscador de permisos en tiempo real -->
+            <div class="filtro-permisos-row">
+              <div class="filtro-permisos-wrapper">
+                <i class="bi bi-search filtro-permisos-icon"></i>
+                <input
+                  type="text"
+                  class="filtro-permisos-input"
+                  placeholder="Buscar permiso por nombre, código o tipo…"
+                  [ngModel]="filtroPermisos()"
+                  (ngModelChange)="filtrarPermisos($event)"
+                />
+                @if (filtroPermisos()) {
+                  <button class="filtro-clear" (click)="filtrarPermisos('')" title="Limpiar búsqueda">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Checkbox Seleccionar Todos -->
+            <div class="select-all-permisos">
+              <app-checkbox
+                [id]="'select-all-permisos'"
+                [textLabel]="'Seleccionar todos los permisos'"
+                [checked]="allPermisosSelected"
+                (checkedChange)="toggleSelectAllPermisos($event)"
+              ></app-checkbox>
+              <span class="permisos-count">{{ cantidadSeleccionadosPermisos }} de {{ recursos().length }} seleccionado(s)</span>
+            </div>
+
+            <!-- Listado de permisos -->
             <div class="permisos-grid">
-              @for (recurso of recursos(); track recurso.id; let i = $index) {
-                <div class="permiso-item">
-                  <app-checkbox
-                    [id]="'permiso-' + recurso.id"
-                    [textLabel]="recurso.nombre + ' (' + recurso.tipo + ')'"
-                    [checked]="permisosArray.at(i).value"
-                    (checkedChange)="togglePermiso(i, $event)"
-                  ></app-checkbox>
-                </div>
+              @if (recursosFiltrados().length === 0) {
+                <div class="permisos-no-results">No se encontraron permisos con ese criterio.</div>
+              } @else {
+                @for (recurso of recursosFiltradosIndices(); track recurso; let fi = $index) {
+                  <div class="permiso-item">
+                    <app-checkbox
+                      [id]="'permiso-' + recursos()[recurso].id"
+                      [textLabel]="recursos()[recurso].nombre + ' (' + recursos()[recurso].tipo + ')'"
+                      [checked]="permisosArray.at(recurso).value"
+                      (checkedChange)="togglePermiso(recurso, $event)"
+                    ></app-checkbox>
+                  </div>
+                }
               }
             </div>
 

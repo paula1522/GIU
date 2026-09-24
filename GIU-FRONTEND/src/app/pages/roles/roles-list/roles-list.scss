@@ -101,6 +101,81 @@
   align-items: center;
 }
 
+/* ===== Buscador de permisos ===== */
+.filtro-permisos-row {
+  margin-bottom: 0.5rem;
+}
+
+.filtro-permisos-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filtro-permisos-icon {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.filtro-permisos-input {
+  width: 100%;
+  padding: 0.5rem 2.25rem 0.5rem 2.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  &:focus {
+    border-color: #e92012;
+    box-shadow: 0 0 0 3px rgba(233, 32, 18, 0.1);
+  }
+  &::placeholder { color: #94a3b8; }
+}
+
+.filtro-clear {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 0.875rem;
+  padding: 0.2rem;
+  &:hover { color: #e92012; }
+}
+
+/* ===== Seleccionar todos ===== */
+.select-all-permisos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.permisos-count {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.permisos-no-results {
+  grid-column: 1 / -1;
+  padding: 1.5rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.8125rem;
+}
+
 .permisos-error {
   display: flex;
   align-items: center;
