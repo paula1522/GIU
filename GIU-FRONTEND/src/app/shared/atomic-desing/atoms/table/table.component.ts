@@ -23,12 +23,17 @@ export class TableComponent {
   @Input() totalItemsPerPag = 10;// Número de elementos por página
   @Output() clickEventButton = new EventEmitter<{ action: string; row: any, idTable: string }>();
   @Input() idTable:string = '';// id de la tabla
+  @Input() enableSort: boolean = true; // Habilita ordenamiento por columnas
 
   // Variables para paginación
   currentPageIndex:any = 1; // Índice de la primera página
   paginatedData: any[] = [];
   pagesToShow: (number | string)[] = [];
   totalPages: number = 0;
+
+  // Variables para ordenamiento
+  sortColumn: number = -1; // Índice de la columna ordenada (-1 = ninguna)
+  sortDirection: 'asc' | 'desc' | null = null; // null = sin ordenar
 
   // Event emitter for pagination actions
   @Output() pageChange = new EventEmitter<number>();
@@ -59,9 +64,52 @@ export class TableComponent {
   }
 
   updatePaginatedData() {
+    let data = [...this.dataSource];
+    // Aplicar ordenamiento si hay columna seleccionada
+    if (this.sortColumn >= 0 && this.sortDirection && this.columnsToDisplay[this.sortColumn]) {
+      const col = this.columnsToDisplay[this.sortColumn];
+      data.sort((a: any, b: any) => {
+        const valA = a[col]?.columValue ?? a[col]?.switchValue ?? '';
+        const valB = b[col]?.columValue ?? b[col]?.switchValue ?? '';
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        if (strA < strB) return this.sortDirection === 'asc' ? -1 : 1;
+        if (strA > strB) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
     const start = (this.currentPageIndex - 1) * this.totalItemsPerPag;
     const end = start + this.totalItemsPerPag;
-    this.paginatedData = this.dataSource.slice(start, end);
+    this.paginatedData = data.slice(start, end);
+  }
+
+  /**
+   * Alterna el ordenamiento de una columna: asc -> desc -> sin orden -> asc
+   */
+  toggleSort(colIndex: number): void {
+    if (!this.enableSort) return;
+    if (this.sortColumn === colIndex) {
+      if (this.sortDirection === 'asc') {
+        this.sortDirection = 'desc';
+      } else if (this.sortDirection === 'desc') {
+        this.sortDirection = null;
+        this.sortColumn = -1;
+      } else {
+        this.sortDirection = 'asc';
+      }
+    } else {
+      this.sortColumn = colIndex;
+      this.sortDirection = 'asc';
+    }
+    this.currentPageIndex = 1;
+    this.updatePaginatedData();
+    this.updatePagesToShow();
+  }
+
+  /** Retorna el ícono de ordenamiento para una columna. */
+  getSortIcon(colIndex: number): string {
+    if (this.sortColumn !== colIndex || !this.sortDirection) return 'bi bi-arrow-down-up';
+    return this.sortDirection === 'asc' ? 'bi bi-sort-up' : 'bi bi-sort-down';
   }
 
   goToFirstPage() {
@@ -140,6 +188,16 @@ export class TableComponent {
     item[column] = event.row.value;
     let idTable: string = this.idTable;
     this.clickEventButton.emit({ action: column, row: item, idTable: idTable });
+  }
+
+  /**
+   * Maneja el cambio de un switch en la tabla.
+   */
+  onSwitchToggle(item: any, column: string, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    item[column].switchValue = checked;
+    const action = item[column].switchAction || column;
+    this.clickEventButton.emit({ action, row: item, idTable: this.idTable });
   }
 
   updatePagesToShow() {

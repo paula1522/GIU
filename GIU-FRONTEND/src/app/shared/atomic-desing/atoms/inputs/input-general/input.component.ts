@@ -70,6 +70,11 @@ export class InputComponent implements OnInit {
     return !!this.control?.invalid && this.control?.touched;
   }
 
+  /** True si hay un textLabel definido (para ocultar el placeholder cuando hay floating label). */
+  get hasLabel(): boolean {
+    return !!this.textLabel;
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }

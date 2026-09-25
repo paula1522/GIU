@@ -14,7 +14,12 @@
       <thead>
         <tr>
           @for (title of tableColumnTitle; track $index) {
-          <th>{{ title | titlecase }}</th>
+          <th (click)="toggleSort($index)" [class.sortable]="enableSort">
+            {{ title | titlecase }}
+            @if (enableSort) {
+              <i [class]="getSortIcon($index)" class="sort-icon"></i>
+            }
+          </th>
           }
         </tr>
       </thead>
@@ -46,6 +51,14 @@
               [class.badge-danger]="!item[column].satusValue">
               {{ item[column].columValue }}
             </span>
+
+            } @else if (item[column].typeColum === 'SWITCH') {
+
+            <label class="switch-toggle">
+              <input type="checkbox" [checked]="item[column].switchValue"
+                (change)="onSwitchToggle(item, column, $event)" />
+              <span class="switch-slider"></span>
+            </label>
 
             } @else if (item[column].typeColum === 'STRING' && item[column]?.columValue) {
 

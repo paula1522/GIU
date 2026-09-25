@@ -77,9 +77,9 @@
 
         <div class="select-options">
 
-          <!-- OPCIÓN POR DEFECTO -->
+          <!-- OPCIÓN POR DEFECTO (solo si no hay una option con value vacío) -->
 
-          @if (defaultOption) {
+          @if (defaultOption && !hasDefaultInOptions) {
 
             <button
               type="button"

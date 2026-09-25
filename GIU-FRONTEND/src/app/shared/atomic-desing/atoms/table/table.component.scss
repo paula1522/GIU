@@ -54,6 +54,18 @@
   word-break: break-word;
   overflow-wrap: anywhere;
   min-width: $table-min-width;
+
+  &.sortable {
+    cursor: pointer;
+    user-select: none;
+    &:hover { background-color: lighten($table-header-bg, 8%); }
+  }
+
+  .sort-icon {
+    margin-left: 0.3rem;
+    font-size: 0.7rem;
+    opacity: 0.6;
+  }
 }
 
 .responsive-table th:first-child {
@@ -194,5 +206,55 @@ td:hover .tooltip {
     flex-direction: column;
     align-items: flex-start;
     gap: $spacing-sm;
+  }
+}
+
+/* ===== Switch / Toggle ===== */
+.switch-toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .switch-slider {
+      background-color: $primary-color;
+    }
+
+    &:checked + .switch-slider::before {
+      transform: translateX(20px);
+    }
+
+    &:focus + .switch-slider {
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+    }
+  }
+}
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  border-radius: 999px;
+  transition: 0.2s;
+
+  &::before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: 0.2s;
   }
 }

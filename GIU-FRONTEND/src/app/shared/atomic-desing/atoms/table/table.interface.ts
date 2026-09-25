@@ -17,10 +17,13 @@ export interface ColumnConfig {
     satusValue?: boolean;
     columValue?: string;
     actionButtons?: ActionButton[];
+    switchValue?: boolean;
+    switchAction?: string;
 }
 
 export enum typeColum {
     button = 'BUTTON',
     status = 'STATUS',
-    string = 'STRING'
+    string = 'STRING',
+    switch = 'SWITCH'
 }

@@ -10,27 +10,6 @@ input::placeholder {
   color: rgb(160, 158, 158);
 }
 
-.form-label {
-  font-size: 0.8rem;
-  margin: 2px;
-  color: #2D2D2D;
-
-  display: block;
-  width: 100%;
-  min-width: 0;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  .required-mark {
-    color: $primary-color;
-    margin-left: 2px;
-    font-weight: $font-weight-bold;
-  }
-}
-
-
 .input-textarea {
   height: 80px;
   max-height: 80px;
@@ -42,29 +21,103 @@ input::placeholder {
   min-width: 0;
 }
 
+/* ===== Contenedor principal (igual que Select) ===== */
 .input-custom-style {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 0.8rem;
   width: 100%;
-  min-height: 43px;
-  padding: 0 10px 0 12px;
-  border-radius: 10px;
-  border: 1px solid var(--Gris-Medio, #B4B4B4);
-  background: var(--Blanco, #FFF);
+  height: 38px;
+  padding: 0 8px 0 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
   position: relative;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: #e92012;
+    box-shadow: 0 0 0 3px rgba(233, 32, 18, 0.08);
+  }
 }
 
+/* ===== Contenido (label + input) ===== */
+.input-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+}
+
+/* ===== Floating Label (igual que Select) ===== */
+.form-label {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  font-size: 0.7rem;
+  // font-weight: 500;
+  line-height: 1.2;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 2;
+  transition: top 0.15s ease, transform 0.15s ease, font-size 0.15s ease;
+
+  .required-mark {
+    color: $primary-color;
+    margin-left: 2px;
+    font-weight: $font-weight-bold;
+  }
+}
+
+/* Con valor o foco: el label sube */
+.input-custom-style.has-value .form-label,
+.input-custom-style:focus-within .form-label {
+  top: 3px;
+  transform: translateY(0);
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+/* ===== Input ===== */
+.input-custom {
+  flex: 1;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent;
+  padding: 14px 0 0 0;
+  font-size: 0.8rem;
+  color: #1a1a2e;
+  width: 100%;
+  outline: none;
+}
+
+/* Sin label: el input usa padding normal */
+.input-custom-style:not(.has-value) .input-custom {
+  padding-top: 0;
+}
+
+.input-custom:focus,
+.input-custom:active {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* ===== Iconos ===== */
 .input-icon-right {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 24px;
   height: 24px;
-
   margin-left: 8px;
-
   flex-shrink: 0;
 }
 
@@ -72,12 +125,9 @@ input::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 24px;
   height: 24px;
-
-  margin-right: 10px;
-
+  margin-right: 8px;
   flex-shrink: 0;
 }
 
@@ -101,28 +151,21 @@ input::placeholder {
   border-color: $item-color;
 }
 
-.input-custom {
-  flex: 1;
-  border: none !important;
-  box-shadow: none !important;
-  background: transparent;
-  padding: 8px 0;
-}
-
-.input-custom:focus,
-.input-custom:active {
-  outline: none;
-  border: none;
-  box-shadow: none;
-}
-
+/* ===== Error ===== */
 .error-container {
-  min-height: 1.5rem;
+  min-height: 1.2rem;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  text-align: center;
+  text-align: left;
   width: 100%;
+  padding-top: 2px;
+}
+
+.text-danger {
+  font-size: 0.7rem;
+  color: #dc3545;
+  font-weight: 500;
 }
 
 .text-danger {

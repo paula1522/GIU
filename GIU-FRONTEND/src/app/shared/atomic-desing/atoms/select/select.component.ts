@@ -94,6 +94,11 @@ export class SelectComponent implements OnInit {
     return !!this.control?.invalid && this.control?.touched;
   }
 
+  /** True si el defaultOption ya está incluido en las options (evita duplicados). */
+  get hasDefaultInOptions(): boolean {
+    return this.options.some(opt => opt[this.valueKey] === '' || opt[this.valueKey] === null);
+  }
+
   hasError(type: string): boolean {
     return !!this.control?.hasError(type) &&
       (this.control.dirty || this.control.touched);
