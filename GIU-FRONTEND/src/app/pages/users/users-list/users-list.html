@@ -218,3 +218,156 @@
   (confirm)="ejecutarToggle()"
   (cancel)="confirmVisible.set(false)"
 ></app-confirm-modal>
+
+<!-- Modal de carga masiva -->
+@if (showCargaMasiva()) {
+  <div class="overlay" (click)="cerrarCargaMasiva()">
+    <div class="modal modal-carga" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Carga masiva de usuarios</h2>
+        <app-button
+          [icon]="'bi bi-x-lg'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarCargaMasiva()"
+        ></app-button>
+      </div>
+      <div class="modal-body">
+
+        @if (cargaExitosa()) {
+          <!-- Mensaje de éxito -->
+          <div class="carga-exitosa">
+            <i class="bi bi-check-circle-fill"></i>
+            <p>¡Carga masiva completada! Se crearon {{ registrosMasivos().length }} usuario(s) correctamente.</p>
+          </div>
+        } @else {
+          <!-- Zona de carga (Dropzone) -->
+          @if (!archivoCargado()) {
+            <div class="dropzone"
+              (dragover)="onDragOver($event)"
+              (drop)="onFileDropped($event)"
+            >
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p class="dropzone-text">Arrastre su archivo Excel aquí</p>
+              <p class="dropzone-hint">o haga clic en el botón para seleccionarlo</p>
+              <label class="dropzone-btn-label">
+                <input type="file" accept=".xlsx" (change)="onFileSelected($event)" hidden />
+                <span class="dropzone-btn">Seleccionar archivo</span>
+              </label>
+              <p class="dropzone-format">Solo archivos .xlsx</p>
+            </div>
+          }
+
+          <!-- Error de carga -->
+          @if (cargaErrorMsg() && !archivoCargado()) {
+            <div class="carga-error-msg">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              {{ cargaErrorMsg() }}
+            </div>
+          }
+
+          <!-- Panel informativo del archivo cargado -->
+          @if (archivoCargado()) {
+            <div class="carga-info">
+              <div class="carga-info-header">
+                <div class="carga-file-info">
+                  <i class="bi bi-file-earmark-spreadsheet"></i>
+                  <div>
+                    <strong>{{ archivoCargado()?.name }}</strong>
+                    <span class="carga-file-size">{{ tamanoArchivo }}</span>
+                  </div>
+                </div>
+                <app-button
+                  [text]="'Limpiar'"
+                  [icon]="'bi bi-trash'"
+                  [class]="['btn', 'btn-primary-secondary']"
+                  [type]="'button'"
+                  (clickEventButton)="limpiarCarga()"
+                ></app-button>
+              </div>
+
+              <div class="carga-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Total registros</span>
+                  <span class="stat-value">{{ registrosMasivos().length + erroresValidacion().length }}</span>
+                </div>
+                <div class="stat-item stat-valid">
+                  <span class="stat-label">Válidos</span>
+                  <span class="stat-value">{{ registrosMasivos().length }}</span>
+                </div>
+                <div class="stat-item stat-error">
+                  <span class="stat-label">Con errores</span>
+                  <span class="stat-value">{{ erroresValidacion().length }}</span>
+                </div>
+              </div>
+
+              <!-- Lista de errores -->
+              @if (erroresValidacion().length > 0) {
+                <div class="carga-errores">
+                  <div class="carga-errores-title">
+                    <i class="bi bi-exclamation-triangle"></i> Errores de validación ({{ erroresValidacion().length }})
+                  </div>
+                  <div class="carga-errores-list">
+                    @for (err of erroresValidacion(); track err.fila) {
+                      <div class="error-row">
+                        <span class="error-fila">Fila {{ err.fila }}</span>
+                        <span class="error-msg">{{ err.mensaje }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Error de backend -->
+              @if (cargaErrorMsg() && archivoCargado()) {
+                <div class="carga-error-msg">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  {{ cargaErrorMsg() }}
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Botones de acción -->
+          <div class="modal-actions">
+            <app-button
+              [text]="'Cancelar'"
+              [class]="['btn', 'btn-primary-secondary']"
+              [type]="'button'"
+              (clickEventButton)="cerrarCargaMasiva()"
+            ></app-button>
+            @if (archivoCargado() && puedeProcesar) {
+              <app-button
+                [text]="'Procesar Carga Masiva'"
+                [icon]="'bi bi-upload'"
+                [class]="['btn', 'btn-primary']"
+                [type]="'button'"
+                (clickEventButton)="confirmarCargaMasiva()"
+              ></app-button>
+            }
+            @if (procesandoCarga()) {
+              <app-button
+                [text]="'Procesando…'"
+                [icon]="'bi bi-arrow-clockwise'"
+                [class]="['btn', 'btn-primary']"
+                [type]="'button'"
+                [disabled]="true"
+              ></app-button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Confirmación de carga masiva -->
+<app-confirm-modal
+  [visible]="showConfirmCarga()"
+  title="Confirmar carga masiva"
+  [message]="'¿Está seguro de crear ' + registrosMasivos().length + ' usuarios en el sistema?'"
+  confirmText="Confirmar"
+  [isDestructive]="false"
+  (confirm)="ejecutarCargaMasiva()"
+  (cancel)="showConfirmCarga.set(false)"
+></app-confirm-modal>

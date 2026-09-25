@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import * as XLSX from 'xlsx';
 import { UserMockService } from '../../../services/mock/user-mock.service';
 import { RoleMockService } from '../../../services/mock/role-mock.service';
 import { AuthService } from '../../../services/logic/auth.service';
@@ -15,6 +16,18 @@ import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/butt
 import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';
 import { HeaderPagesComponent, HeaderButton } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
+
+interface RegistroMasivo {
+  nombreCompleto: string;
+  identificacion: string;
+  usuarioRed: string;
+  idRol: string;
+}
+
+interface ErrorValidacion {
+  fila: number;
+  mensaje: string;
+}
 
 @Component({
   selector: 'app-users-list',
@@ -117,6 +130,13 @@ export class UsersList implements OnInit, OnDestroy {
         type: 'button',
         action: 'NUEVO',
       });
+      btns.push({
+        text: 'Carga masiva',
+        icon: 'bi bi-file-earmark-spreadsheet',
+        class: ['btn', 'btn-primary-secondary'],
+        type: 'button',
+        action: 'CARGA_MASIVA',
+      });
     }
     return btns;
   });
@@ -125,6 +145,8 @@ export class UsersList implements OnInit, OnDestroy {
   onHeaderButtonClick(action: string): void {
     if (action === 'NUEVO') {
       this.abrirCrear();
+    } else if (action === 'CARGA_MASIVA') {
+      this.abrirCargaMasiva();
     }
   }
   readonly canEdit = this.auth.hasPermission(PERMISSIONS.USUARIOS_EDITAR);
@@ -431,4 +453,260 @@ export class UsersList implements OnInit, OnDestroy {
   // ---------- Getters para FormControl del átomo de Select ----------
   get perfilControl(): FormControl { return this.userForm.get('perfilId') as FormControl; }
   get rolControl(): FormControl { return this.userForm.get('rolId') as FormControl; }
+
+  // ==================== Carga Masiva ====================
+
+  readonly showCargaMasiva = signal(false);
+  readonly archivoCargado = signal<File | null>(null);
+  readonly registrosMasivos = signal<RegistroMasivo[]>([]);
+  readonly erroresValidacion = signal<ErrorValidacion[]>([]);
+  readonly procesandoCarga = signal(false);
+  readonly cargaExitosa = signal(false);
+  readonly cargaErrorMsg = signal('');
+  readonly showConfirmCarga = signal(false);
+
+  /** Encabezados requeridos en el Excel. */
+  private readonly HEADERS_REQUERIDOS = ['Nombre completo', 'identificacion', 'usuario de red', 'id del rol'];
+
+  /** Abrir modal de carga masiva. */
+  abrirCargaMasiva(): void {
+    this.showCargaMasiva.set(true);
+    this.limpiarCarga();
+  }
+
+  /** Cerrar modal de carga masiva. */
+  cerrarCargaMasiva(): void {
+    this.showCargaMasiva.set(false);
+    this.limpiarCarga();
+  }
+
+  /** Limpiar estado de carga. */
+  limpiarCarga(): void {
+    this.archivoCargado.set(null);
+    this.registrosMasivos.set([]);
+    this.erroresValidacion.set([]);
+    this.procesandoCarga.set(false);
+    this.cargaExitosa.set(false);
+    this.cargaErrorMsg.set('');
+  }
+
+  /** Maneja la selección de archivo. */
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      this.procesarArchivo(file);
+    }
+  }
+
+  /** Maneja el arrastre de archivo (drag & drop). */
+  onFileDropped(event: DragEvent): void {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      this.procesarArchivo(file);
+    }
+  }
+
+  /** Previene el comportamiento por defecto del drag over. */
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  /** Procesa el archivo Excel: valida extensión, lee y valida datos. */
+  private procesarArchivo(file: File): void {
+    this.limpiarCarga();
+    this.cargaErrorMsg.set('');
+
+    // Validar extensión
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension !== 'xlsx') {
+      this.cargaErrorMsg.set('Solo se permiten archivos con extensión .xlsx');
+      return;
+    }
+
+    // Validar tipo MIME
+    const mimeValido = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                       file.type === 'application/vnd.ms-excel' || file.type === '';
+    if (!mimeValido) {
+      this.cargaErrorMsg.set('El tipo de archivo no es válido. Solo se aceptan archivos Excel (.xlsx).');
+      return;
+    }
+
+    this.archivoCargado.set(file);
+
+    // Leer el archivo Excel
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' }) as any[][];
+
+        this.validarEstructuraYDatos(jsonData);
+      } catch (error) {
+        this.cargaErrorMsg.set('Error al leer el archivo Excel. Verifique que el archivo no esté corrupto.');
+      }
+    };
+    reader.onerror = () => {
+      this.cargaErrorMsg.set('Error al cargar el archivo.');
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  /** Valida la estructura de encabezados y los datos de cada fila. */
+  private validarEstructuraYDatos(data: any[][]): void {
+    const errores: ErrorValidacion[] = [];
+    const registros: RegistroMasivo[] = [];
+
+    if (data.length === 0) {
+      this.cargaErrorMsg.set('El archivo está vacío.');
+      return;
+    }
+
+    // Validar encabezados (fila 0)
+    const headers = data[0].map((h: any) => String(h).trim());
+    const headersFaltantes = this.HEADERS_REQUERIDOS.filter(h => !headers.includes(h));
+    if (headersFaltantes.length > 0) {
+      this.cargaErrorMsg.set(`Faltan encabezados requeridos: ${headersFaltantes.join(', ')}. Encabezados esperados: ${this.HEADERS_REQUERIDOS.join(', ')}`);
+      return;
+    }
+
+    // Mapear índices de columnas
+    const idxNombre = headers.indexOf('Nombre completo');
+    const idxIdent = headers.indexOf('identificacion');
+    const idxUsuario = headers.indexOf('usuario de red');
+    const idxRol = headers.indexOf('id del rol');
+
+    // Set para detectar duplicados
+    const identificacionesVistas = new Set<string>();
+    const usuariosRedVistos = new Set<string>();
+
+    // Procesar filas (desde la fila 1, la 0 es encabezado)
+    for (let i = 1; i < data.length; i++) {
+      const fila = data[i];
+      const numFila = i + 1; // +1 porque la fila 1 es encabezado en Excel
+
+      // Saltar filas completamente vacías
+      if (fila.every(c => c === '' || c === null || c === undefined)) continue;
+
+      const nombreCompleto = String(fila[idxNombre] ?? '').trim();
+      const identificacion = String(fila[idxIdent] ?? '').trim();
+      const usuarioRed = String(fila[idxUsuario] ?? '').trim();
+      const idRol = String(fila[idxRol] ?? '').trim();
+
+      // Validar campos obligatorios
+      if (!nombreCompleto) {
+        errores.push({ fila: numFila, mensaje: "El campo 'Nombre completo' es obligatorio." });
+      }
+      if (!identificacion) {
+        errores.push({ fila: numFila, mensaje: "El campo 'identificacion' es obligatorio." });
+      }
+      if (!usuarioRed) {
+        errores.push({ fila: numFila, mensaje: "El campo 'usuario de red' es obligatorio." });
+      }
+      if (!idRol) {
+        errores.push({ fila: numFila, mensaje: "El campo 'id del rol' es obligatorio." });
+      }
+
+      // Validar formato numérico
+      if (identificacion && !/^\d+$/.test(identificacion)) {
+        errores.push({ fila: numFila, mensaje: `El campo 'identificacion' debe ser numérico. Valor encontrado: "${identificacion}"` });
+      }
+      if (idRol && !/^\d+$/.test(idRol)) {
+        errores.push({ fila: numFila, mensaje: `El campo 'id del rol' debe ser numérico. Valor encontrado: "${idRol}"` });
+      }
+
+      // Validar duplicados internos
+      if (identificacion) {
+        if (identificacionesVistas.has(identificacion)) {
+          errores.push({ fila: numFila, mensaje: `Identificación duplicada: "${identificacion}" ya existe en el archivo.` });
+        } else {
+          identificacionesVistas.add(identificacion);
+        }
+      }
+      if (usuarioRed) {
+        if (usuariosRedVistos.has(usuarioRed.toLowerCase())) {
+          errores.push({ fila: numFila, mensaje: `Usuario de red duplicado: "${usuarioRed}" ya existe en el archivo.` });
+        } else {
+          usuariosRedVistos.add(usuarioRed.toLowerCase());
+        }
+      }
+
+      // Si no hay errores en esta fila, agregar a registros válidos
+      const erroresFila = errores.filter(e => e.fila === numFila);
+      if (erroresFila.length === 0) {
+        registros.push({ nombreCompleto, identificacion, usuarioRed, idRol });
+      }
+    }
+
+    this.registrosMasivos.set(registros);
+    this.erroresValidacion.set(errores);
+  }
+
+  /** Tamaño del archivo formateado. */
+  get tamanoArchivo(): string {
+    const file = this.archivoCargado();
+    if (!file) return '';
+    const kb = file.size / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  }
+
+  /** True si hay registros válidos y no hay errores. */
+  get puedeProcesar(): boolean {
+    return this.registrosMasivos().length > 0 && this.erroresValidacion().length === 0 && !this.procesandoCarga();
+  }
+
+  /** Abre la confirmación de carga masiva. */
+  confirmarCargaMasiva(): void {
+    this.showConfirmCarga.set(true);
+  }
+
+  /** Procesa la carga masiva: crea los usuarios en el sistema. */
+  ejecutarCargaMasiva(): void {
+    this.showConfirmCarga.set(false);
+    this.procesandoCarga.set(true);
+    this.cargaExitosa.set(false);
+    this.cargaErrorMsg.set('');
+
+    const registros = this.registrosMasivos();
+    let pendientes = registros.length;
+    let exitosos = 0;
+    let fallidos = 0;
+    const erroresBackend: string[] = [];
+
+    registros.forEach((reg) => {
+      this.userService.crear({
+        usuarioRed: reg.usuarioRed,
+        nombre: reg.nombreCompleto,
+        correo: `${reg.usuarioRed}@claro.com.co`,
+        numeroIdentificacion: reg.identificacion,
+      }, this.auth.usuarioRed()).subscribe({
+        next: () => {
+          exitosos++;
+          pendientes--;
+          if (pendientes === 0) this.finalizarCarga(exitosos, fallidos, erroresBackend);
+        },
+        error: () => {
+          fallidos++;
+          erroresBackend.push(`Error al crear usuario "${reg.usuarioRed}"`);
+          pendientes--;
+          if (pendientes === 0) this.finalizarCarga(exitosos, fallidos, erroresBackend);
+        },
+      });
+    });
+  }
+
+  /** Finaliza la carga masiva y muestra el resultado. */
+  private finalizarCarga(exitosos: number, fallidos: number, errores: string[]): void {
+    this.procesandoCarga.set(false);
+    if (fallidos === 0) {
+      this.cargaExitosa.set(true);
+    } else {
+      this.cargaErrorMsg.set(`Carga finalizada: ${exitosos} usuario(s) creado(s) correctamente, ${fallidos} fallido(s). ${errores.join('; ')}`);
+    }
+    this.cargar();
+  }
 }
