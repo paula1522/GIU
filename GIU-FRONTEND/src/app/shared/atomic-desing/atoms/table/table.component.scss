@@ -28,11 +28,22 @@
 /* Tabla */
 .table-scroll {
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
 .responsive-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   font-size: $table-font-size;
   border-collapse: separate;
   border-spacing: 0;
@@ -50,15 +61,15 @@
   padding: $table-header-padding;
   text-align: left;
   border: 1px solid #FFFFFF;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  min-width: $table-min-width;
+  white-space: nowrap;
 
   &.sortable {
     cursor: pointer;
     user-select: none;
-    &:hover { background-color: lighten($table-header-bg, 8%); }
+
+    &:hover {
+      background-color: lighten($table-header-bg, 8%);
+    }
   }
 
   .sort-icon {
@@ -80,14 +91,10 @@
   padding: $table-cell-padding-y $table-cell-padding-x;
   border: 1px solid $table-border-color;
   background-color: $table-bg;
-  position: relative;
-  max-width: $table-max-width;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  min-width: $table-min-width;
+  white-space: nowrap;
+  max-width: 280px;
 }
 
 /* Texto de celda */
@@ -95,6 +102,30 @@
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Columna de acciones: se ajusta al contenido de los botones */
+.responsive-table th:last-child,
+.responsive-table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+  overflow: visible;
+  max-width: none;
+}
+
+/* Acciones */
+.cell.center {
+  display: flex;
+  align-items: center;
+}
+
+.cell.center.icons {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.4rem;
 }
 
 /* Tooltip */
@@ -141,17 +172,6 @@ td:hover .tooltip {
   border: 1px solid $color-danger;
 }
 
-/* Acciones */
-.cell.center {
-  display: flex;
-  align-items: center;
-}
-
-.cell.center.icons {
-  justify-content: left;
-  margin-left: -7px;
-}
-
 /* Paginación */
 .pagination-container {
   display: flex;
@@ -190,17 +210,7 @@ td:hover .tooltip {
   color: $text-secondary;
 }
 
-@media (max-width: 1024px) {
-  .table-scroll {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .responsive-table {
-    width: max-content;
-  }
-}
-
+/* Responsive */
 @media (max-width: 768px) {
   .header-records-table {
     flex-direction: column;

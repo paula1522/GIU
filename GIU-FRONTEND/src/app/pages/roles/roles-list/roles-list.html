@@ -8,8 +8,8 @@
     <app-input [form]="searchForm" [controlName]="'search'" [placeholder]="'Buscar rol…'" [showRequiredMark]="false">
     </app-input>
 
-    <app-select [id]="'filtro-estado'" [control]="estadoFiltro" [options]="estadoOptions" [displayKey]="'nombre'"
-      [valueKey]="'id'" [defaultOption]="'Todos'" [showRequiredMark]="false">
+    <app-select [id]="'filtro-estado'" [textLabel]="'Estado'" [control]="estadoFiltro" [options]="estadoOptions"
+      [displayKey]="'nombre'" [valueKey]="'id'" [defaultOption]="'Todos'" [showRequiredMark]="false">
     </app-select>
   </div>
 
@@ -24,6 +24,7 @@
 
 </div>
 
+<!-- ==================== Modal: Crear / Editar rol ==================== -->
 @if (showForm()) {
 <div class="overlay" (click)="cerrarForm()">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -180,14 +181,14 @@
 </div>
 }
 
-<!-- Confirmación toggle estado -->
+<!-- ==================== Confirmación toggle estado ==================== -->
 <app-confirm-modal [visible]="confirmVisible()" [title]="confirmTitle()" [message]="confirmMsg()"
   [confirmText]="confirmRole()?.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'"
   [isDestructive]="confirmRole()?.estado === 'ACTIVO'" (confirm)="ejecutarToggle()"
   (cancel)="confirmVisible.set(false)">
 </app-confirm-modal>
 
-<!-- Modal de usuarios por rol -->
+<!-- ==================== Modal: Usuarios por rol ==================== -->
 @if (showUsuariosModal()) {
 
 <div class="overlay" (click)="cerrarUsuariosModal()">
@@ -242,7 +243,8 @@
 
         @if (usuarioBuscado(); as user) {
 
-        <div class="usuario-encontrado">
+        <div class="usuario-encontrado" [class.usuario-encontrado--activo]="user.estado === 'ACTIVO'"
+          [class.usuario-encontrado--inactivo]="user.estado !== 'ACTIVO'">
 
           <div class="usuario-info">
 
@@ -255,10 +257,15 @@
               </span>
             </div>
 
+            <span class="badge" [class.badge-success]="user.estado === 'ACTIVO'"
+              [class.badge-danger]="user.estado !== 'ACTIVO'">
+              {{ user.estado }}
+            </span>
+
           </div>
 
           <app-button [text]="'Asociar al rol'" [icon]="'bi bi-link-45deg'" [class]="['btn', 'btn-primary']"
-            [type]="'button'" (clickEventButton)="asociarUsuarioRol()">
+            [type]="'button'" [disabled]="user.estado !== 'ACTIVO'" (clickEventButton)="asociarUsuarioRol()">
           </app-button>
 
         </div>
@@ -314,8 +321,13 @@
               </span>
               }
 
-              <app-button [text]="'Quitar seleccionados'" [icon]="'bi bi-trash'" [class]="['btn', 'btn-primary']"
-                [type]="'button'" [disabled]="!haySeleccionados" (clickEventButton)="quitarSeleccionados()">
+              <app-button
+                [text]="quitandoUsuarios() ? 'Quitando…' : 'Quitar seleccionados'"
+                [icon]="quitandoUsuarios() ? 'bi bi-arrow-clockwise' : 'bi bi-trash'"
+                [class]="['btn', 'btn-primary']"
+                [type]="'button'"
+                [disabled]="!haySeleccionados || quitandoUsuarios()"
+                (clickEventButton)="quitarSeleccionados()">
               </app-button>
 
             </div>
@@ -340,7 +352,7 @@
 
             @for (
             u of paginatedUsuarios();
-            track u.id;
+            track u.usuarioRed;
             let i = $index
             ) {
 
@@ -350,23 +362,34 @@
 
             <div class="usuario-row" [class.selected]="isUsuarioSelected(globalIndex)">
 
-              <app-checkbox [id]="'chk-' + u.id" [checked]="isUsuarioSelected(globalIndex)"
+              <app-checkbox [id]="'chk-' + u.usuarioRed" [checked]="isUsuarioSelected(globalIndex)"
                 (checkedChange)="toggleSeleccionUsuario(globalIndex, $event)">
               </app-checkbox>
 
               <div class="usuario-row-info">
 
-                <span class="usuario-row-nombre">
-                  {{ u.nombre }}
+                <div class="usuario-row-text">
+
+                  <span class="usuario-row-nombre">
+                    {{ u.nombre }}
+                  </span>
+
+                  <span class="usuario-row-red">
+                    {{ u.usuarioRed }}
+                  </span>
+
+                  <span class="usuario-row-correo">
+                    {{ u.correo || '—' }}
+                  </span>
+
+                </div>
+
+                <span class="badge" [class.badge-success]="u.estado === 'ACTIVO'"
+                  [class.badge-danger]="u.estado !== 'ACTIVO'">
+                  {{ u.estado }}
                 </span>
 
-                <span class="usuario-row-red">
-                  {{ u.usuarioRed }}
-                </span>
-
-                <span class="usuario-row-correo">
-                  {{ u.correo || '—' }}
-                </span>
+              
 
               </div>
 
@@ -424,3 +447,126 @@
 </div>
 
 }
+
+<!-- ==================== Modal: Detalle del rol ==================== -->
+@if (showDetalleRol()) {
+<div class="overlay" (click)="cerrarDetalleRol()">
+  <div class="modal modal-detalle" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>Detalle del rol — {{ rolDetalle()?.nombre }}</h2>
+      <app-button [icon]="'bi bi-x-lg'" [class]="['btn', 'btn-primary-secondary']" [type]="'button'"
+        (clickEventButton)="cerrarDetalleRol()"></app-button>
+    </div>
+
+    <div class="modal-body">
+
+      @if (rolDetalle(); as r) {
+
+      <!-- Sección A: Datos del Rol -->
+      <div class="detalle-section">
+        <div class="detalle-section-title">
+          <i class="bi bi-shield-lock"></i> Datos del Rol
+        </div>
+
+        <div class="detalle-grid">
+          <div class="detalle-item">
+            <span class="detalle-label">ID</span>
+            <span class="detalle-value">#{{ r.id }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Nombre</span>
+            <span class="detalle-value">{{ r.nombre }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Descripción</span>
+            <span class="detalle-value">{{ r.descripcion || '—' }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Estado</span>
+            <span class="badge" [class.badge-success]="r.estado === 'ACTIVO'"
+              [class.badge-danger]="r.estado !== 'ACTIVO'">
+              {{ r.estado }}
+            </span>
+          </div>
+          <div class="detalle-item">
+            <span class="detalle-label">Cantidad de permisos</span>
+            <span class="detalle-value">{{ permisosRol().length }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección B: Permisos Asignados -->
+      <div class="detalle-section">
+        <div class="detalle-section-title">
+          <i class="bi bi-key"></i> Permisos Asignados
+        </div>
+
+        @if (cargandoDetalleRol()) {
+        <div class="detalle-loading">Cargando permisos…</div>
+        } @else if (permisosRol().length === 0) {
+        <div class="detalle-empty">Este rol no tiene permisos asignados actualmente.</div>
+        } @else {
+        <div class="apps-table-wrapper">
+          <table class="apps-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Código</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of permisosRol(); track p.recuId) {
+              <tr>
+                <td>
+                  <div class="app-cell">
+                    <i class="bi bi-key"></i>
+                    <span>{{ p.recuNombre || '—' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="role-chip">
+                    <i class="bi bi-tag"></i>
+                    {{ p.recuTipo || '—' }}
+                  </span>
+                </td>
+                <td>{{ p.recuCodigo || '—' }}</td>
+                <td>
+                  <span class="badge" [class.badge-success]="p.recuEstado === 'ACTIVO'"
+                    [class.badge-danger]="p.recuEstado !== 'ACTIVO'">
+                    {{ p.recuEstado || '—' }}
+                  </span>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
+      </div>
+
+      }
+
+      <!-- Acciones del modal de detalle -->
+      <div class="modal-actions">
+        <app-button [text]="'Cerrar'" [icon]="'bi bi-x-lg'" [class]="['btn', 'btn-primary-secondary']" [type]="'button'"
+          (clickEventButton)="cerrarDetalleRol()"></app-button>
+      </div>
+
+    </div>
+  </div>
+</div>
+}
+
+<!-- ==================== Confirmación quitar usuarios del rol ==================== -->
+<app-confirm-modal
+  [visible]="confirmQuitarVisible()"
+  [title]="'Quitar usuarios del rol'"
+  [message]="confirmQuitarMsg()"
+  [confirmText]="quitandoUsuarios() ? 'Quitando…' : 'Quitar'"
+  [isDestructive]="true"
+  (confirm)="ejecutarQuitarUsuarios()"
+  (cancel)="cancelarQuitarUsuarios()">
+</app-confirm-modal>

@@ -1,151 +1,31 @@
 @use '../../../../../styles/variables' as *;
 
-.button-radius {
-  padding: 12px !important;
-  font-size: 16px !important;
-  border-radius: 20px !important; // Botones redondeados
-}
 
+// Botón por defecto (gris oscuro, sin borde)
 .default-btn {
   border-radius: 5px;
-  border: 0px;
+  border: 0;
   padding: 0.3rem;
   color: #fff;
   font-size: 0.75rem;
   background-color: #6c757d;
 }
 
-.btn-primary:hover {
-  background-color: $primary-color;
-  // Gris de fondo para el botón primary
-  border-color: $primary-color !important;
-  color: white !important; // Texto en gris oscuro
+// Redondeado extendido (usado como `btn-radius` extra)
+.button-radius {
+  padding: 12px !important;
+  font-size: 16px !important;
+  border-radius: 20px !important;
 }
 
-// Botón Secundario (blanco con borde rojo)
-.btn-outline-danger {
-  background-color: white !important; // Blanco de fondo para el botón secundario
-  color: $primary-color;
-  // Texto en rojo
-  border-color: $primary-color;
-  width: 134px;
-  height: 25px;
-  padding: 1px 10px;
-
-}
-
-.btn-secondary {
-  // background-color:  #dddddd !important;
-  // Gris de fondo para el botón primary
-  // border-color: #d8d8d8 !important;
-  color: #000000 !important; // Texto en gris oscuro
-  height: 35px;
-  
-}
-
-.btn-secondary:hover {
-  // background-color: #b8b8b8 !important;
-  // border-color: #b8b8b8 !important;
-  color: rgb(0, 0, 0) !important;
-}
-
-.btn-outline-green {
-  background-color: white !important; // Blanco de fondo para el botón secundario
-  color: $primary-color;
-
-  ; // Texto en rojo
-  border-color: $primary-color;
-
-  ;
-}
-
-.btn-outline-green:hover {
-  background-color: $primary-color;
-
-  ; // Cambia a rojo en hover
-  color: white !important;
-}
-
-.btn-outline-danger:hover {
-  background-color: $primary-color;
-
-  ; // Cambia a rojo en hover
-  color: $primary-color;
-  ;
-}
-
-.btn-outline-danger:disabled {
-  background-color: $primary-color !important;
-  /* Fondo rojo */
-  color: white !important;
-  /* Texto blanco */
-  border-color: $primary-color;
-  /* Borde rojo */
-  cursor: not-allowed;
-  /* Muestra un ícono de no permitido */
-  opacity: 0.65;
-  /* Opcional, da un efecto visual */
-}
-
-// Botón Limpiar (gris claro)
-.btn-light {
-  background-color: #f8f9fa !important;
-  border-color: #ddd !important;
-  color: #6c757d !important;
-}
-
-.btn-light:hover {
-  background-color: #e2e6ea !important;
-  color: #495057 !important;
-}
-
-.btn-grey {
-  background-color: #b8b8b8 !important;
-  border-color: #b8b8b8 !important;
-  color: #2d2d2d !important;
-}
-
-.btn-grey:hover {
-  background-color: #f8f9fa !important;
-  color: #000 !important;
-}
-
-/* Botones de navegación */
-.btn-outline-primary {
-  color: $primary-color;
-  border-color: $primary-color;
-  border-radius: 20px;
-  padding: 5px 30px;
-}
-
-a,
-.btn-link {
-  color: $primary-color;
-  /* Color verde azulado para los links */
-  font-weight: bold !important;
-}
-
-.btn-outline-primary:hover {
-  background-color: $primary-color;
-  color: white !important;
-  border-color: $primary-color;
-}
-
-.btn-outline-blue {
-  border-color: rgba(24, 115, 133, 1);
-  color: rgba(24, 115, 133, 1);
-  border-radius: 20px;
-  padding: 3px 22px;
-  border: 2px solid rgba(24, 115, 133, 1);
-  font-size: 13px;
-}
-
+// Forma circular/ancha (usada junto a `default-btn` en botones grandes)
 .circle {
   width: 200px;
   font-size: 13px;
   border-radius: 20px;
 }
 
+// Botón solo icono
 .s-icon {
   width: 30px;
   color: black;
@@ -153,17 +33,15 @@ a,
   border: none;
 }
 
-// Botón Primario
+   // Botón primario (rojo corporativo)
 .btn-primary {
   width: auto;
   min-width: 100px;
   height: 34px;
-
   padding: 0 18px;
 
   border: none !important;
   border-radius: 8px !important;
-
   background: $primary-color !important;
   color: #ffffff !important;
 
@@ -177,9 +55,7 @@ a,
   gap: 0.35rem;
 
   cursor: pointer;
-
   box-shadow: 0 3px 8px rgba(233, 32, 18, 0.2);
-
   transition: all 0.2s ease;
 
   &:hover {
@@ -193,12 +69,12 @@ a,
   }
 }
 
-// Variante de ancho completo para login
+// Variante ancho completo (login, formularios centrados)
 .btn-primary-full {
   width: 280px;
 }
 
-// Botón Secundario (blanco con borde)
+   //Botón secundario (blanco con borde)
 .btn-primary-secondary {
   width: auto;
   min-width: 90px;
@@ -209,6 +85,7 @@ a,
   background: #ffffff !important;
   border: 1px solid $border-color !important;
   color: $text-primary !important;
+
   font-size: 13px;
   font-weight: 500;
 
@@ -226,6 +103,110 @@ a,
     color: $primary-color !important;
   }
 }
+
+.btn-secondary {
+  color: #000000 !important;
+  height: 35px;
+
+  &:hover {
+    color: rgb(0, 0, 0) !important;
+  }
+}
+
+   //Variantes outline
+.btn-outline-danger {
+  background-color: white !important;
+  color: $primary-color;
+  border-color: $primary-color;
+  width: 134px;
+  height: 25px;
+  padding: 1px 10px;
+
+  &:hover {
+    background-color: $primary-color;
+    color: $primary-color;
+  }
+
+  &:disabled {
+    background-color: $primary-color !important;
+    color: white !important;
+    border-color: $primary-color;
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+}
+
+.btn-outline-green {
+  background-color: white !important;
+  color: $primary-color;
+  border-color: $primary-color;
+
+  &:hover {
+    background-color: $primary-color;
+    color: white !important;
+  }
+}
+
+.btn-outline-primary {
+  color: $primary-color;
+  border-color: $primary-color;
+  border-radius: 20px;
+  padding: 5px 30px;
+
+  &:hover {
+    background-color: $primary-color;
+    color: white !important;
+    border-color: $primary-color;
+  }
+}
+
+.btn-outline-blue {
+  border: 2px solid rgba(24, 115, 133, 1);
+  color: rgba(24, 115, 133, 1);
+  border-radius: 20px;
+  padding: 3px 22px;
+  font-size: 13px;
+}
+
+   //Neutros (gris, claro)
+.btn-light {
+  background-color: #f8f9fa !important;
+  border-color: #ddd !important;
+  color: #6c757d !important;
+
+  &:hover {
+    background-color: #e2e6ea !important;
+    color: #495057 !important;
+  }
+}
+
+.btn-grey {
+  background-color: #b8b8b8 !important;
+  border-color: #b8b8b8 !important;
+  color: #2d2d2d !important;
+
+  &:hover {
+    background-color: #f8f9fa !important;
+    color: #000 !important;
+  }
+}
+
+   //Links
+a,
+.btn-link {
+  color: $primary-color;
+  font-weight: bold !important;
+}
+
+   // Botones especiales
+.btn-createot {
+  font-size: 16px;
+  font-weight: 700;
+  height: 40px;
+  width: 134px;
+}
+
+   // Botones de solo icono (circular)
 .icon-info,
 .icon-danger,
 .icon-warning,
@@ -238,23 +219,13 @@ a,
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
+  transition: background-color 0.15s ease, width 0.15s ease, height 0.15s ease;
 }
 
-.icon-sucess {
-  color: #059669;
-}
-
-.icon-info {
-  color: #187385;
-}
-
-.icon-danger {
-  color: #D82831;
-}
-
-.icon-warning {
-  color: #ffc107;
-}
+.icon-sucess { color: #059669; }
+.icon-info   { color: #187385; }
+.icon-danger { color: #D82831; }
+.icon-warning{ color: #ffc107; }
 
 .icon-sucess:hover {
   background-color: rgba(215, 242, 219, 1);
@@ -280,9 +251,145 @@ a,
   width: 34px;
 }
 
-.btn-createot {
-  font-size: 16px;
+
+
+  // BOTONES DE TABLA — outline moderno · responsive · compactos
+
+.btn-table-view,
+.btn-table-edit,
+.btn-table-danger,
+.btn-table-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  background: #ffffff;
+  padding: 0.28rem 0.6rem;
+  border-radius: 7px;
+  font-size: 0.72rem;
   font-weight: 700;
-  height: 40px;
-  width: 134px;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  white-space: nowrap;
+
+  cursor: pointer;
+  transition: all 0.16s ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+
+  i,
+  .bi {
+    font-size: 0.82rem;
+    line-height: 1;
+    transition: transform 0.16s ease;
+  }
+
+  /* ---------- Tablet: compacta más ---------- */
+  @media (max-width: 1200px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.68rem;
+    gap: 0.25rem;
+
+    i, .bi { font-size: 0.78rem; }
+  }
+
+  /* ---------- Móvil: icono solo, cuadrado ---------- */
+  @media (max-width: 768px) {
+    padding: 0.4rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0;              /* oculta el texto */
+    gap: 0;
+
+    i, .bi {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+/* ---------- "Ver" / "Detalle" → gris azulado ---------- */
+.btn-table-view {
+  color: #334155;
+  border: 1.5px solid #cbd5e1;
+
+  &:hover {
+    color: #0f172a;
+    border-color: #94a3b8;
+    background: #f8fafc;
+    box-shadow: 0 3px 8px rgba(51, 65, 85, 0.12);
+    transform: translateY(-1px);
+
+    i { transform: scale(1.08); }
+  }
+}
+
+/* ---------- "Editar" → azul ---------- */
+.btn-table-edit {
+  color: #1d4ed8;
+  border: 1.5px solid #1d4ed8;
+
+  &:hover {
+    color: #ffffff;
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 10px rgba(29, 78, 216, 0.28);
+    transform: translateY(-1px);
+
+    i { transform: scale(1.08); }
+  }
+}
+
+/* ---------- "Activar" → verde ---------- */
+.btn-table-success {
+  color: #047857;
+  border: 1.5px solid #047857;
+
+  &:hover {
+    color: #ffffff;
+    background: #047857;
+    border-color: #047857;
+    box-shadow: 0 4px 10px rgba(4, 120, 87, 0.28);
+    transform: translateY(-1px);
+
+    i { transform: scale(1.08); }
+  }
+}
+
+/* ---------- "Inactivar" / "Eliminar" → rojo ---------- */
+.btn-table-danger {
+  color: #b91c1c;
+  border: 1.5px solid #b91c1c;
+
+  &:hover {
+    color: #ffffff;
+    background: #b91c1c;
+    border-color: #b91c1c;
+    box-shadow: 0 4px 10px rgba(185, 28, 28, 0.28);
+    transform: translateY(-1px);
+
+    i { transform: scale(1.08); }
+  }
+}
+
+/* ---------- Deshabilitado ---------- */
+.btn-table-view:disabled,
+.btn-table-edit:disabled,
+.btn-table-danger:disabled,
+.btn-table-success:disabled {
+  color: #94a3b8 !important;
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+  transform: none !important;
+  opacity: 0.65;
+}
+
+/* ---------- Activo (click) ---------- */
+.btn-table-view:active,
+.btn-table-edit:active,
+.btn-table-danger:active,
+.btn-table-success:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
 }

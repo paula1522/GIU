@@ -1,74 +1,91 @@
-.page { max-width: 1200px; margin: 0 auto; }
-.page-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: #1a1a2e; }
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Barra de filtros superior (input búsqueda + select estado)
 .filters-bar {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
   align-items: flex-start;
   width: 100%;
+
+  app-input  { flex: 6 1 0; min-width: 0; }
+  app-select { flex: 4 1 0; min-width: 0; }
 }
 
-.filters-bar app-input {
-  flex: 6 1 0;
-  min-width: 0;
+// Estado de carga
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
 }
 
-.filters-bar app-select {
-  flex: 4 1 0;
-  min-width: 0;
+// Badges de estado (reutilizables en tabla, modales, detalles)
+.badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
-.count { font-size: 0.8125rem; color: #64748b; margin-bottom: 0.75rem; }
-.loading, .empty { padding: 2rem; text-align: center; color: #64748b; }
-.table-container { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; }
-.table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-.table th { text-align: left; padding: 0.75rem 1rem; background: #f5f5f5; border-bottom: 2px solid #e2e8f0; font-weight: 600; color: #64748b; }
-.table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; }
-.badge { display: inline-flex; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
-.badge-success { background: #d1fae5; color: #065f46; }
-.badge-danger { background: #fee2e2; color: #991b1b; }
-.actions-cell { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-.btn-sm { padding: 0.3rem 0.7rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; }
-.btn-danger { background: #dc3545; color: #fff; }
-.btn-success { background: #198754; color: #fff; }
-.btn-edit { background: #fff; border: 1px solid #e2e8f0; color: #1a1a2e; }
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal { background: #fff; border-radius: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
-.modal-header h2 { font-size: 1rem; font-weight: 600; margin: 0; }
-.modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; }
-.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-.form-field { display: flex; flex-direction: column; gap: 0.3rem; }
-.form-label { font-size: 0.75rem; font-weight: 600; color: #64748b; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem; }
-.btn-secondary { padding: 0.5rem 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 0.875rem; color: #1a1a2e; }
+.badge-success { background: #d1fae5; color: #065f46; }  // verde: ACTIVO
+.badge-danger  { background: #fee2e2; color: #991b1b; }  // rojo: INACTIVO / BLOQUEADO
 
-/* ===== Estilos para botones dentro del átomo de tabla ===== */
-::ng-deep .btn-table-view {
-  background: #fff !important; border: 1px solid #e2e8f0 !important;
-  color: #1a1a2e !important; padding: 0.3rem 0.7rem !important;
-  border-radius: 6px !important; font-size: 0.75rem !important;
-  cursor: pointer !important; font-weight: 500 !important;
-}
-::ng-deep .btn-table-edit {
-  background: #c81f1f !important; border: 1px solid #e2e8f0 !important;
-  color: #1a1a2e !important; padding: 0.3rem 0.7rem !important;
-  border-radius: 6px !important; font-size: 0.75rem !important;
-  cursor: pointer !important; font-weight: 500 !important;
-}
-::ng-deep .btn-table-danger {
-  background: #dc3545 !important; color: #fff !important;
-  border: none !important; padding: 0.3rem 0.7rem !important;
-  border-radius: 6px !important; font-size: 0.75rem !important;
-  cursor: pointer !important; font-weight: 500 !important;
-}
-::ng-deep .btn-table-success {
-  background: #198754 !important; color: #fff !important;
-  border: none !important; padding: 0.3rem 0.7rem !important;
-  border-radius: 6px !important; font-size: 0.75rem !important;
-  cursor: pointer !important; font-weight: 500 !important;
+
+
+// Overlay + Modal base (compartido por los 3 modales del componente)
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
 }
 
-/* ===== Sección de permisos ===== */
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1a1a2e;
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+// Sección de permisos (dentro del modal Crear/Editar rol)
 .permisos-section {
   display: flex;
   flex-direction: column;
@@ -99,6 +116,7 @@
   font-weight: 400;
 }
 
+// Contenedor con scroll de la lista de permisos
 .permisos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -110,11 +128,9 @@
   max-height: 240px;
   overflow-y: auto;
   width: 100%;
-
 }
 
-
-
+// Fila de permisos (encabezado y cada ítem comparten grid)
 .permiso-header,
 .permiso-item {
   display: grid;
@@ -139,10 +155,8 @@
   align-items: center;
 }
 
-/* ===== Buscador de permisos ===== */
-.filtro-permisos-row {
-  margin-bottom: 0.5rem;
-}
+// Buscador interno de permisos
+.filtro-permisos-row { margin-bottom: 0.5rem; }
 
 .filtro-permisos-wrapper {
   position: relative;
@@ -168,6 +182,7 @@
   background: #fff;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
   &:focus {
     border-color: #e92012;
     box-shadow: 0 0 0 3px rgba(233, 32, 18, 0.1);
@@ -187,7 +202,7 @@
   &:hover { color: #e92012; }
 }
 
-/* ===== Seleccionar todos ===== */
+// Bloque "Seleccionar todos los permisos"
 .select-all-permisos {
   display: flex;
   align-items: center;
@@ -214,6 +229,7 @@
   font-size: 0.8125rem;
 }
 
+// Mensaje de error: "Debe seleccionar al menos un permiso"
 .permisos-error {
   display: flex;
   align-items: center;
@@ -227,7 +243,7 @@
   i { font-size: 1rem; }
 }
 
-/* ===== Modal de usuarios por rol ===== */
+// Modal de Usuarios por Rol (buscador + listado + paginación)
 .modal-usuarios { max-width: 680px; }
 
 .usuarios-section {
@@ -249,6 +265,7 @@
   i { color: #e92012; }
 }
 
+// Fila "usuario de red + botón buscar"
 .search-usuario-row {
   display: flex;
   gap: 0.75rem;
@@ -256,6 +273,7 @@
   app-input { flex: 1; }
 }
 
+// Mensaje de error al buscar usuario (no encontrado / ya asignado / etc.)
 .search-usuario-error {
   font-size: 0.8125rem;
   color: #dc3545;
@@ -264,26 +282,40 @@
   border-radius: 6px;
 }
 
+// Card del usuario encontrado — cambia de color según estado
 .usuario-encontrado {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: #d1fae5;
   border-radius: 8px;
-  border-left: 3px solid #198754;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &.usuario-encontrado--activo {
+    background: #d1fae5;
+    border-left: 3px solid #198754;
+    .usuario-info i { color: #198754; }
+  }
+
+  &.usuario-encontrado--inactivo {
+    background: #fee2e2;
+    border-left: 3px solid #dc3545;
+    .usuario-info i { color: #dc3545; }
+  }
 }
 
 .usuario-info {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  i { font-size: 1.5rem; color: #198754; }
+
+  i { font-size: 1.5rem; }
   div { display: flex; flex-direction: column; }
   .usuario-red { font-size: 0.75rem; color: #64748b; }
 }
 
+// Estado vacío (sin usuarios asignados o sin resultados)
 .empty-usuarios {
   padding: 1.5rem;
   text-align: center;
@@ -294,72 +326,7 @@
   border: 1px solid #e2e8f0;
 }
 
-.usuarios-list-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  flex-wrap: wrap;
-}
-
-.usuario-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  background: #fff;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  transition: border-color 0.15s ease, background 0.15s ease;
-  &:hover { border-color: #e92012; }
-}
-
-.usuario-row-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  .usuario-row-nombre { font-size: 0.8125rem; font-weight: 600; color: #1a1a2e; }
-  .usuario-row-red { font-size: 0.75rem; color: #64748b; }
-  .usuario-row-correo { font-size: 0.7rem; color: #94a3b8; }
-}
-
-/* ===== Búsqueda interna y paginación ===== */
-.filtro-interno-row {
-  margin-bottom: 0.5rem;
-}
-
-.filtro-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.filtro-icon {
-  position: absolute;
-  left: 0.75rem;
-  font-size: 0.875rem;
-  color: #64748b;
-  pointer-events: none;
-}
-
-.filtro-input {
-  width: 100%;
-  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  color: #1a1a2e;
-  background: #fff;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  &:focus {
-    border-color: #e92012;
-    box-shadow: 0 0 0 3px rgba(233, 32, 18, 0.1);
-  }
-  &::placeholder { color: #94a3b8; }
-}
-
+// Barra superior de la lista (checkbox seleccionar todos + botón quitar)
 .usuarios-list-header {
   display: flex;
   align-items: center;
@@ -391,6 +358,7 @@
   font-weight: 500;
 }
 
+// Contenedor con scroll de la lista de usuarios
 .usuarios-list-scroll {
   display: flex;
   flex-direction: column;
@@ -403,11 +371,81 @@
   border-radius: 8px;
 }
 
-.usuario-row.selected {
-  border-color: #e92012;
-  background: #fef2f2;
+// Fila de usuario (checkbox + info + badge de estado)
+.usuario-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover { border-color: #e92012; }
+
+  &.selected {
+    border-color: #e92012;
+    background: #fef2f2;
+  }
 }
 
+// Info: texto (nombre/usuario/correo) a la izquierda, badge a la derecha
+.usuario-row-info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.usuario-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  .usuario-row-nombre { font-size: 0.8125rem; font-weight: 600; color: #1a1a2e; }
+  .usuario-row-red    { font-size: 0.75rem;   color: #64748b; }
+  .usuario-row-correo { font-size: 0.7rem;    color: #94a3b8; }
+}
+
+// Buscador interno (dentro del listado de asignados)
+.filtro-interno-row { margin-bottom: 0.5rem; }
+
+.filtro-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filtro-icon {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.filtro-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: #e92012;
+    box-shadow: 0 0 0 3px rgba(233, 32, 18, 0.1);
+  }
+  &::placeholder { color: #94a3b8; }
+}
+
+// Paginación del listado de usuarios
 .paginacion-usuarios {
   display: flex;
   align-items: center;
@@ -425,6 +463,7 @@
   font-size: 0.8rem;
   color: #1a1a2e;
   transition: all 0.15s ease;
+
   &:hover:not(:disabled) { border-color: #e92012; color: #e92012; }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
@@ -434,4 +473,132 @@
   color: #64748b;
   font-weight: 500;
   padding: 0 0.5rem;
+}
+
+// 8. Modal de Detalle del Rol (datos + permisos asignados)
+.modal-detalle {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.detalle-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detalle-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  border-bottom: 2px solid #e92012;
+  padding-bottom: 0.4rem;
+  i { color: #e92012; }
+}
+
+// Grid de pares label/value
+.detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.detalle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.detalle-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.detalle-value {
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+// Estados de carga / vacío dentro de una sección de detalle
+.detalle-loading,
+.detalle-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+// Tabla interna (usada para "Permisos Asignados")
+.apps-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.apps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    background: #1a1a2e;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    color: #1a1a2e;
+  }
+
+  tr:last-child td { border-bottom: none; }
+}
+
+.app-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  i { color: #e92012; }
+}
+
+// Chip para tipo de permiso dentro de la tabla
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #e92012;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  i { font-size: 0.65rem; }
 }

@@ -1,26 +1,51 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormsModule,ReactiveFormsModule,FormBuilder,FormGroup,FormArray,Validators,FormControl,} from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  Validators,
+  FormControl,
+} from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { UserMockService } from '../../../services/mock/user-mock.service';
+import { UserService } from '../../../services/api/users.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { Role, UserApplication, User } from '../../../models/domain/giu.models';
+import { Role } from '../../../models/domain/giu.models';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
 
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
-import {ColumnConfig,ActionButton,typeColum,} from '../../../shared/atomic-desing/atoms/table/table.interface';
+import {
+  ColumnConfig,
+  ActionButton,
+  typeColum,
+} from '../../../shared/atomic-desing/atoms/table/table.interface';
 import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input-general/input.component';
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
-import {HeaderButton,HeaderPagesComponent,} from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
+import {
+  HeaderButton,
+  HeaderPagesComponent,
+} from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
 import { SelectComponent } from '../../../shared/atomic-desing/atoms/select/select.component';
 
 import { minSelectedValidator } from '../validators/min-selected.validator';
 import { RoleService } from '../../../services/api/roles.service';
-import {CrearRolRequest,ModificarRolRequest,RecursoResponseDTO,} from '../../../models/api/roles.model';
+import {
+  CrearRolRequest,
+  ModificarRolRequest,
+  RecursoResponseDTO,
+  RecursosRolResponse,
+} from '../../../models/api/roles.model';
+import {
+  AsignarRolRequest,
+  UsuarioAsignadoRol,
+  UsuarioResponseDTO,
+} from '../../../models/api/users.model';
 
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -46,7 +71,7 @@ import { switchMap } from 'rxjs/operators';
 export class RolesList implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly roleService = inject(RoleService);
-  private readonly userService = inject(UserMockService);
+  private readonly userService = inject(UserService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
@@ -178,7 +203,16 @@ export class RolesList implements OnInit {
       action: 'VER_USUARIOS',
       title: 'Ver usuarios asociados',
       icon: 'bi bi-people',
-      styles: 'btn-table-view',
+      class: 'btn-table-view',
+      type: 'button',
+    });
+
+    buttons.push({
+      label: 'Ver detalle',
+      action: 'VER_DETALLE',
+      title: 'Ver detalle del rol',
+      icon: 'bi bi-eye',
+      class: 'btn-table-view',
       type: 'button',
     });
 
@@ -188,7 +222,7 @@ export class RolesList implements OnInit {
         action: 'EDITAR',
         title: 'Editar rol',
         icon: 'bi bi-pencil-square',
-        styles: 'btn-table-edit',
+        class: 'btn-table-edit',
         type: 'button',
       });
 
@@ -197,7 +231,7 @@ export class RolesList implements OnInit {
         action: 'TOGGLE',
         title: r.estado === 'ACTIVO' ? 'Inactivar rol' : 'Activar rol',
         icon: r.estado === 'ACTIVO' ? 'bi bi-toggle-on' : 'bi bi-toggle-off',
-        styles: r.estado === 'ACTIVO' ? 'btn-table-danger' : 'btn-table-success',
+        class: r.estado === 'ACTIVO' ? 'btn-table-danger' : 'btn-table-success',
         type: 'button',
       });
     }
@@ -227,7 +261,9 @@ export class RolesList implements OnInit {
   onTableAction(event: { action: string; row: any; idTable: string }): void {
     const role: Role = event.row._role;
 
-    if (event.action === 'EDITAR') {
+    if (event.action === 'VER_DETALLE') {
+      this.abrirDetalleRol(role);
+    } else if (event.action === 'EDITAR') {
       this.abrirEditar(role);
     } else if (event.action === 'TOGGLE') {
       this.toggleEstado(role);
@@ -643,29 +679,65 @@ export class RolesList implements OnInit {
       });
   }
 
+  // ==================== Modal de Detalle del Rol ====================
+
+  readonly showDetalleRol = signal(false);
+  readonly rolDetalle = signal<Role | null>(null);
+  readonly permisosRol = signal<RecursosRolResponse[]>([]);
+  readonly cargandoDetalleRol = signal(false);
+
+  abrirDetalleRol(role: Role): void {
+    this.rolDetalle.set(role);
+    this.permisosRol.set([]);
+    this.showDetalleRol.set(true);
+    this.cargandoDetalleRol.set(true);
+
+    this.roleService.obtenerDetalleRol(role.id).subscribe({
+      next: (res) => {
+        this.permisosRol.set(res.data?.recursos ?? []);
+        this.cargandoDetalleRol.set(false);
+      },
+      error: (err) => {
+        console.error('ERROR AL OBTENER DETALLE DEL ROL:', err);
+        this.permisosRol.set([]);
+        this.cargandoDetalleRol.set(false);
+      },
+    });
+  }
+
+  cerrarDetalleRol(): void {
+    this.showDetalleRol.set(false);
+    this.rolDetalle.set(null);
+    this.permisosRol.set([]);
+  }
+
   // ==================== Modal de Usuarios por Rol ====================
 
   readonly showUsuariosModal = signal(false);
   readonly rolSeleccionado = signal<Role | null>(null);
-  readonly usuariosRol = signal<UserApplication[]>([]);
-  readonly usuarioBuscado = signal<User | null>(null);
+  readonly usuariosRol = signal<UsuarioAsignadoRol[]>([]);
+  readonly usuarioBuscado = signal<UsuarioResponseDTO | null>(null);
   readonly buscandoUsuario = signal(false);
   readonly searchUsuarioError = signal('');
+
+  // ---- Confirmación de retiro ----
+  readonly confirmQuitarVisible = signal(false);
+  readonly confirmQuitarMsg = signal('');
+  readonly usuariosAQuitar = signal<UsuarioAsignadoRol[]>([]);
+  readonly quitandoUsuarios = signal(false);
 
   readonly filtroInterno = signal('');
 
   readonly usuariosFiltrados = computed(() => {
     const term = this.filtroInterno().toLowerCase().trim();
 
-    if (!term) {
-      return this.usuariosRol();
-    }
+    if (!term) return this.usuariosRol();
 
     return this.usuariosRol().filter(
       (u) =>
-        u.nombre.toLowerCase().includes(term) ||
         u.usuarioRed.toLowerCase().includes(term) ||
-        (u.correo ?? '').toLowerCase().includes(term)
+        u.nombre.toLowerCase().includes(term) ||
+        u.correo.toLowerCase().includes(term)
     );
   });
 
@@ -732,18 +804,14 @@ export class RolesList implements OnInit {
   }
 
   cargarUsuariosRol(rolId: number): void {
-    this.userService.listarPorRol(this.apliId(), rolId).subscribe({
-      next: (res) => {
-        const usuarios = res.data ?? [];
-
+    this.userService.listarUsuariosPorRol(rolId).subscribe({
+      next: (usuarios) => {
         this.usuariosRol.set(usuarios);
-
         this.currentPageUsuarios.set(1);
         this.selectedIndices.set(new Set());
-
         this.seleccionForm.get('selectAll')?.setValue(false);
       },
-      error: () => {},
+      error: (err) => console.error('ERROR AL CARGAR USUARIOS DEL ROL:', err),
     });
   }
 
@@ -815,88 +883,118 @@ export class RolesList implements OnInit {
     return this.selectedIndices().size;
   }
 
+  // ==================== Retirar usuarios (individual y por lote) ====================
+
+  /** Abre el confirm para quitar TODOS los seleccionados. */
   quitarSeleccionados(): void {
     const role = this.rolSeleccionado();
-
-    if (!role) {
-      return;
-    }
+    if (!role) return;
 
     const usuarios = this.usuariosFiltrados();
-
     const indices = Array.from(this.selectedIndices()).sort((a, b) => a - b);
 
-    const usuariosAQuitar = indices
+    const seleccionados = indices
       .map((i) => usuarios[i])
-      .filter((u): u is UserApplication => !!u);
+      .filter((u): u is UsuarioAsignadoRol => !!u);
 
-    let pendientes = usuariosAQuitar.length;
+    if (seleccionados.length === 0) return;
 
-    if (pendientes === 0) {
-      return;
-    }
+    this.usuariosAQuitar.set(seleccionados);
+    this.confirmQuitarMsg.set(
+      `¿Desea quitar ${seleccionados.length} usuario(s) de este rol? Esta acción no se puede deshacer.`
+    );
+    this.confirmQuitarVisible.set(true);
+  }
 
-    usuariosAQuitar.forEach((u) => {
-      this.userService.desasignarRol(u.usuarioRed, this.apliId(), role.id).subscribe({
+  /** Abre el confirm para quitar UN solo usuario (botón de la fila). */
+  quitarUsuario(usuario: UsuarioAsignadoRol): void {
+    this.usuariosAQuitar.set([usuario]);
+    this.confirmQuitarMsg.set(
+      `¿Desea quitar a "${usuario.nombre}" (${usuario.usuarioRed}) de este rol?`
+    );
+    this.confirmQuitarVisible.set(true);
+  }
+
+  /** Ejecuta el DELETE real (llamado desde el confirm modal). */
+  ejecutarQuitarUsuarios(): void {
+    const role = this.rolSeleccionado();
+    const usuarios = this.usuariosAQuitar();
+
+    if (!role || usuarios.length === 0) return;
+
+    this.confirmQuitarVisible.set(false);
+    this.quitandoUsuarios.set(true);
+
+    const requests: AsignarRolRequest[] = usuarios.map((u) => ({
+      usuarioRed: u.usuarioRed,
+      rolId: role.id,
+    }));
+
+    this.userService
+      .retirarRoles(this.apliId(), requests, this.auth.usuarioRed())
+      .subscribe({
         next: () => {
-          pendientes--;
-
-          if (pendientes === 0) {
-            this.cargarUsuariosRol(role.id);
-          }
+          this.quitandoUsuarios.set(false);
+          this.usuariosAQuitar.set([]);
+          this.selectedIndices.set(new Set());
+          this.cargarUsuariosRol(role.id);
         },
-        error: () => {
-          pendientes--;
+        error: (err) => {
+          console.error('ERROR AL QUITAR USUARIOS:', err);
+          this.quitandoUsuarios.set(false);
         },
       });
-    });
   }
+
+  cancelarQuitarUsuarios(): void {
+    this.confirmQuitarVisible.set(false);
+    this.usuariosAQuitar.set([]);
+  }
+
+  // ==================== Buscar / asociar usuario ====================
 
   buscarUsuarioRol(): void {
     const usuarioRed = this.searchUsuarioForm.get('usuarioRed')?.value?.trim();
 
     if (!usuarioRed || this.searchUsuarioForm.get('usuarioRed')?.invalid) {
-      this.searchUsuarioError.set(
-        'Ingrese un usuario de red válido (mínimo 2 caracteres).'
-      );
-
+      this.searchUsuarioError.set('Ingrese un usuario de red válido (mínimo 2 caracteres).');
       return;
     }
 
     this.buscandoUsuario.set(true);
     this.searchUsuarioError.set('');
 
-    this.userService.buscarPorUsuarioRed(usuarioRed).subscribe({
+    // GET /api/usuarios?usuarioRed=xxx
+    this.userService.listarUsuarios({ usuarioRed }).subscribe({
       next: (res) => {
         this.buscandoUsuario.set(false);
 
-        const user = res.data;
+        const lista = res.data ?? [];
+        const user = lista[0]; // el filtro es exacto, debería venir 0 o 1
 
-        if (user) {
-          const yaAsignado = this.usuariosRol().some(
-            (u) => u.usuarioRed === user.usuarioRed
-          );
-
-          if (yaAsignado) {
-            this.searchUsuarioError.set(
-              `El usuario "${user.usuarioRed}" ya está asignado a este rol.`
-            );
-
-            this.usuarioBuscado.set(null);
-          } else {
-            this.usuarioBuscado.set(user);
-          }
-        } else {
+        if (!user) {
           this.usuarioBuscado.set(null);
-
           this.searchUsuarioError.set(
             `No se encontró ningún usuario con usuarioRed "${usuarioRed}".`
           );
+          return;
+        }
+
+        const yaAsignado = this.usuariosRol().some(
+          (u) => u.usuarioRed === user.usuarioRed
+        );
+
+        if (yaAsignado) {
+          this.searchUsuarioError.set(
+            `El usuario "${user.usuarioRed}" ya está asignado a este rol.`
+          );
+          this.usuarioBuscado.set(null);
+        } else {
+          this.usuarioBuscado.set(user);
         }
       },
       error: () => {
         this.buscandoUsuario.set(false);
-
         this.searchUsuarioError.set('Error al buscar el usuario.');
       },
     });
@@ -906,28 +1004,21 @@ export class RolesList implements OnInit {
     const user = this.usuarioBuscado();
     const role = this.rolSeleccionado();
 
-    if (!user || !role) {
-      return;
-    }
+    if (!user || !role) return;
 
     this.userService
-      .asignarRol({
-        usuarioRed: user.usuarioRed,
-        apliId: this.apliId(),
-        rolId: role.id,
-        fechaIn: new Date().toISOString().substring(0, 10),
-      })
+      .asignarRol(
+        this.apliId(),
+        { usuarioRed: user.usuarioRed, rolId: role.id },
+        this.auth.usuarioRed()
+      )
       .subscribe({
         next: () => {
           this.usuarioBuscado.set(null);
-
-          this.searchUsuarioForm.reset({
-            usuarioRed: '',
-          });
-
+          this.searchUsuarioForm.reset({ usuarioRed: '' });
           this.cargarUsuariosRol(role.id);
         },
-        error: () => {},
+        error: (err) => console.error('ERROR AL ASIGNAR ROL:', err),
       });
   }
 
@@ -939,5 +1030,7 @@ export class RolesList implements OnInit {
     this.searchUsuarioError.set('');
     this.filtroInterno.set('');
     this.selectedIndices.set(new Set());
+    this.confirmQuitarVisible.set(false);
+    this.usuariosAQuitar.set([]);
   }
 }
