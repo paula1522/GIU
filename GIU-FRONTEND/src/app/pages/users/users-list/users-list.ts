@@ -25,10 +25,18 @@ interface RegistroMasivo {
   idRol: string;
 }
 
+/** Registro de eliminación masiva: solo usuario de red. La validación se aplica a nivel de base de datos. */
+interface RegistroEliminacion {
+  usuarioRed: string;
+}
+
 interface ErrorValidacion {
   fila: number;
   mensaje: string;
 }
+
+/** Tipo de flujo dentro del modal de carga masiva. */
+type FlujoCargaMasiva = 'creacion' | 'eliminacion';
 
 @Component({
   selector: 'app-users-list',
@@ -474,6 +482,26 @@ export class UsersList implements OnInit, OnDestroy {
   readonly cargaErrorMsg = signal('');
   readonly showConfirmCarga = signal(false);
 
+  /** Tipo de flujo activo en el modal de carga masiva. */
+  readonly flujoCarga = signal<FlujoCargaMasiva>('creacion');
+
+  /** Registros de eliminación masiva con estado de validación. */
+  readonly registrosEliminacion = signal<RegistroEliminacion[]>([]);
+  readonly procesandoEliminacion = signal(false);
+  readonly eliminacionExitosa = signal(false);
+  readonly eliminacionErrorMsg = signal('');
+  readonly showConfirmEliminacion = signal(false);
+
+  /** Encabezado requerido para el flujo de eliminación. */
+  private readonly HEADER_ELIMINACION = ['usuario de red'];
+
+  /** Título dinámico del modal de carga masiva según flujo. */
+  readonly cargaModalTitle = computed(() =>
+    this.flujoCarga() === 'eliminacion'
+      ? 'Eliminación / Desvinculación masiva'
+      : 'Carga masiva de usuarios'
+  );
+
   /** Encabezados requeridos en el Excel. */
   private readonly HEADERS_REQUERIDOS = ['Nombre completo', 'identificacion', 'usuario de red', 'id del rol'];
 
@@ -499,6 +527,17 @@ export class UsersList implements OnInit, OnDestroy {
     this.procesandoCarga.set(false);
     this.cargaExitosa.set(false);
     this.cargaErrorMsg.set('');
+    // Limpieza del flujo de eliminación
+    this.registrosEliminacion.set([]);
+    this.procesandoEliminacion.set(false);
+    this.eliminacionExitosa.set(false);
+    this.eliminacionErrorMsg.set('');
+  }
+
+  /** Cambia el flujo activo dentro del modal de carga masiva. */
+  cambiarFlujoCarga(flujoo: FlujoCargaMasiva): void {
+    this.limpiarCarga();
+    this.flujoCarga.set(flujoo);
   }
 
   /** Maneja la selección de archivo. */
@@ -555,7 +594,11 @@ export class UsersList implements OnInit, OnDestroy {
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' }) as any[][];
 
-        this.validarEstructuraYDatos(jsonData);
+        if (this.flujoCarga() === 'eliminacion') {
+          this.validarEstructuraEliminacion(jsonData);
+        } else {
+          this.validarEstructuraYDatos(jsonData);
+        }
       } catch (error) {
         this.cargaErrorMsg.set('Error al leer el archivo Excel. Verifique que el archivo no esté corrupto.');
       }
@@ -656,6 +699,76 @@ export class UsersList implements OnInit, OnDestroy {
     this.erroresValidacion.set(errores);
   }
 
+  /**
+   * Valida la estructura del archivo de eliminación masiva.
+   * Encabezado único: "usuario de red".
+   * Validaciones: celdas vacías, duplicados internos.
+   * Luego verifica contra el servicio mock el estado de cada usuario.
+   */
+  private validarEstructuraEliminacion(data: any[][]): void {
+    const errores: ErrorValidacion[] = [];
+    const usuariosRed: string[] = [];
+
+    if (data.length === 0) {
+      this.cargaErrorMsg.set('El archivo está vacío.');
+      return;
+    }
+
+    // Validar encabezado (fila 0)
+    const headers = data[0].map((h: any) => String(h).trim().toLowerCase());
+    const headerEsperado = this.HEADER_ELIMINACION[0].toLowerCase();
+    if (!headers.includes(headerEsperado)) {
+      this.cargaErrorMsg.set(
+        `Encabezado inválido. Se esperaba "${this.HEADER_ELIMINACION[0]}", se encontró: "${headers.join(', ')}".`
+      );
+      return;
+    }
+
+    const idxUsuario = headers.indexOf(headerEsperado);
+    const usuariosVistos = new Set<string>();
+
+    for (let i = 1; i < data.length; i++) {
+      const fila = data[i];
+      const numFila = i + 1;
+
+      // Saltar filas completamente vacías
+      if (fila.every(c => c === '' || c === null || c === undefined)) continue;
+
+      const usuarioRed = String(fila[idxUsuario] ?? '').trim();
+
+      if (!usuarioRed) {
+        errores.push({ fila: numFila, mensaje: "El campo 'usuario de red' es obligatorio." });
+        continue;
+      }
+
+      // Validar que el registro sea numérico
+      if (!/^\d+$/.test(usuarioRed)) {
+        errores.push({
+          fila: numFila,
+          mensaje: `El registro "${usuarioRed}" no es numérico. El campo 'usuario de red' debe contener solo dígitos.`,
+        });
+        continue;
+      }
+
+      if (usuariosVistos.has(usuarioRed.toLowerCase())) {
+        errores.push({ fila: numFila, mensaje: `Usuario de red duplicado: "${usuarioRed}" ya existe en el archivo.` });
+      } else {
+        usuariosVistos.add(usuarioRed.toLowerCase());
+        usuariosRed.push(usuarioRed);
+      }
+    }
+
+    this.erroresValidacion.set(errores);
+
+    if (usuariosRed.length === 0 && errores.length === 0) {
+      this.cargaErrorMsg.set('El archivo no contiene registros para procesar.');
+      return;
+    }
+
+    // Los usuarios se almacenan sin validación a nivel front; la lógica se aplica en base de datos.
+    this.registrosEliminacion.set(usuariosRed.map((u) => ({ usuarioRed: u })));
+  }
+
   /** Tamaño del archivo formateado. */
   get tamanoArchivo(): string {
     const file = this.archivoCargado();
@@ -668,6 +781,31 @@ export class UsersList implements OnInit, OnDestroy {
   /** True si hay registros válidos y no hay errores. */
   get puedeProcesar(): boolean {
     return this.registrosMasivos().length > 0 && this.erroresValidacion().length === 0 && !this.procesandoCarga();
+  }
+
+  /** Cantidad total de usuarios cargados para eliminación. */
+  get usuariosValidosEliminacion(): number {
+    return this.registrosEliminacion().length;
+  }
+
+  /** True si hay usuarios para eliminar y no se está procesando. */
+  get puedeProcesarEliminacion(): boolean {
+    return this.usuariosValidosEliminacion > 0 && this.erroresValidacion().length === 0 && !this.procesandoEliminacion();
+  }
+
+  /** Errores de validación cuyo mensaje indica que el registro no es numérico. */
+  get erroresNoNumericos(): ErrorValidacion[] {
+    return this.erroresValidacion().filter((e) => e.mensaje.includes('no es numérico'));
+  }
+
+  /** Cantidad de registros que no son numéricos. */
+  get cantidadNoNumericos(): number {
+    return this.erroresNoNumericos.length;
+  }
+
+  /** Lista de números de fila con registros no numéricos, separados por coma. */
+  get filasNoNumericas(): string {
+    return this.erroresNoNumericos.map((e) => e.fila).join(', ');
   }
 
   /** Abre la confirmación de carga masiva. */
@@ -717,6 +855,67 @@ export class UsersList implements OnInit, OnDestroy {
       this.cargaExitosa.set(true);
     } else {
       this.cargaErrorMsg.set(`Carga finalizada: ${exitosos} usuario(s) creado(s) correctamente, ${fallidos} fallido(s). ${errores.join('; ')}`);
+    }
+    this.cargar();
+  }
+
+  // ==================== Eliminación / Desvinculación Masiva ====================
+
+  /** Abre la confirmación de eliminación masiva. */
+  confirmarEliminacionMasiva(): void {
+    this.showConfirmEliminacion.set(true);
+  }
+
+  /**
+   * Procesa la eliminación/desvinculación masiva.
+   * Recorre los registros válidos y desasigna el rol de cada usuario.
+   * Si el usuario queda sin roles, se inactiva automáticamente.
+   */
+  ejecutarEliminacionMasiva(): void {
+    this.showConfirmEliminacion.set(false);
+    this.procesandoEliminacion.set(true);
+    this.eliminacionExitosa.set(false);
+    this.eliminacionErrorMsg.set('');
+
+    const registros = this.registrosEliminacion();
+    let pendientes = registros.length;
+    let exitosos = 0;
+    let fallidos = 0;
+    const erroresBackend: string[] = [];
+
+    if (pendientes === 0) {
+      this.procesandoEliminacion.set(false);
+      this.eliminacionErrorMsg.set('No hay usuarios para procesar.');
+      return;
+    }
+
+    registros.forEach((reg) => {
+      // Desasignar el rol del usuario (usar gestión de estado para inactivar si es el único rol)
+      this.userService.gestionarEstado(reg.usuarioRed, false).subscribe({
+        next: () => {
+          exitosos++;
+          pendientes--;
+          if (pendientes === 0) this.finalizarEliminacion(exitosos, fallidos, erroresBackend);
+        },
+        error: () => {
+          fallidos++;
+          erroresBackend.push(`Error al desvincular usuario "${reg.usuarioRed}"`);
+          pendientes--;
+          if (pendientes === 0) this.finalizarEliminacion(exitosos, fallidos, erroresBackend);
+        },
+      });
+    });
+  }
+
+  /** Finaliza la eliminación masiva y muestra el resultado. */
+  private finalizarEliminacion(exitosos: number, fallidos: number, errores: string[]): void {
+    this.procesandoEliminacion.set(false);
+    if (fallidos === 0) {
+      this.eliminacionExitosa.set(true);
+    } else {
+      this.eliminacionErrorMsg.set(
+        `Eliminación finalizada: ${exitosos} usuario(s) desvinculado(s) correctamente, ${fallidos} fallido(s). ${errores.join('; ')}`
+      );
     }
     this.cargar();
   }

@@ -1,3 +1,5 @@
+@use '../../../../styles/variables' as *;
+
 .page { max-width: 1200px; margin: 0 auto; }
 .page-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: #1a1a2e; }
 .filters-bar { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
@@ -302,4 +304,135 @@
 
 .error-msg {
   color: #64748b;
+}
+
+/* ===== Selector de flujo (Creación vs Eliminación) ===== */
+.flujo-selector {
+  display: flex;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+  border-bottom: 2px solid $border-color;
+  padding-bottom: 0;
+}
+
+.flujo-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  background: transparent;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  i { font-size: $font-size-md; }
+
+  &:hover {
+    color: $primary-color;
+  }
+
+  &.active {
+    color: $primary-color;
+    border-bottom-color: $primary-color;
+    font-weight: $font-weight;
+  }
+}
+
+/* ===== Banner informativo de eliminación ===== */
+.eliminacion-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  background: $color-warning-bg;
+  border-left: 4px solid $color-warning;
+  margin-bottom: $spacing-md;
+
+  i {
+    font-size: 1.25rem;
+    color: $color-warning;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .eliminacion-banner-content {
+    font-size: $font-size-sm;
+    color: $color-warning-text;
+    line-height: 1.5;
+
+    strong { font-weight: $font-weight-bold; }
+  }
+}
+
+/* ===== Lista de usuarios a desvincular ===== */
+.eliminacion-tabla-wrapper {
+  margin-top: $spacing-md;
+}
+
+.eliminacion-tabla-title {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-base;
+  font-weight: $font-weight;
+  color: $text-primary;
+  margin-bottom: $spacing-sm;
+
+  i { color: $primary-color; }
+}
+
+.eliminacion-lista {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  background: $bg-surface;
+}
+
+.eliminacion-lista-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-bottom: 1px solid $border-color-light;
+  font-size: $font-size-base;
+
+  &:last-child { border-bottom: none; }
+
+  i { color: $color-danger; font-size: $font-size-md; }
+
+  .eliminacion-usuario {
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+  }
+}
+
+/* Alerta específica de registros no numéricos */
+.eliminacion-no-numerico-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  background: $color-danger-bg;
+  border-left: 4px solid $color-danger;
+  margin-top: $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-danger-text;
+  line-height: 1.5;
+
+  i {
+    font-size: 1.1rem;
+    color: $color-danger;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  strong { font-weight: $font-weight-bold; }
 }

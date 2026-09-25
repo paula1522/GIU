@@ -212,132 +212,323 @@
 <!-- Modal de carga masiva -->
 <app-modal
   #cargaModal
-  [title]="'Carga masiva de usuarios'"
+  [title]="cargaModalTitle()"
   [size]="'large'"
   [showFooter]="false"
   (closeMeEvent)="cerrarCargaMasiva()"
 >
-  @if (cargaExitosa()) {
-    <!-- Mensaje de éxito -->
-    <div class="carga-exitosa">
-      <i class="bi bi-check-circle-fill"></i>
-      <p>¡Carga masiva completada! Se crearon {{ registrosMasivos().length }} usuario(s) correctamente.</p>
-    </div>
-  } @else {
-    <!-- Zona de carga (Dropzone) -->
-    @if (!archivoCargado()) {
-      <div class="dropzone"
-        (dragover)="onDragOver($event)"
-        (drop)="onFileDropped($event)"
-      >
-        <i class="bi bi-cloud-arrow-up"></i>
-        <p class="dropzone-text">Arrastre su archivo Excel aquí</p>
-        <p class="dropzone-hint">o haga clic en el botón para seleccionarlo</p>
-        <label class="dropzone-btn-label">
-          <input type="file" accept=".xlsx" (change)="onFileSelected($event)" hidden />
-          <span class="dropzone-btn">Seleccionar archivo</span>
-        </label>
-        <p class="dropzone-format">Solo archivos .xlsx</p>
-      </div>
-    }
+  <!-- Selector de flujo: Creación vs Eliminación -->
+  <div class="flujo-selector">
+    <button
+      type="button"
+      class="flujo-tab"
+      [class.active]="flujoCarga() === 'creacion'"
+      (click)="cambiarFlujoCarga('creacion')"
+    >
+      <i class="bi bi-person-plus-fill"></i> Creación Masiva
+    </button>
+    <button
+      type="button"
+      class="flujo-tab"
+      [class.active]="flujoCarga() === 'eliminacion'"
+      (click)="cambiarFlujoCarga('eliminacion')"
+    >
+      <i class="bi bi-person-dash-fill"></i> Eliminación Masiva
+    </button>
+  </div>
 
-    <!-- Error de carga -->
-    @if (cargaErrorMsg() && !archivoCargado()) {
-      <div class="carga-error-msg">
-        <i class="bi bi-exclamation-circle-fill"></i>
-        {{ cargaErrorMsg() }}
+  <!-- ===================== Flujo: Creación Masiva ===================== -->
+  @if (flujoCarga() === 'creacion') {
+    @if (cargaExitosa()) {
+      <!-- Mensaje de éxito -->
+      <div class="carga-exitosa">
+        <i class="bi bi-check-circle-fill"></i>
+        <p>¡Carga masiva completada! Se crearon {{ registrosMasivos().length }} usuario(s) correctamente.</p>
       </div>
-    }
+    } @else {
+      <!-- Zona de carga (Dropzone) -->
+      @if (!archivoCargado()) {
+        <div class="dropzone"
+          (dragover)="onDragOver($event)"
+          (drop)="onFileDropped($event)"
+        >
+          <i class="bi bi-cloud-arrow-up"></i>
+          <p class="dropzone-text">Arrastre su archivo Excel aquí</p>
+          <p class="dropzone-hint">o haga clic en el botón para seleccionarlo</p>
+          <label class="dropzone-btn-label">
+            <input type="file" accept=".xlsx" (change)="onFileSelected($event)" hidden />
+            <span class="dropzone-btn">Seleccionar archivo</span>
+          </label>
+          <p class="dropzone-format">Solo archivos .xlsx</p>
+        </div>
+      }
 
-    <!-- Panel informativo del archivo cargado -->
-    @if (archivoCargado()) {
-      <div class="carga-info">
-        <div class="carga-info-header">
-          <div class="carga-file-info">
-            <i class="bi bi-file-earmark-spreadsheet"></i>
-            <div>
-              <strong>{{ archivoCargado()?.name }}</strong>
-              <span class="carga-file-size">{{ tamanoArchivo }}</span>
+      <!-- Error de carga -->
+      @if (cargaErrorMsg() && !archivoCargado()) {
+        <div class="carga-error-msg">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          {{ cargaErrorMsg() }}
+        </div>
+      }
+
+      <!-- Panel informativo del archivo cargado -->
+      @if (archivoCargado()) {
+        <div class="carga-info">
+          <div class="carga-info-header">
+            <div class="carga-file-info">
+              <i class="bi bi-file-earmark-spreadsheet"></i>
+              <div>
+                <strong>{{ archivoCargado()?.name }}</strong>
+                <span class="carga-file-size">{{ tamanoArchivo }}</span>
+              </div>
+            </div>
+            <app-button
+              [text]="'Limpiar'"
+              [icon]="'bi bi-trash'"
+              [class]="['btn', 'btn-primary-secondary']"
+              [type]="'button'"
+              (clickEventButton)="limpiarCarga()"
+            ></app-button>
+          </div>
+
+          <div class="carga-stats">
+            <div class="stat-item">
+              <span class="stat-label">Total registros</span>
+              <span class="stat-value">{{ registrosMasivos().length + erroresValidacion().length }}</span>
+            </div>
+            <div class="stat-item stat-valid">
+              <span class="stat-label">Válidos</span>
+              <span class="stat-value">{{ registrosMasivos().length }}</span>
+            </div>
+            <div class="stat-item stat-error">
+              <span class="stat-label">Con errores</span>
+              <span class="stat-value">{{ erroresValidacion().length }}</span>
             </div>
           </div>
+
+          <!-- Lista de errores -->
+          @if (erroresValidacion().length > 0) {
+            <div class="carga-errores">
+              <div class="carga-errores-title">
+                <i class="bi bi-exclamation-triangle"></i> Errores de validación ({{ erroresValidacion().length }})
+              </div>
+              <div class="carga-errores-list">
+                @for (err of erroresValidacion(); track err.fila) {
+                  <div class="error-row">
+                    <span class="error-fila">Fila {{ err.fila }}</span>
+                    <span class="error-msg">{{ err.mensaje }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Error de backend -->
+          @if (cargaErrorMsg() && archivoCargado()) {
+            <div class="carga-error-msg">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              {{ cargaErrorMsg() }}
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Botones de acción -->
+      <div class="modal-actions">
+        <app-button
+          [text]="'Cancelar'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarCargaMasiva()"
+        ></app-button>
+        @if (archivoCargado() && puedeProcesar) {
           <app-button
-            [text]="'Limpiar'"
-            [icon]="'bi bi-trash'"
-            [class]="['btn', 'btn-primary-secondary']"
+            [text]="'Procesar Carga Masiva'"
+            [icon]="'bi bi-upload'"
+            [class]="['btn', 'btn-primary']"
             [type]="'button'"
-            (clickEventButton)="limpiarCarga()"
+            (clickEventButton)="confirmarCargaMasiva()"
           ></app-button>
-        </div>
-
-        <div class="carga-stats">
-          <div class="stat-item">
-            <span class="stat-label">Total registros</span>
-            <span class="stat-value">{{ registrosMasivos().length + erroresValidacion().length }}</span>
-          </div>
-          <div class="stat-item stat-valid">
-            <span class="stat-label">Válidos</span>
-            <span class="stat-value">{{ registrosMasivos().length }}</span>
-          </div>
-          <div class="stat-item stat-error">
-            <span class="stat-label">Con errores</span>
-            <span class="stat-value">{{ erroresValidacion().length }}</span>
-          </div>
-        </div>
-
-        <!-- Lista de errores -->
-        @if (erroresValidacion().length > 0) {
-          <div class="carga-errores">
-            <div class="carga-errores-title">
-              <i class="bi bi-exclamation-triangle"></i> Errores de validación ({{ erroresValidacion().length }})
-            </div>
-            <div class="carga-errores-list">
-              @for (err of erroresValidacion(); track err.fila) {
-                <div class="error-row">
-                  <span class="error-fila">Fila {{ err.fila }}</span>
-                  <span class="error-msg">{{ err.mensaje }}</span>
-                </div>
-              }
-            </div>
-          </div>
         }
-
-        <!-- Error de backend -->
-        @if (cargaErrorMsg() && archivoCargado()) {
-          <div class="carga-error-msg">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            {{ cargaErrorMsg() }}
-          </div>
+        @if (procesandoCarga()) {
+          <app-button
+            [text]="'Procesando…'"
+            [icon]="'bi bi-arrow-clockwise'"
+            [class]="['btn', 'btn-primary']"
+            [type]="'button'"
+            [disabled]="true"
+          ></app-button>
         }
       </div>
     }
+  }
 
-    <!-- Botones de acción -->
-    <div class="modal-actions">
-      <app-button
-        [text]="'Cancelar'"
-        [class]="['btn', 'btn-primary-secondary']"
-        [type]="'button'"
-        (clickEventButton)="cerrarCargaMasiva()"
-      ></app-button>
-      @if (archivoCargado() && puedeProcesar) {
-        <app-button
-          [text]="'Procesar Carga Masiva'"
-          [icon]="'bi bi-upload'"
-          [class]="['btn', 'btn-primary']"
-          [type]="'button'"
-          (clickEventButton)="confirmarCargaMasiva()"
-        ></app-button>
-      }
-      @if (procesandoCarga()) {
-        <app-button
-          [text]="'Procesando…'"
-          [icon]="'bi bi-arrow-clockwise'"
-          [class]="['btn', 'btn-primary']"
-          [type]="'button'"
-          [disabled]="true"
-        ></app-button>
-      }
+  <!-- ===================== Flujo: Eliminación Masiva ===================== -->
+  @if (flujoCarga() === 'eliminacion') {
+    <!-- Banner informativo de regla de negocio -->
+    <div class="eliminacion-banner">
+      <i class="bi bi-info-circle-fill"></i>
+      <div class="eliminacion-banner-content">
+        <strong>Nota importante:</strong>
+        Esta acción únicamente remueve la asignación del rol actual. Si el usuario cuenta con más aplicaciones
+        asociadas, mantendrá sus accesos. Si este es el único rol asignado al usuario, su cuenta pasará
+        automáticamente a estado <strong>INACTIVO</strong>. Si el usuario se ha retirado definitivamente de la
+        empresa, contacte a Soporte para realizar la eliminación completa del sistema.
+      </div>
     </div>
+
+    @if (eliminacionExitosa()) {
+      <!-- Mensaje de éxito -->
+      <div class="carga-exitosa">
+        <i class="bi bi-check-circle-fill"></i>
+        <p>¡Eliminación masiva completada! Se desvincularon {{ usuariosValidosEliminacion }} usuario(s) correctamente.</p>
+      </div>
+    } @else {
+      <!-- Zona de carga (Dropzone) -->
+      @if (!archivoCargado()) {
+        <div class="dropzone"
+          (dragover)="onDragOver($event)"
+          (drop)="onFileDropped($event)"
+        >
+          <i class="bi bi-cloud-arrow-up"></i>
+          <p class="dropzone-text">Arrastre su archivo Excel aquí</p>
+          <p class="dropzone-hint">o haga clic en el botón para seleccionarlo</p>
+          <label class="dropzone-btn-label">
+            <input type="file" accept=".xlsx" (change)="onFileSelected($event)" hidden />
+            <span class="dropzone-btn">Seleccionar archivo</span>
+          </label>
+          <p class="dropzone-format">Solo archivos .xlsx — Encabezado: "usuario de red"</p>
+        </div>
+      }
+
+      <!-- Error de carga -->
+      @if (cargaErrorMsg() && !archivoCargado()) {
+        <div class="carga-error-msg">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          {{ cargaErrorMsg() }}
+        </div>
+      }
+
+      <!-- Panel informativo del archivo cargado -->
+      @if (archivoCargado()) {
+        <div class="carga-info">
+          <div class="carga-info-header">
+            <div class="carga-file-info">
+              <i class="bi bi-file-earmark-spreadsheet"></i>
+              <div>
+                <strong>{{ archivoCargado()?.name }}</strong>
+                <span class="carga-file-size">{{ tamanoArchivo }}</span>
+              </div>
+            </div>
+            <app-button
+              [text]="'Limpiar'"
+              [icon]="'bi bi-trash'"
+              [class]="['btn', 'btn-primary-secondary']"
+              [type]="'button'"
+              (clickEventButton)="limpiarCarga()"
+            ></app-button>
+          </div>
+
+          <div class="carga-stats">
+            <div class="stat-item">
+              <span class="stat-label">Total usuarios</span>
+              <span class="stat-value">{{ registrosEliminacion().length }}</span>
+            </div>
+            <div class="stat-item stat-error">
+              <span class="stat-label">Con errores</span>
+              <span class="stat-value">{{ erroresValidacion().length }}</span>
+            </div>
+            @if (cantidadNoNumericos > 0) {
+              <div class="stat-item stat-error">
+                <span class="stat-label">No numéricos</span>
+                <span class="stat-value">{{ cantidadNoNumericos }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Alerta específica de registros no numéricos -->
+          @if (cantidadNoNumericos > 0) {
+            <div class="carga-error-msg eliminacion-no-numerico-alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <div>
+                <strong>{{ cantidadNoNumericos }} registro(s) no numérico(s)</strong> en la(s) fila(s): {{ filasNoNumericas }}.
+                El campo "usuario de red" debe contener solo dígitos.
+              </div>
+            </div>
+          }
+
+          <!-- Lista de usuarios a desvincular -->
+          @if (registrosEliminacion().length > 0) {
+            <div class="eliminacion-tabla-wrapper">
+              <div class="eliminacion-tabla-title">
+                <i class="bi bi-list-check"></i> Usuarios a desvincular
+              </div>
+              <div class="eliminacion-lista">
+                @for (reg of registrosEliminacion(); track reg.usuarioRed) {
+                  <div class="eliminacion-lista-row">
+                    <i class="bi bi-person-dash"></i>
+                    <span class="eliminacion-usuario">{{ reg.usuarioRed }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Lista de errores de validación -->
+          @if (erroresValidacion().length > 0) {
+            <div class="carga-errores">
+              <div class="carga-errores-title">
+                <i class="bi bi-exclamation-triangle"></i> Errores de validación ({{ erroresValidacion().length }})
+              </div>
+              <div class="carga-errores-list">
+                @for (err of erroresValidacion(); track err.fila) {
+                  <div class="error-row">
+                    <span class="error-fila">Fila {{ err.fila }}</span>
+                    <span class="error-msg">{{ err.mensaje }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Error de backend -->
+          @if (eliminacionErrorMsg()) {
+            <div class="carga-error-msg">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              {{ eliminacionErrorMsg() }}
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Botones de acción -->
+      <div class="modal-actions">
+        <app-button
+          [text]="'Cancelar'"
+          [class]="['btn', 'btn-primary-secondary']"
+          [type]="'button'"
+          (clickEventButton)="cerrarCargaMasiva()"
+        ></app-button>
+        @if (archivoCargado() && puedeProcesarEliminacion) {
+          <app-button
+            [text]="'Procesar Eliminación Masiva'"
+            [icon]="'bi bi-person-dash'"
+            [class]="['btn', 'btn-primary']"
+            [type]="'button'"
+            (clickEventButton)="confirmarEliminacionMasiva()"
+          ></app-button>
+        }
+        @if (procesandoEliminacion()) {
+          <app-button
+            [text]="'Procesando…'"
+            [icon]="'bi bi-arrow-clockwise'"
+            [class]="['btn', 'btn-primary']"
+            [type]="'button'"
+            [disabled]="true"
+          ></app-button>
+        }
+      </div>
+    }
   }
 </app-modal>
 
@@ -350,4 +541,15 @@
   [isDestructive]="false"
   (confirm)="ejecutarCargaMasiva()"
   (cancel)="showConfirmCarga.set(false)"
+></app-confirm-modal>
+
+<!-- Confirmación de eliminación masiva -->
+<app-confirm-modal
+  [visible]="showConfirmEliminacion()"
+  title="Confirmar eliminación masiva"
+  [message]="'¿Está seguro de remover la asignación de rol para ' + usuariosValidosEliminacion + ' usuarios?'"
+  confirmText="Confirmar"
+  [isDestructive]="true"
+  (confirm)="ejecutarEliminacionMasiva()"
+  (cancel)="showConfirmEliminacion.set(false)"
 ></app-confirm-modal>
