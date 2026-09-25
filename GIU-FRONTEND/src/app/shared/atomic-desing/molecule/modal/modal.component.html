@@ -1,28 +1,37 @@
-@if (isOpen){
-<div class="modal modal-backdrop" (click)="onBackdropClick()">
-  <div class="modal-content" #modal [ngClass]="['clickable-backdrop', sizeClass]" (click)="$event.stopPropagation()">
-    @if (includeHeader){
-    <button type="button" class="close" aria-label="Close" (click)="close()">
-      <span aria-hidden="true">&times;</span>
-    </button>
+@if (isOpen) {
+<div class="modal-backdrop" (click)="onBackdropClick()">
+  <div class="modal-content" #modalContent tabindex="-1" [ngClass]="sizeClass" (click)="$event.stopPropagation()">
+    @if (includeHeader) {
+      <div class="modal-header">
+        @if (title) {
+          <h2 class="modal-title">{{ title }}</h2>
+        }
+        <button type="button" class="modal-close-btn" aria-label="Cerrar" (click)="close()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
     }
 
-  
-      @if (title){
-      <h5 class="modal-title">{{ title }}</h5>
-      }
+    <div class="modal-body">
       <ng-content></ng-content>
-    
-
-    @if (showFooter){
-    <div class="modal-footer">
-      @if (cancelText){
-      <app-button [class]="classCancelBtn" [text]="cancelText" (click)="close()"></app-button>
-      }
-      @if (confirmText){
-      <app-button [class]="classConfirmBtn" [text]="confirmText" (click)="confirm()"></app-button>
-      }
     </div>
+
+    @if (showFooter) {
+      <div class="modal-footer">
+        @if (cancelText) {
+          <app-button [text]="cancelText" [class]="classCancelBtn" [type]="'button'" (clickEventButton)="close()"></app-button>
+        }
+        @if (confirmText) {
+          <app-button
+            [text]="confirmLabel"
+            [icon]="confirmLoading ? 'bi bi-arrow-clockwise' : ''"
+            [class]="classConfirmBtn"
+            [type]="'button'"
+            [disabled]="confirmDisabled || confirmLoading"
+            (clickEventButton)="confirm()"
+          ></app-button>
+        }
+      </div>
     }
   </div>
 </div>

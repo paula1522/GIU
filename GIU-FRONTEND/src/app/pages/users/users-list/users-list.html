@@ -29,184 +29,174 @@
 </div>
 
 <!-- Modal crear/editar -->
-@if (showForm()) {
-  <div class="overlay" (click)="cerrarForm()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ editingUser() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+<app-modal
+  #userModal
+  [title]="modalTitle()"
+  [size]="'large'"
+  [showFooter]="false"
+  (closeMeEvent)="cerrarForm()"
+>
+  <!-- Fase 1: Búsqueda por usuarioRed -->
+  @if (formPhase() === 'search') {
+    <div class="search-phase">
+      <p class="phase-info">
+        <i class="bi bi-search"></i>
+        Ingrese el <strong>usuario de red</strong> para verificar si ya existe en el sistema.
+      </p>
+      <form [formGroup]="searchForm" (ngSubmit)="buscarUsuario()">
+        <app-input
+          [textLabel]="'Usuario de Red'"
+          [form]="searchForm"
+          [controlName]="'usuarioRed'"
+          [validationMessages]="searchValidationMessages"
+          [placeholder]="'ej: maria.gomez'"
+          [type]="'text'"
+        ></app-input>
+        @if (searchError()) {
+          <div class="search-error">{{ searchError() }}</div>
+        }
+        <div class="modal-actions">
+          <app-button
+            [text]="'Cancelar'"
+            [class]="['btn', 'btn-primary-secondary']"
+            [type]="'button'"
+            (clickEventButton)="cerrarForm()"
+          ></app-button>
+          <app-button
+            [text]="searching() ? 'Buscando…' : 'Buscar usuario'"
+            [icon]="searching() ? 'bi bi-arrow-clockwise' : 'bi bi-search'"
+            [class]="['btn', 'btn-primary']"
+            [type]="'submit'"
+            [disabled]="searching()"
+            (clickEventButton)="buscarUsuario()"
+          ></app-button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Fase 2: Formulario completo -->
+  @if (formPhase() === 'form') {
+    <form [formGroup]="userForm" (ngSubmit)="guardar()">
+
+      <!-- Banner de usuario encontrado / nuevo -->
+      <div class="user-status-banner" [class.found]="foundUser()" [class.new-user]="!foundUser()">
+        <i class="bi" [class.bi-check-circle-fill]="foundUser()" [class.bi-person-plus-fill]="!foundUser()"></i>
+        @if (foundUser()) {
+          Usuario existente — los campos se han cargado para edición.
+        } @else {
+          Usuario no encontrado — complete los datos para crearlo.
+        }
+      </div>
+
+      <app-input
+        [textLabel]="'Usuario de Red'"
+        [form]="userForm"
+        [controlName]="'usuarioRed'"
+        [validationMessages]="userValidationMessages"
+        [type]="'text'"
+      ></app-input>
+
+      <app-input
+        [textLabel]="'Nombre completo'"
+        [form]="userForm"
+        [controlName]="'nombre'"
+        [validationMessages]="userValidationMessages"
+        [placeholder]="'Nombre completo'"
+        [type]="'text'"
+      ></app-input>
+
+      <app-input
+        [textLabel]="'Correo electrónico'"
+        [form]="userForm"
+        [controlName]="'correo'"
+        [validationMessages]="userValidationMessages"
+        [placeholder]="'correo@claro.com.co'"
+        [type]="'email'"
+      ></app-input>
+
+      <app-input
+        [textLabel]="'Número de identificación'"
+        [form]="userForm"
+        [controlName]="'numeroIdentificacion'"
+        [validationMessages]="userValidationMessages"
+        [placeholder]="'Cédula'"
+        [type]="'text'"
+      ></app-input>
+
+      <!-- Selector de perfil -->
+      <app-select
+        [id]="'select-perfil'"
+        [textLabel]="'Perfil'"
+        [control]="perfilControl"
+        [options]="perfilOptions()"
+        [displayKey]="'nameSelect'"
+        [valueKey]="'id'"
+        [defaultOption]="'— Seleccione un perfil —'"
+        [count_validation_messages]="userValidationMessages"
+      ></app-select>
+
+      <!-- Checkbox Administrador -->
+      <div class="form-field form-field-checkbox">
+        <app-checkbox
+          [id]="'chk-admin'"
+          [textLabel]="'Es Administrador'"
+          [form]="userForm"
+          [controlName]="'esAdministrador'"
+        ></app-checkbox>
+        <small class="checkbox-hint">Marca esta casilla si el usuario tendrá privilegios de administrador sobre la aplicación.</small>
+      </div>
+
+      <!-- Asignación de rol con fechas opcionales -->
+      <div class="form-section-title">
+        <i class="bi bi-person-badge"></i> Asignación de Rol
+      </div>
+      <app-select
+        [id]="'select-rol'"
+        [textLabel]="'Rol'"
+        [control]="rolControl"
+        [options]="rolOptions()"
+        [displayKey]="'nameSelect'"
+        [valueKey]="'id'"
+        [defaultOption]="'— Sin rol —'"
+        [showRequiredMark]="false"
+      ></app-select>
+      <div class="form-row">
+        <app-input
+          [textLabel]="'Fecha Inicio'"
+          [form]="userForm"
+          [controlName]="'fechaInRol'"
+          [type]="'date'"
+          [showRequiredMark]="false"
+        ></app-input>
+        <app-input
+          [textLabel]="'Fecha Fin'"
+          [form]="userForm"
+          [controlName]="'fechaFinRol'"
+          [type]="'date'"
+          [showRequiredMark]="false"
+        ></app-input>
+      </div>
+
+      <div class="modal-actions">
         <app-button
-          [icon]="'bi bi-x-lg'"
+          [text]="'Cancelar'"
           [class]="['btn', 'btn-primary-secondary']"
           [type]="'button'"
           (clickEventButton)="cerrarForm()"
         ></app-button>
+        <app-button
+          [text]="saving() ? 'Guardando…' : 'Guardar'"
+          [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
+          [class]="['btn', 'btn-primary']"
+          [type]="'submit'"
+          [disabled]="!canSave()"
+          (clickEventButton)="guardar()"
+        ></app-button>
       </div>
-      <div class="modal-body">
-
-        <!-- Fase 1: Búsqueda por usuarioRed -->
-        @if (formPhase() === 'search') {
-          <div class="search-phase">
-            <p class="phase-info">
-              <i class="bi bi-search"></i>
-              Ingrese el <strong>usuario de red</strong> para verificar si ya existe en el sistema.
-            </p>
-            <form [formGroup]="searchForm" (ngSubmit)="buscarUsuario()">
-              <app-input
-                [textLabel]="'Usuario de Red'"
-                [form]="searchForm"
-                [controlName]="'usuarioRed'"
-                [validationMessages]="searchValidationMessages"
-                [placeholder]="'ej: maria.gomez'"
-                [type]="'text'"
-              ></app-input>
-              @if (searchError()) {
-                <div class="search-error">{{ searchError() }}</div>
-              }
-              <div class="modal-actions">
-                <app-button
-                  [text]="'Cancelar'"
-                  [class]="['btn', 'btn-primary-secondary']"
-                  [type]="'button'"
-                  (clickEventButton)="cerrarForm()"
-                ></app-button>
-                <app-button
-                  [text]="searching() ? 'Buscando…' : 'Buscar usuario'"
-                  [icon]="searching() ? 'bi bi-arrow-clockwise' : 'bi bi-search'"
-                  [class]="['btn', 'btn-primary']"
-                  [type]="'submit'"
-                  [disabled]="searching()"
-                  (clickEventButton)="buscarUsuario()"
-                ></app-button>
-              </div>
-            </form>
-          </div>
-        }
-
-        <!-- Fase 2: Formulario completo -->
-        @if (formPhase() === 'form') {
-          <form [formGroup]="userForm" (ngSubmit)="guardar()">
-
-            <!-- Banner de usuario encontrado / nuevo -->
-            <div class="user-status-banner" [class.found]="foundUser()" [class.new-user]="!foundUser()">
-              <i class="bi" [class.bi-check-circle-fill]="foundUser()" [class.bi-person-plus-fill]="!foundUser()"></i>
-              @if (foundUser()) {
-                Usuario existente — los campos se han cargado para edición.
-              } @else {
-                Usuario no encontrado — complete los datos para crearlo.
-              }
-            </div>
-
-            <app-input
-              [textLabel]="'Usuario de Red'"
-              [form]="userForm"
-              [controlName]="'usuarioRed'"
-              [validationMessages]="userValidationMessages"
-              [type]="'text'"
-            ></app-input>
-
-            <app-input
-              [textLabel]="'Nombre completo'"
-              [form]="userForm"
-              [controlName]="'nombre'"
-              [validationMessages]="userValidationMessages"
-              [placeholder]="'Nombre completo'"
-              [type]="'text'"
-            ></app-input>
-
-            <app-input
-              [textLabel]="'Correo electrónico'"
-              [form]="userForm"
-              [controlName]="'correo'"
-              [validationMessages]="userValidationMessages"
-              [placeholder]="'correo@claro.com.co'"
-              [type]="'email'"
-            ></app-input>
-
-            <app-input
-              [textLabel]="'Número de identificación'"
-              [form]="userForm"
-              [controlName]="'numeroIdentificacion'"
-              [validationMessages]="userValidationMessages"
-              [placeholder]="'Cédula'"
-              [type]="'text'"
-            ></app-input>
-
-            <!-- Selector de perfil -->
-            <app-select
-              [id]="'select-perfil'"
-              [textLabel]="'Perfil'"
-              [control]="perfilControl"
-              [options]="perfilOptions()"
-              [displayKey]="'nameSelect'"
-              [valueKey]="'id'"
-              [defaultOption]="'— Seleccione un perfil —'"
-              [count_validation_messages]="userValidationMessages"
-            ></app-select>
-
-            <!-- Checkbox Administrador -->
-            <div class="form-field form-field-checkbox">
-              <app-checkbox
-                [id]="'chk-admin'"
-                [textLabel]="'Es Administrador'"
-                [form]="userForm"
-                [controlName]="'esAdministrador'"
-              ></app-checkbox>
-              <small class="checkbox-hint">Marca esta casilla si el usuario tendrá privilegios de administrador sobre la aplicación.</small>
-            </div>
-
-            <!-- Asignación de rol con fechas opcionales -->
-            <div class="form-section-title">
-              <i class="bi bi-person-badge"></i> Asignación de Rol
-            </div>
-            <app-select
-              [id]="'select-rol'"
-              [textLabel]="'Rol'"
-              [control]="rolControl"
-              [options]="rolOptions()"
-              [displayKey]="'nameSelect'"
-              [valueKey]="'id'"
-              [defaultOption]="'— Sin rol —'"
-              [showRequiredMark]="false"
-            ></app-select>
-            <div class="form-row">
-              <app-input
-                [textLabel]="'Fecha Inicio'"
-                [form]="userForm"
-                [controlName]="'fechaInRol'"
-                [type]="'date'"
-                [showRequiredMark]="false"
-              ></app-input>
-              <app-input
-                [textLabel]="'Fecha Fin'"
-                [form]="userForm"
-                [controlName]="'fechaFinRol'"
-                [type]="'date'"
-                [showRequiredMark]="false"
-              ></app-input>
-            </div>
-
-            <div class="modal-actions">
-              <app-button
-                [text]="'Cancelar'"
-                [class]="['btn', 'btn-primary-secondary']"
-                [type]="'button'"
-                (clickEventButton)="cerrarForm()"
-              ></app-button>
-              <app-button
-                [text]="saving() ? 'Guardando…' : 'Guardar'"
-                [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
-                [class]="['btn', 'btn-primary']"
-                [type]="'submit'"
-                [disabled]="!canSave()"
-                (clickEventButton)="guardar()"
-              ></app-button>
-            </div>
-          </form>
-        }
-      </div>
-    </div>
-  </div>
-}
+    </form>
+  }
+</app-modal>
 
 <!-- Confirmación toggle estado -->
 <app-confirm-modal
@@ -220,146 +210,136 @@
 ></app-confirm-modal>
 
 <!-- Modal de carga masiva -->
-@if (showCargaMasiva()) {
-  <div class="overlay" (click)="cerrarCargaMasiva()">
-    <div class="modal modal-carga" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Carga masiva de usuarios</h2>
-        <app-button
-          [icon]="'bi bi-x-lg'"
-          [class]="['btn', 'btn-primary-secondary']"
-          [type]="'button'"
-          (clickEventButton)="cerrarCargaMasiva()"
-        ></app-button>
+<app-modal
+  #cargaModal
+  [title]="'Carga masiva de usuarios'"
+  [size]="'large'"
+  [showFooter]="false"
+  (closeMeEvent)="cerrarCargaMasiva()"
+>
+  @if (cargaExitosa()) {
+    <!-- Mensaje de éxito -->
+    <div class="carga-exitosa">
+      <i class="bi bi-check-circle-fill"></i>
+      <p>¡Carga masiva completada! Se crearon {{ registrosMasivos().length }} usuario(s) correctamente.</p>
+    </div>
+  } @else {
+    <!-- Zona de carga (Dropzone) -->
+    @if (!archivoCargado()) {
+      <div class="dropzone"
+        (dragover)="onDragOver($event)"
+        (drop)="onFileDropped($event)"
+      >
+        <i class="bi bi-cloud-arrow-up"></i>
+        <p class="dropzone-text">Arrastre su archivo Excel aquí</p>
+        <p class="dropzone-hint">o haga clic en el botón para seleccionarlo</p>
+        <label class="dropzone-btn-label">
+          <input type="file" accept=".xlsx" (change)="onFileSelected($event)" hidden />
+          <span class="dropzone-btn">Seleccionar archivo</span>
+        </label>
+        <p class="dropzone-format">Solo archivos .xlsx</p>
       </div>
-      <div class="modal-body">
+    }
 
-        @if (cargaExitosa()) {
-          <!-- Mensaje de éxito -->
-          <div class="carga-exitosa">
-            <i class="bi bi-check-circle-fill"></i>
-            <p>¡Carga masiva completada! Se crearon {{ registrosMasivos().length }} usuario(s) correctamente.</p>
+    <!-- Error de carga -->
+    @if (cargaErrorMsg() && !archivoCargado()) {
+      <div class="carga-error-msg">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        {{ cargaErrorMsg() }}
+      </div>
+    }
+
+    <!-- Panel informativo del archivo cargado -->
+    @if (archivoCargado()) {
+      <div class="carga-info">
+        <div class="carga-info-header">
+          <div class="carga-file-info">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <div>
+              <strong>{{ archivoCargado()?.name }}</strong>
+              <span class="carga-file-size">{{ tamanoArchivo }}</span>
+            </div>
           </div>
-        } @else {
-          <!-- Zona de carga (Dropzone) -->
-          @if (!archivoCargado()) {
-            <div class="dropzone"
-              (dragover)="onDragOver($event)"
-              (drop)="onFileDropped($event)"
-            >
-              <i class="bi bi-cloud-arrow-up"></i>
-              <p class="dropzone-text">Arrastre su archivo Excel aquí</p>
-              <p class="dropzone-hint">o haga clic en el botón para seleccionarlo</p>
-              <label class="dropzone-btn-label">
-                <input type="file" accept=".xlsx" (change)="onFileSelected($event)" hidden />
-                <span class="dropzone-btn">Seleccionar archivo</span>
-              </label>
-              <p class="dropzone-format">Solo archivos .xlsx</p>
+          <app-button
+            [text]="'Limpiar'"
+            [icon]="'bi bi-trash'"
+            [class]="['btn', 'btn-primary-secondary']"
+            [type]="'button'"
+            (clickEventButton)="limpiarCarga()"
+          ></app-button>
+        </div>
+
+        <div class="carga-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total registros</span>
+            <span class="stat-value">{{ registrosMasivos().length + erroresValidacion().length }}</span>
+          </div>
+          <div class="stat-item stat-valid">
+            <span class="stat-label">Válidos</span>
+            <span class="stat-value">{{ registrosMasivos().length }}</span>
+          </div>
+          <div class="stat-item stat-error">
+            <span class="stat-label">Con errores</span>
+            <span class="stat-value">{{ erroresValidacion().length }}</span>
+          </div>
+        </div>
+
+        <!-- Lista de errores -->
+        @if (erroresValidacion().length > 0) {
+          <div class="carga-errores">
+            <div class="carga-errores-title">
+              <i class="bi bi-exclamation-triangle"></i> Errores de validación ({{ erroresValidacion().length }})
             </div>
-          }
-
-          <!-- Error de carga -->
-          @if (cargaErrorMsg() && !archivoCargado()) {
-            <div class="carga-error-msg">
-              <i class="bi bi-exclamation-circle-fill"></i>
-              {{ cargaErrorMsg() }}
-            </div>
-          }
-
-          <!-- Panel informativo del archivo cargado -->
-          @if (archivoCargado()) {
-            <div class="carga-info">
-              <div class="carga-info-header">
-                <div class="carga-file-info">
-                  <i class="bi bi-file-earmark-spreadsheet"></i>
-                  <div>
-                    <strong>{{ archivoCargado()?.name }}</strong>
-                    <span class="carga-file-size">{{ tamanoArchivo }}</span>
-                  </div>
-                </div>
-                <app-button
-                  [text]="'Limpiar'"
-                  [icon]="'bi bi-trash'"
-                  [class]="['btn', 'btn-primary-secondary']"
-                  [type]="'button'"
-                  (clickEventButton)="limpiarCarga()"
-                ></app-button>
-              </div>
-
-              <div class="carga-stats">
-                <div class="stat-item">
-                  <span class="stat-label">Total registros</span>
-                  <span class="stat-value">{{ registrosMasivos().length + erroresValidacion().length }}</span>
-                </div>
-                <div class="stat-item stat-valid">
-                  <span class="stat-label">Válidos</span>
-                  <span class="stat-value">{{ registrosMasivos().length }}</span>
-                </div>
-                <div class="stat-item stat-error">
-                  <span class="stat-label">Con errores</span>
-                  <span class="stat-value">{{ erroresValidacion().length }}</span>
-                </div>
-              </div>
-
-              <!-- Lista de errores -->
-              @if (erroresValidacion().length > 0) {
-                <div class="carga-errores">
-                  <div class="carga-errores-title">
-                    <i class="bi bi-exclamation-triangle"></i> Errores de validación ({{ erroresValidacion().length }})
-                  </div>
-                  <div class="carga-errores-list">
-                    @for (err of erroresValidacion(); track err.fila) {
-                      <div class="error-row">
-                        <span class="error-fila">Fila {{ err.fila }}</span>
-                        <span class="error-msg">{{ err.mensaje }}</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Error de backend -->
-              @if (cargaErrorMsg() && archivoCargado()) {
-                <div class="carga-error-msg">
-                  <i class="bi bi-exclamation-circle-fill"></i>
-                  {{ cargaErrorMsg() }}
+            <div class="carga-errores-list">
+              @for (err of erroresValidacion(); track err.fila) {
+                <div class="error-row">
+                  <span class="error-fila">Fila {{ err.fila }}</span>
+                  <span class="error-msg">{{ err.mensaje }}</span>
                 </div>
               }
             </div>
-          }
+          </div>
+        }
 
-          <!-- Botones de acción -->
-          <div class="modal-actions">
-            <app-button
-              [text]="'Cancelar'"
-              [class]="['btn', 'btn-primary-secondary']"
-              [type]="'button'"
-              (clickEventButton)="cerrarCargaMasiva()"
-            ></app-button>
-            @if (archivoCargado() && puedeProcesar) {
-              <app-button
-                [text]="'Procesar Carga Masiva'"
-                [icon]="'bi bi-upload'"
-                [class]="['btn', 'btn-primary']"
-                [type]="'button'"
-                (clickEventButton)="confirmarCargaMasiva()"
-              ></app-button>
-            }
-            @if (procesandoCarga()) {
-              <app-button
-                [text]="'Procesando…'"
-                [icon]="'bi bi-arrow-clockwise'"
-                [class]="['btn', 'btn-primary']"
-                [type]="'button'"
-                [disabled]="true"
-              ></app-button>
-            }
+        <!-- Error de backend -->
+        @if (cargaErrorMsg() && archivoCargado()) {
+          <div class="carga-error-msg">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            {{ cargaErrorMsg() }}
           </div>
         }
       </div>
+    }
+
+    <!-- Botones de acción -->
+    <div class="modal-actions">
+      <app-button
+        [text]="'Cancelar'"
+        [class]="['btn', 'btn-primary-secondary']"
+        [type]="'button'"
+        (clickEventButton)="cerrarCargaMasiva()"
+      ></app-button>
+      @if (archivoCargado() && puedeProcesar) {
+        <app-button
+          [text]="'Procesar Carga Masiva'"
+          [icon]="'bi bi-upload'"
+          [class]="['btn', 'btn-primary']"
+          [type]="'button'"
+          (clickEventButton)="confirmarCargaMasiva()"
+        ></app-button>
+      }
+      @if (procesandoCarga()) {
+        <app-button
+          [text]="'Procesando…'"
+          [icon]="'bi bi-arrow-clockwise'"
+          [class]="['btn', 'btn-primary']"
+          [type]="'button'"
+          [disabled]="true"
+        ></app-button>
+      }
     </div>
-  </div>
-}
+  }
+</app-modal>
 
 <!-- Confirmación de carga masiva -->
 <app-confirm-modal

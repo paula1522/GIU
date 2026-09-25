@@ -1,44 +1,37 @@
 import { CommonModule, NgIf } from '@angular/common';
-import { Component, ElementRef, Input, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, Output, EventEmitter, HostListener, OnDestroy } from '@angular/core';
 import { ButtonComponent } from '../../atoms/button/button.component';
-
-/**
- * @autor Janel Góngora
- * 
- * @description Este componente proporciona una interfaz de usuario para mostrar información
- * y recibir confirmación del usuario. Permite configurar el tamaño, el texto de
- * los botones de confirmación y cancelación, y manejar eventos de cierre.
- */
 
 @Component({
   selector: 'app-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, ButtonComponent ],
+  imports: [CommonModule, ButtonComponent],
 })
-export class ModalComponent {
-  @ViewChild('modal', { static: false }) modal!: ElementRef; // Referencia al elemento modal.
+export class ModalComponent implements OnDestroy {
+  @ViewChild('modalContent', { static: false }) modalContent!: ElementRef;
 
-  @Input() title!: string; // Título del modal.
-  @Input() confirmText?: string = "Aceptar"; // Texto del botón de confirmación.
-  @Input() classConfirmBtn?: string; // Clase CSS del botón de confirmación.
-  @Input() cancelText?: string = "Cancelar"; // Texto del botón de cancelación.
-  @Input() classCancelBtn?: string; // Clase CSS del botón de cancelación.
-  @Input() size: 'small' | 'medium' | 'large' | 'xlarge' | string = 'medium'; // Configuración del tamaño del modal.
-  @Input() showFooter = true; // Indica si se debe mostrar el pie del modal.
-  @Input() closeOnBackdropClick: boolean = false; // Indica si el modal se cierra al hacer clic en el fondo.
-  @Input() includeHeader : boolean = true;
+  @Input() title: string = '';
+  @Input() confirmText: string = 'Aceptar';
+  @Input() classConfirmBtn: string = "['btn', 'btn-primary']";
+  @Input() cancelText: string = 'Cancelar';
+  @Input() classCancelBtn: string = "['btn', 'btn-primary-secondary']";
+  @Input() size: 'small' | 'medium' | 'large' | 'xlarge' | string = 'medium';
+  @Input() showFooter: boolean = true;
+  @Input() closeOnBackdropClick: boolean = true;
+  @Input() includeHeader: boolean = true;
+  @Input() confirmDisabled: boolean = false;
+  @Input() confirmLoading: boolean = false;
+  @Input() loadingText: string = 'Guardando…';
 
-  isOpen: boolean = false; // Estado del modal (abierto o cerrado).
+  isOpen: boolean = false;
+  private previousFocus: HTMLElement | null = null;
 
-  @Output() closeMeEvent = new EventEmitter<void>(); // Evento emitido al cerrar el modal.
-  @Output() confirmEvent = new EventEmitter<void>(); // Evento emitido al confirmar la acción.
-  @Output() backClicEvent = new EventEmitter<void>(); // Evento emitido al hacer clic en el fondo.
+  @Output() closeMeEvent = new EventEmitter<void>();
+  @Output() confirmEvent = new EventEmitter<void>();
+  @Output() backClicEvent = new EventEmitter<void>();
 
-  /**
-   * sizeClass - Propiedad computada que devuelve la clase CSS correspondiente al tamaño del modal.
-   */
   get sizeClass(): string {
     switch (this.size) {
       case 'small': return 'modal-sm';
@@ -49,41 +42,49 @@ export class ModalComponent {
     }
   }
 
-  /**
-   * open - Método que abre el modal.
-   */
-  open() {
+  get confirmLabel(): string {
+    return this.confirmLoading ? this.loadingText : this.confirmText;
+  }
+
+  open(): void {
     this.isOpen = true;
+    this.previousFocus = document.activeElement as HTMLElement;
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      this.modalContent?.nativeElement?.focus();
+    }, 50);
   }
 
-  /**
-   * close - Método que cierra el modal y emite el evento de cierre.
-   */
-  close() {
+  close(): void {
     this.isOpen = false;
+    document.body.style.overflow = '';
     this.closeMeEvent.emit();
+    if (this.previousFocus) {
+      setTimeout(() => this.previousFocus?.focus(), 50);
+    }
   }
 
-  /**
-   * onBackdropClick - Maneja el clic en el fondo del modal.
-   * 
-   * Este método cierra el modal si la propiedad closeOnBackdropClick está activada.
-   * También emite un evento para notificar sobre el clic en el fondo.
-   */
-  onBackdropClick() {
+  onBackdropClick(): void {
     this.backClicEvent.emit();
     if (this.closeOnBackdropClick) {
       this.close();
     }
   }
 
-  /**
-   * confirm - Método que maneja la confirmación de la acción.
-   * 
-   * Cierra el modal y emite el evento de confirmación.
-   */
-  confirm() {
-    this.close();
+  confirm(): void {
+    if (this.confirmDisabled || this.confirmLoading) return;
     this.confirmEvent.emit();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (!this.isOpen) return;
+    if (event.key === 'Escape') {
+      this.close();
+    }
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 }

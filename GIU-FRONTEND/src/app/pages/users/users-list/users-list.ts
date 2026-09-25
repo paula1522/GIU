@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -15,6 +15,7 @@ import { SelectComponent } from '../../../shared/atomic-desing/atoms/select/sele
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';
 import { HeaderPagesComponent, HeaderButton } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
+import { ModalComponent } from '../../../shared/atomic-desing/molecule/modal/modal.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
 
 interface RegistroMasivo {
@@ -32,7 +33,7 @@ interface ErrorValidacion {
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, SelectComponent, ButtonComponent, CheckboxComponent, HeaderPagesComponent, ConfirmModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, SelectComponent, ButtonComponent, CheckboxComponent, HeaderPagesComponent, ModalComponent, ConfirmModalComponent],
   templateUrl: './users-list.html',
   styleUrl: './users-list.scss',
 })
@@ -153,12 +154,16 @@ export class UsersList implements OnInit, OnDestroy {
   readonly canToggle = this.auth.hasPermission(PERMISSIONS.USUARIOS_GESTIONAR_ESTADO);
 
   // ---------- Modal crear/editar ----------
+  @ViewChild('userModal') userModal!: ModalComponent;
   readonly showForm = signal(false);
   readonly saving = signal(false);
   readonly editingUser = signal<UserApplication | null>(null);
 
   /** Fase del modal: 'search' = buscar usuarioRed, 'form' = formulario completo */
   readonly formPhase = signal<'search' | 'form'>('search');
+
+  /** Título dinámico del modal según edición/creación. */
+  readonly modalTitle = computed(() => this.editingUser() ? 'Editar usuario' : 'Nuevo usuario');
 
   /** Usuario encontrado en la búsqueda */
   readonly foundUser = signal<UserApplication | null>(null);
@@ -264,6 +269,7 @@ export class UsersList implements OnInit, OnDestroy {
     this.searchForm.reset();
     this.userForm.reset();
     this.showForm.set(true);
+    this.userModal?.open();
   }
 
   abrirEditar(user: UserApplication): void {
@@ -284,6 +290,7 @@ export class UsersList implements OnInit, OnDestroy {
       fechaInRol: user.fechaInRol ? user.fechaInRol.substring(0, 10) : '',
       fechaFinRol: user.fechaFinRol ? user.fechaFinRol.substring(0, 10) : '',
     });
+    this.userModal?.open();
   }
 
   cerrarForm(): void {
@@ -291,6 +298,7 @@ export class UsersList implements OnInit, OnDestroy {
     this.formPhase.set('search');
     this.foundUser.set(null);
     this.searchError.set('');
+    this.userModal?.close();
   }
 
   // ---------- Búsqueda por usuarioRed ----------
@@ -373,7 +381,7 @@ export class UsersList implements OnInit, OnDestroy {
       this.userService.actualizar(baseRequest, this.auth.usuarioRed()).subscribe({
         next: () => {
           this.saving.set(false);
-          this.showForm.set(false);
+          this.cerrarForm();
           this.cargar();
         },
         error: () => this.saving.set(false),
@@ -382,7 +390,7 @@ export class UsersList implements OnInit, OnDestroy {
       this.userService.crear(baseRequest, this.auth.usuarioRed()).subscribe({
         next: () => {
           this.saving.set(false);
-          this.showForm.set(false);
+          this.cerrarForm();
           this.cargar();
         },
         error: () => this.saving.set(false),
@@ -456,6 +464,7 @@ export class UsersList implements OnInit, OnDestroy {
 
   // ==================== Carga Masiva ====================
 
+  @ViewChild('cargaModal') cargaModal!: ModalComponent;
   readonly showCargaMasiva = signal(false);
   readonly archivoCargado = signal<File | null>(null);
   readonly registrosMasivos = signal<RegistroMasivo[]>([]);
@@ -472,12 +481,14 @@ export class UsersList implements OnInit, OnDestroy {
   abrirCargaMasiva(): void {
     this.showCargaMasiva.set(true);
     this.limpiarCarga();
+    this.cargaModal?.open();
   }
 
   /** Cerrar modal de carga masiva. */
   cerrarCargaMasiva(): void {
     this.showCargaMasiva.set(false);
     this.limpiarCarga();
+    this.cargaModal?.close();
   }
 
   /** Limpiar estado de carga. */
