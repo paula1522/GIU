@@ -30,54 +30,10 @@
   font-size: 0.75rem;
   font-weight: 600;
 }
-.badge-success { background: #d1fae5; color: #065f46; }  // verde: ACTIVO
-.badge-danger  { background: #fee2e2; color: #991b1b; }  // rojo: INACTIVO / BLOQUEADO
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-danger  { background: #fee2e2; color: #991b1b; }
 
-
-
-// Overlay + Modal base (compartido por los 3 modales del componente)
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
-
-.modal {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-
-  h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0;
-    color: #1a1a2e;
-  }
-}
-
-.modal-body {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
+// Acciones del modal (usado en el form modal y el detalle)
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -118,7 +74,6 @@
 
 // Contenedor con scroll de la lista de permisos
 .permisos-grid {
-  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.75rem;
   padding: 1rem;
@@ -127,7 +82,6 @@
   border-radius: 8px;
   max-height: 240px;
   overflow-y: auto;
-  width: 100%;
 }
 
 // Fila de permisos (encabezado y cada ítem comparten grid)
@@ -244,8 +198,6 @@
 }
 
 // Modal de Usuarios por Rol (buscador + listado + paginación)
-.modal-usuarios { max-width: 680px; }
-
 .usuarios-section {
   display: flex;
   flex-direction: column;
@@ -273,7 +225,7 @@
   app-input { flex: 1; }
 }
 
-// Mensaje de error al buscar usuario (no encontrado / ya asignado / etc.)
+// Mensaje de error al buscar usuario
 .search-usuario-error {
   font-size: 0.8125rem;
   color: #dc3545;
@@ -475,17 +427,7 @@
   padding: 0 0.5rem;
 }
 
-// 8. Modal de Detalle del Rol (datos + permisos asignados)
-.modal-detalle {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 720px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
+// Modal de Detalle del Rol (datos + permisos asignados)
 .detalle-section {
   display: flex;
   flex-direction: column;

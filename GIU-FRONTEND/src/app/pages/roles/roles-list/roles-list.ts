@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -27,6 +27,7 @@ import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
+import { ModalComponent } from '../../../shared/atomic-desing/molecule/modal/modal.component';
 import {
   HeaderButton,
   HeaderPagesComponent,
@@ -62,6 +63,7 @@ import { switchMap } from 'rxjs/operators';
     ButtonComponent,
     CheckboxComponent,
     ConfirmModalComponent,
+    ModalComponent,
     HeaderPagesComponent,
     SelectComponent,
   ],
@@ -74,6 +76,12 @@ export class RolesList implements OnInit {
   private readonly userService = inject(UserService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+
+  // ==================== Refs de modales ====================
+
+  @ViewChild('modalForm') modalForm!: ModalComponent;
+  @ViewChild('modalUsuarios') modalUsuarios!: ModalComponent;
+  @ViewChild('modalDetalle') modalDetalle!: ModalComponent;
 
   // ==================== Estado general ====================
 
@@ -220,10 +228,11 @@ export class RolesList implements OnInit {
       buttons.push({
         label: 'Editar',
         action: 'EDITAR',
-        title: 'Editar rol',
+        title: r.estado === 'ACTIVO' ? 'Editar rol' : 'El rol está inactivo — actívelo para editar',
         icon: 'bi bi-pencil-square',
         class: 'btn-table-edit',
         type: 'button',
+        disabled: r.estado !== 'ACTIVO',
       });
 
       buttons.push({
@@ -238,23 +247,14 @@ export class RolesList implements OnInit {
 
     return {
       _role: r,
-      nombre: {
-        typeColum: typeColum.string,
-        columValue: r.nombre,
-      },
-      descripcion: {
-        typeColum: typeColum.string,
-        columValue: r.descripcion || '—',
-      },
+      nombre: { typeColum: typeColum.string, columValue: r.nombre },
+      descripcion: { typeColum: typeColum.string, columValue: r.descripcion || '—' },
       estado: {
         typeColum: typeColum.status,
         columValue: r.estado,
         satusValue: r.estado === 'ACTIVO',
       },
-      acciones: {
-        typeColum: typeColum.button,
-        actionButtons: buttons,
-      },
+      acciones: { typeColum: typeColum.button, actionButtons: buttons },
     } as ColumnConfig;
   }
 
@@ -274,19 +274,13 @@ export class RolesList implements OnInit {
 
   // ==================== Formulario de rol ====================
 
-  readonly showForm = signal(false);
   readonly editingRole = signal<Role | null>(null);
   readonly saving = signal(false);
 
   roleForm!: FormGroup;
 
   readonly validationMessages: Record<string, { type: string; message: string }[]> = {
-    nombre: [
-      {
-        type: 'required',
-        message: 'El nombre del rol es obligatorio.',
-      },
-    ],
+    nombre: [{ type: 'required', message: 'El nombre del rol es obligatorio.' }],
   };
 
   // ==================== Confirmación toggle ====================
@@ -313,7 +307,6 @@ export class RolesList implements OnInit {
     this.cargarRecursos();
   }
 
-  /** Acceso al FormArray de permisos desde el template. */
   get permisosArray(): FormArray {
     return this.roleForm.get('permisos') as FormArray;
   }
@@ -378,12 +371,10 @@ export class RolesList implements OnInit {
     this.permisosArray.updateValueAndValidity();
   }
 
-  /** Filtra los permisos en tiempo real. */
   filtrarPermisos(term: string): void {
     this.filtroPermisos.set(term);
   }
 
-  /** Selecciona/deselecciona todos los permisos visibles. */
   toggleSelectAllPermisos(checked: boolean): void {
     const indices = this.recursosFiltradosIndices();
 
@@ -394,7 +385,6 @@ export class RolesList implements OnInit {
     this.permisosArray.updateValueAndValidity();
   }
 
-  /** Estado del checkbox "Seleccionar todos". */
   get selectAllPermisosState(): boolean | null {
     const indices = this.recursosFiltradosIndices();
 
@@ -403,32 +393,22 @@ export class RolesList implements OnInit {
     }
 
     const values = indices.map((i) => this.permisosArray.at(i).value);
-
     const allTrue = values.every((v) => v === true);
     const allFalse = values.every((v) => v === false);
 
-    if (allTrue) {
-      return true;
-    }
-
-    if (allFalse) {
-      return false;
-    }
-
+    if (allTrue) return true;
+    if (allFalse) return false;
     return null;
   }
 
-  /** True si todos los permisos visibles están seleccionados. */
   get allPermisosSelected(): boolean {
     return this.selectAllPermisosState === true;
   }
 
-  /** Cantidad de permisos seleccionados. */
   get cantidadSeleccionadosPermisos(): number {
     return this.permisosArray.value.filter((v: boolean) => v).length;
   }
 
-  /** Retorna los IDs de los recursos seleccionados. */
   private getSelectedPermisosIds(): number[] {
     const ids: number[] = [];
 
@@ -451,20 +431,14 @@ export class RolesList implements OnInit {
     this.editingRole.set(null);
     this.filtroPermisos.set('');
 
-    this.roleForm?.reset({
-      nombre: '',
-      descripcion: '',
-    });
-
+    this.roleForm?.reset({ nombre: '', descripcion: '' });
     this.buildPermisosCheckboxes([]);
 
-    this.showForm.set(true);
+    this.modalForm?.open();
   }
 
   abrirEditar(role: Role): void {
     this.editingRole.set(role);
-
-    // Limpia la búsqueda interna al abrir el modal
     this.filtroPermisos.set('');
 
     this.roleForm?.patchValue({
@@ -472,7 +446,6 @@ export class RolesList implements OnInit {
       descripcion: role.descripcion ?? '',
     });
 
-    // Cargar los permisos actualmente asignados al rol
     this.roleService.obtenerDetalleRol(role.id).subscribe({
       next: (res) => {
         const assignedIds = (res.data?.recursos ?? []).map((recurso) => recurso.recuId);
@@ -496,20 +469,17 @@ export class RolesList implements OnInit {
       },
     });
 
-    this.showForm.set(true);
+    this.modalForm?.open();
   }
 
   cerrarForm(): void {
-    this.showForm.set(false);
+    this.modalForm?.close();
   }
 
   // ==================== Guardar (crear / editar) ====================
 
   guardar(): void {
-    // Guard de reentrada: evita doble envío
-    if (this.saving()) {
-      return;
-    }
+    if (this.saving()) return;
 
     if (this.roleForm.invalid) {
       this.roleForm.markAllAsTouched();
@@ -523,7 +493,6 @@ export class RolesList implements OnInit {
     const selectedIds = this.getSelectedPermisosIds();
 
     if (!role) {
-      // CREAR
       const request: CrearRolRequest = {
         nombre: formValue.nombre,
         descripcion: formValue.descripcion,
@@ -533,7 +502,7 @@ export class RolesList implements OnInit {
       this.roleService.crearRol(this.apliId(), request, this.auth.usuarioRed()).subscribe({
         next: () => {
           this.saving.set(false);
-          this.showForm.set(false);
+          this.cerrarForm();
           this.cargar();
         },
         error: (error) => {
@@ -545,7 +514,6 @@ export class RolesList implements OnInit {
       return;
     }
 
-    // EDITAR
     this.editarRol(role.id, formValue.nombre, formValue.descripcion, selectedIds);
   }
 
@@ -607,22 +575,18 @@ export class RolesList implements OnInit {
                     modificar: of(modificarRes),
                     recursos: forkJoin(tareas),
                   })
-                : of({
-                    modificar: modificarRes,
-                    recursos: null,
-                  });
+                : of({ modificar: modificarRes, recursos: null });
             })
           )
           .subscribe({
             next: () => {
-              // Invalidamos cache del rol editado
               this.roleDetalleCache.update((cache) => {
                 const { [rolId]: _, ...rest } = cache;
                 return rest;
               });
 
               this.saving.set(false);
-              this.showForm.set(false);
+              this.cerrarForm();
               this.cargar();
             },
             error: (error) => {
@@ -642,24 +606,18 @@ export class RolesList implements OnInit {
 
   toggleEstado(role: Role): void {
     this.confirmRole.set(role);
-
     this.confirmTitle.set(role.estado === 'ACTIVO' ? 'Inactivar rol' : 'Activar rol');
-
     this.confirmMsg.set(
       role.estado === 'ACTIVO'
         ? `¿Desea inactivar el rol "${role.nombre}"? Los usuarios con este rol no tendrán acceso hasta ser activado nuevamente.`
         : `¿Desea activar el rol "${role.nombre}"?`
     );
-
     this.confirmVisible.set(true);
   }
 
   ejecutarToggle(): void {
     const role = this.confirmRole();
-
-    if (!role) {
-      return;
-    }
+    if (!role) return;
 
     this.confirmVisible.set(false);
 
@@ -681,7 +639,6 @@ export class RolesList implements OnInit {
 
   // ==================== Modal de Detalle del Rol ====================
 
-  readonly showDetalleRol = signal(false);
   readonly rolDetalle = signal<Role | null>(null);
   readonly permisosRol = signal<RecursosRolResponse[]>([]);
   readonly cargandoDetalleRol = signal(false);
@@ -689,8 +646,9 @@ export class RolesList implements OnInit {
   abrirDetalleRol(role: Role): void {
     this.rolDetalle.set(role);
     this.permisosRol.set([]);
-    this.showDetalleRol.set(true);
     this.cargandoDetalleRol.set(true);
+
+    this.modalDetalle?.open();
 
     this.roleService.obtenerDetalleRol(role.id).subscribe({
       next: (res) => {
@@ -706,25 +664,27 @@ export class RolesList implements OnInit {
   }
 
   cerrarDetalleRol(): void {
-    this.showDetalleRol.set(false);
     this.rolDetalle.set(null);
     this.permisosRol.set([]);
+    this.modalDetalle?.close();
   }
 
   // ==================== Modal de Usuarios por Rol ====================
 
-  readonly showUsuariosModal = signal(false);
   readonly rolSeleccionado = signal<Role | null>(null);
   readonly usuariosRol = signal<UsuarioAsignadoRol[]>([]);
   readonly usuarioBuscado = signal<UsuarioResponseDTO | null>(null);
   readonly buscandoUsuario = signal(false);
   readonly searchUsuarioError = signal('');
 
-  // ---- Confirmación de retiro ----
   readonly confirmQuitarVisible = signal(false);
   readonly confirmQuitarMsg = signal('');
   readonly usuariosAQuitar = signal<UsuarioAsignadoRol[]>([]);
   readonly quitandoUsuarios = signal(false);
+
+  readonly rolSeleccionadoActivo = computed(
+    () => this.rolSeleccionado()?.estado === 'ACTIVO'
+  );
 
   readonly filtroInterno = signal('');
 
@@ -756,16 +716,12 @@ export class RolesList implements OnInit {
   readonly rangoMostrado = computed(() => {
     const total = this.usuariosFiltrados().length;
 
-    if (total === 0) {
-      return '0 usuarios';
-    }
+    if (total === 0) return '0 usuarios';
 
     const start = (this.currentPageUsuarios() - 1) * this.itemsPerPageUsuarios + 1;
     const end = Math.min(this.currentPageUsuarios() * this.itemsPerPageUsuarios, total);
 
-    return `Mostrando ${start}-${end} de ${total.toLocaleString(
-      'es-CO'
-    )} usuario(s) asignado(s)`;
+    return `Mostrando ${start}-${end} de ${total.toLocaleString('es-CO')} usuario(s) asignado(s)`;
   });
 
   readonly selectedIndices = signal<Set<number>>(new Set());
@@ -791,14 +747,21 @@ export class RolesList implements OnInit {
   abrirUsuariosRol(role: Role): void {
     this.rolSeleccionado.set(role);
     this.usuarioBuscado.set(null);
-    this.searchUsuarioError.set('');
     this.filtroInterno.set('');
     this.currentPageUsuarios.set(1);
     this.selectedIndices.set(new Set());
 
+    if (role.estado !== 'ACTIVO') {
+      this.searchUsuarioError.set(
+        `El rol "${role.nombre}" no está habilitado. Actívelo antes de gestionar usuarios.`
+      );
+    } else {
+      this.searchUsuarioError.set('');
+    }
+
     this.initUsuariosForms();
 
-    this.showUsuariosModal.set(true);
+    this.modalUsuarios?.open();
 
     this.cargarUsuariosRol(role.id);
   }
@@ -829,6 +792,8 @@ export class RolesList implements OnInit {
   }
 
   toggleSeleccionUsuario(globalIndex: number, checked: boolean): void {
+    if (!this.rolSeleccionadoActivo()) return;
+
     const current = new Set(this.selectedIndices());
 
     if (checked) {
@@ -838,11 +803,12 @@ export class RolesList implements OnInit {
     }
 
     this.selectedIndices.set(current);
-
     this.updateSelectAllState();
   }
 
   toggleSelectAll(checked: boolean): void {
+    if (!this.rolSeleccionadoActivo()) return;
+
     const current = new Set(this.selectedIndices());
 
     const start = (this.currentPageUsuarios() - 1) * this.itemsPerPageUsuarios;
@@ -883,12 +849,18 @@ export class RolesList implements OnInit {
     return this.selectedIndices().size;
   }
 
-  // ==================== Retirar usuarios (individual y por lote) ====================
+  // ==================== Retirar usuarios ====================
 
-  /** Abre el confirm para quitar TODOS los seleccionados. */
   quitarSeleccionados(): void {
     const role = this.rolSeleccionado();
     if (!role) return;
+
+    if (role.estado !== 'ACTIVO') {
+      this.searchUsuarioError.set(
+        `El rol "${role.nombre}" no está habilitado. Actívelo antes de quitar usuarios.`
+      );
+      return;
+    }
 
     const usuarios = this.usuariosFiltrados();
     const indices = Array.from(this.selectedIndices()).sort((a, b) => a - b);
@@ -906,8 +878,17 @@ export class RolesList implements OnInit {
     this.confirmQuitarVisible.set(true);
   }
 
-  /** Abre el confirm para quitar UN solo usuario (botón de la fila). */
   quitarUsuario(usuario: UsuarioAsignadoRol): void {
+    const role = this.rolSeleccionado();
+    if (!role) return;
+
+    if (role.estado !== 'ACTIVO') {
+      this.searchUsuarioError.set(
+        `El rol "${role.nombre}" no está habilitado. Actívelo antes de quitar usuarios.`
+      );
+      return;
+    }
+
     this.usuariosAQuitar.set([usuario]);
     this.confirmQuitarMsg.set(
       `¿Desea quitar a "${usuario.nombre}" (${usuario.usuarioRed}) de este rol?`
@@ -915,7 +896,6 @@ export class RolesList implements OnInit {
     this.confirmQuitarVisible.set(true);
   }
 
-  /** Ejecuta el DELETE real (llamado desde el confirm modal). */
   ejecutarQuitarUsuarios(): void {
     const role = this.rolSeleccionado();
     const usuarios = this.usuariosAQuitar();
@@ -937,11 +917,19 @@ export class RolesList implements OnInit {
           this.quitandoUsuarios.set(false);
           this.usuariosAQuitar.set([]);
           this.selectedIndices.set(new Set());
+          this.searchUsuarioError.set('');
           this.cargarUsuariosRol(role.id);
         },
         error: (err) => {
           console.error('ERROR AL QUITAR USUARIOS:', err);
           this.quitandoUsuarios.set(false);
+
+          const msg =
+            err?.error?.mensaje ||
+            err?.error?.message ||
+            'No se pudieron quitar los usuarios del rol.';
+
+          this.searchUsuarioError.set(msg);
         },
       });
   }
@@ -954,6 +942,16 @@ export class RolesList implements OnInit {
   // ==================== Buscar / asociar usuario ====================
 
   buscarUsuarioRol(): void {
+    const role = this.rolSeleccionado();
+    if (!role) return;
+
+    if (role.estado !== 'ACTIVO') {
+      this.searchUsuarioError.set(
+        `El rol "${role.nombre}" no está habilitado. Actívelo antes de asignar usuarios.`
+      );
+      return;
+    }
+
     const usuarioRed = this.searchUsuarioForm.get('usuarioRed')?.value?.trim();
 
     if (!usuarioRed || this.searchUsuarioForm.get('usuarioRed')?.invalid) {
@@ -964,13 +962,12 @@ export class RolesList implements OnInit {
     this.buscandoUsuario.set(true);
     this.searchUsuarioError.set('');
 
-    // GET /api/usuarios?usuarioRed=xxx
     this.userService.listarUsuarios({ usuarioRed }).subscribe({
       next: (res) => {
         this.buscandoUsuario.set(false);
 
         const lista = res.data ?? [];
-        const user = lista[0]; // el filtro es exacto, debería venir 0 o 1
+        const user = lista[0];
 
         if (!user) {
           this.usuarioBuscado.set(null);
@@ -1006,6 +1003,15 @@ export class RolesList implements OnInit {
 
     if (!user || !role) return;
 
+    if (role.estado !== 'ACTIVO') {
+      this.searchUsuarioError.set(
+        `El rol "${role.nombre}" no está habilitado. Actívelo antes de asignar usuarios.`
+      );
+      return;
+    }
+
+    this.searchUsuarioError.set('');
+
     this.userService
       .asignarRol(
         this.apliId(),
@@ -1018,12 +1024,21 @@ export class RolesList implements OnInit {
           this.searchUsuarioForm.reset({ usuarioRed: '' });
           this.cargarUsuariosRol(role.id);
         },
-        error: (err) => console.error('ERROR AL ASIGNAR ROL:', err),
+        error: (err) => {
+          console.error('ERROR AL ASIGNAR ROL:', err);
+
+          const msg =
+            err?.error?.mensaje ||
+            err?.error?.message ||
+            `El usuario "${user.usuarioRed}" ya tiene un rol asignado en la aplicación.`;
+
+          this.searchUsuarioError.set(msg);
+          this.usuarioBuscado.set(null);
+        },
       });
   }
 
   cerrarUsuariosModal(): void {
-    this.showUsuariosModal.set(false);
     this.rolSeleccionado.set(null);
     this.usuariosRol.set([]);
     this.usuarioBuscado.set(null);
@@ -1032,5 +1047,6 @@ export class RolesList implements OnInit {
     this.selectedIndices.set(new Set());
     this.confirmQuitarVisible.set(false);
     this.usuariosAQuitar.set([]);
+    this.modalUsuarios?.close();
   }
 }
