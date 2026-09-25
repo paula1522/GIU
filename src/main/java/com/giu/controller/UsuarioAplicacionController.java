@@ -290,7 +290,7 @@ public class UsuarioAplicacionController {
         @GetMapping("/roles")
         public ResponseEntity<RespuestaGenerica<List<RolResponseDTO>>> obtenerRoles(
                         @PathVariable Long apliId,
-                        @RequestParam(required = false, defaultValue = Constantes.ESTADO_ACTIVO) String estado) {
+                        @RequestParam(required = false) String estado) {
 
                 logger.info("GET /aplicaciones/{}/roles - estado={}",
                                 apliId,

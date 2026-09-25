@@ -1,315 +1,426 @@
-<app-header-pages
-  [title]="'Roles'"
-  [subtitle]="'Roles creados parala aplicación seleccionada'"
-  [buttons]="headerButtons()"
-  (buttonClick)="abrirCrear()"
-></app-header-pages>
-
-
+<app-header-pages [title]="'Roles'" [subtitle]="'Roles creados para la aplicación seleccionada'"
+  [buttons]="headerButtons()" (buttonClick)="abrirCrear()">
+</app-header-pages>
 
 <div class="page">
 
   <div class="filters-bar">
-    <input type="text" class="input" placeholder="Buscar rol…" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); filtrar()" />
+    <app-input [form]="searchForm" [controlName]="'search'" [placeholder]="'Buscar rol…'" [showRequiredMark]="false">
+    </app-input>
+
+    <app-select [id]="'filtro-estado'" [control]="estadoFiltro" [options]="estadoOptions" [displayKey]="'nombre'"
+      [valueKey]="'id'" [defaultOption]="'Todos'" [showRequiredMark]="false">
+    </app-select>
   </div>
 
-  @if (loading()) { <div class="loading">Cargando…</div> }
-  @else {
-    <app-table
-      [tableTitle]="'Roles'"
-      [tableColumnTitle]="tableColumnTitle"
-      [columnsToDisplay]="columnsToDisplay"
-      [dataSource]="tableData()"
-      [showPaginator]="true"
-      [totalItemsPerPag]="10"
-      [idTable]="'roles-list'"
-      (clickEventButton)="onTableAction($event)"
-    ></app-table>
+  @if (loading()) {
+  <div class="loading">Cargando…</div>
+  } @else {
+  <app-table [tableTitle]="'Roles'" [tableColumnTitle]="tableColumnTitle" [columnsToDisplay]="columnsToDisplay"
+    [dataSource]="tableData()" [showPaginator]="true" [totalItemsPerPag]="10" [idTable]="'roles-list'"
+    (clickEventButton)="onTableAction($event)">
+  </app-table>
   }
+
 </div>
 
 @if (showForm()) {
-  <div class="overlay" (click)="cerrarForm()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ editingRole() ? 'Editar rol' : 'Nuevo rol' }}</h2>
-        <app-button
-          [icon]="'bi bi-x-lg'"
-          [class]="['btn', 'btn-primary-secondary']"
-          [type]="'button'"
-          (clickEventButton)="cerrarForm()"
-        ></app-button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="roleForm" (ngSubmit)="guardar()">
-          <app-input
-            [textLabel]="'Nombre'"
-            [form]="roleForm"
-            [controlName]="'nombre'"
-            [validationMessages]="validationMessages"
-            [placeholder]="'Nombre del rol'"
-            [type]="'text'"
-          ></app-input>
+<div class="overlay" (click)="cerrarForm()">
+  <div class="modal" (click)="$event.stopPropagation()">
 
-          <app-input
-            [textLabel]="'Descripción'"
-            [form]="roleForm"
-            [controlName]="'descripcion'"
-            [placeholder]="'Descripción del rol'"
-            [isTextArea]="true"
-            [showRequiredMark]="false"
-          ></app-input>
+    <div class="modal-header">
+      <h2>{{ editingRole() ? 'Editar rol' : 'Nuevo rol' }}</h2>
 
-          <!-- Sección de permisos obligatorios -->
-          <div class="permisos-section" formArrayName="permisos">
-            <div class="permisos-header">
-              <span class="permisos-title">
-                <i class="bi bi-key"></i>
-                Permisos de la aplicación
-              </span>
-              <span class="permisos-hint">Seleccione al menos un permiso</span>
+      <app-button [icon]="'bi bi-x-lg'" [class]="['btn', 'btn-primary-secondary']" [type]="'button'"
+        (clickEventButton)="cerrarForm()">
+      </app-button>
+    </div>
+
+    <div class="modal-body">
+
+      <form [formGroup]="roleForm" (ngSubmit)="guardar()">
+
+        <app-input [textLabel]="'Nombre'" [form]="roleForm" [controlName]="'nombre'"
+          [validationMessages]="validationMessages" [placeholder]="'Nombre del rol'" [type]="'text'">
+        </app-input>
+
+        <app-input [textLabel]="'Descripción'" [form]="roleForm" [controlName]="'descripcion'"
+          [placeholder]="'Descripción del rol'" [isTextArea]="true" [showRequiredMark]="false">
+        </app-input>
+
+        <!-- Sección de permisos -->
+        <div class="permisos-section" formArrayName="permisos">
+
+          <div class="permisos-header">
+            <span class="permisos-title">
+              <i class="bi bi-key"></i>
+              Permisos de la aplicación
+            </span>
+
+            <span class="permisos-hint">
+              Seleccione al menos un permiso
+            </span>
+          </div>
+
+          <div class="permisos-grid">
+
+            <div class="permiso-header">
+              <span>Nombre</span>
+              <span>Tipo</span>
+              <span>Estado</span>
             </div>
 
-            <!-- Buscador de permisos en tiempo real -->
+            <!-- Buscador de permisos -->
             <div class="filtro-permisos-row">
               <div class="filtro-permisos-wrapper">
+
                 <i class="bi bi-search filtro-permisos-icon"></i>
-                <input
-                  type="text"
-                  class="filtro-permisos-input"
-                  placeholder="Buscar permiso por nombre, código o tipo…"
-                  [ngModel]="filtroPermisos()"
-                  (ngModelChange)="filtrarPermisos($event)"
-                />
+
+                <input type="text" class="filtro-permisos-input" placeholder="Buscar permiso por nombre, código o tipo…"
+                  [ngModel]="filtroPermisos()" [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="filtrarPermisos($event)" />
+
                 @if (filtroPermisos()) {
-                  <button class="filtro-clear" (click)="filtrarPermisos('')" title="Limpiar búsqueda">
-                    <i class="bi bi-x-circle"></i>
-                  </button>
+                <button type="button" class="filtro-clear" (click)="filtrarPermisos('')" title="Limpiar búsqueda">
+                  <i class="bi bi-x-circle"></i>
+                </button>
                 }
+
               </div>
             </div>
 
-            <!-- Checkbox Seleccionar Todos -->
+            <!-- Seleccionar todos los permisos -->
             <div class="select-all-permisos">
-              <app-checkbox
-                [id]="'select-all-permisos'"
-                [textLabel]="'Seleccionar todos los permisos'"
-                [checked]="allPermisosSelected"
-                (checkedChange)="toggleSelectAllPermisos($event)"
-              ></app-checkbox>
-              <span class="permisos-count">{{ cantidadSeleccionadosPermisos }} de {{ recursos().length }} seleccionado(s)</span>
+
+              <app-checkbox [id]="'select-all-permisos'" [textLabel]="'Seleccionar todos los permisos'"
+                [checked]="allPermisosSelected" (checkedChange)="toggleSelectAllPermisos($event)">
+              </app-checkbox>
+
+              <span class="permisos-count">
+                {{ cantidadSeleccionadosPermisos }}
+                de
+                {{ recursos().length }}
+                seleccionado(s)
+              </span>
+
             </div>
 
             <!-- Listado de permisos -->
-            <div class="permisos-grid">
+            <div class="permisos-list">
+
               @if (recursosFiltrados().length === 0) {
-                <div class="permisos-no-results">No se encontraron permisos con ese criterio.</div>
+
+              <div class="permisos-no-results">
+                No se encontraron permisos con ese criterio.
+              </div>
+
               } @else {
-                @for (recurso of recursosFiltradosIndices(); track recurso; let fi = $index) {
-                  <div class="permiso-item">
-                    <app-checkbox
-                      [id]="'permiso-' + recursos()[recurso].id"
-                      [textLabel]="recursos()[recurso].nombre + ' (' + recursos()[recurso].tipo + ')'"
-                      [checked]="permisosArray.at(recurso).value"
-                      (checkedChange)="togglePermiso(recurso, $event)"
-                    ></app-checkbox>
-                  </div>
-                }
+
+              @for (
+              recursoIndex of recursosFiltradosIndices();
+              track recursoIndex
+              ) {
+
+              <div class="permiso-item">
+
+                <div class="permiso-nombre">
+
+                  <app-checkbox [id]="'permiso-' + recursos()[recursoIndex].id"
+                    [textLabel]="recursos()[recursoIndex].nombre" [checked]="permisosArray.at(recursoIndex).value"
+                    (checkedChange)="togglePermiso(recursoIndex, $event)">
+                  </app-checkbox>
+
+                </div>
+
+                <span>
+                  {{ recursos()[recursoIndex].tipo }}
+                </span>
+
+                <span>
+                  {{ recursos()[recursoIndex].estado }}
+                </span>
+
+              </div>
+
               }
+
+              }
+
             </div>
 
-            @if (permisosInvalid) {
-              <div class="permisos-error">
-                <i class="bi bi-exclamation-circle-fill"></i>
-                Debe seleccionar al menos un permiso para este rol.
-              </div>
-            }
           </div>
 
-          <div class="modal-actions">
-            <app-button
-              [text]="'Cancelar'"
-              [class]="['btn', 'btn-primary-secondary']"
-              [type]="'button'"
-              (clickEventButton)="cerrarForm()"
-            ></app-button>
-            <app-button
-              [text]="saving() ? 'Guardando…' : 'Guardar'"
-              [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
-              [class]="['btn', 'btn-primary']"
-              [type]="'submit'"
-              [disabled]="saving() || roleForm.invalid"
-              (clickEventButton)="guardar()"
-            ></app-button>
+          @if (permisosInvalid) {
+          <div class="permisos-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            Debe seleccionar al menos un permiso para este rol.
           </div>
-        </form>
-      </div>
+          }
+
+        </div>
+
+        <div class="modal-actions">
+
+          <app-button [text]="'Cancelar'" [class]="['btn', 'btn-primary-secondary']" [type]="'button'"
+            (clickEventButton)="cerrarForm()">
+          </app-button>
+
+          <app-button [text]="saving() ? 'Guardando…' : 'Guardar'"
+            [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'" [class]="['btn', 'btn-primary']"
+            [type]="'submit'" [disabled]="saving() || roleForm.invalid">
+          </app-button>
+
+        </div>
+
+      </form>
+
     </div>
+
   </div>
+</div>
 }
 
 <!-- Confirmación toggle estado -->
-<app-confirm-modal
-  [visible]="confirmVisible()"
-  [title]="confirmTitle()"
-  [message]="confirmMsg()"
+<app-confirm-modal [visible]="confirmVisible()" [title]="confirmTitle()" [message]="confirmMsg()"
   [confirmText]="confirmRole()?.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'"
-  [isDestructive]="confirmRole()?.estado === 'ACTIVO'"
-  (confirm)="ejecutarToggle()"
-  (cancel)="confirmVisible.set(false)"
-></app-confirm-modal>
+  [isDestructive]="confirmRole()?.estado === 'ACTIVO'" (confirm)="ejecutarToggle()"
+  (cancel)="confirmVisible.set(false)">
+</app-confirm-modal>
 
 <!-- Modal de usuarios por rol -->
 @if (showUsuariosModal()) {
-  <div class="overlay" (click)="cerrarUsuariosModal()">
-    <div class="modal modal-usuarios" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Usuarios asignados al rol: {{ rolSeleccionado()?.nombre }}</h2>
-        <app-button
-          [icon]="'bi bi-x-lg'"
-          [class]="['btn', 'btn-primary-secondary']"
-          [type]="'button'"
-          (clickEventButton)="cerrarUsuariosModal()"
-        ></app-button>
-      </div>
-      <div class="modal-body">
 
-        <!-- Sección A: Búsqueda y asignación -->
-        <div class="usuarios-section">
-          <div class="section-title-usuarios">
-            <i class="bi bi-person-plus"></i> Asignar nuevo usuario
-          </div>
-          <form [formGroup]="searchUsuarioForm" (ngSubmit)="buscarUsuarioRol()">
-            <div class="search-usuario-row">
-              <app-input
-                [textLabel]="'Usuario de Red'"
-                [form]="searchUsuarioForm"
-                [controlName]="'usuarioRed'"
-                [placeholder]="'ej: maria.gomez'"
-                [type]="'text'"
-                [showRequiredMark]="false"
-              ></app-input>
-              <app-button
-                [text]="buscandoUsuario() ? 'Buscando…' : 'Buscar'"
-                [icon]="buscandoUsuario() ? 'bi bi-arrow-clockwise' : 'bi bi-search'"
-                [class]="['btn', 'btn-primary']"
-                [type]="'submit'"
-                [disabled]="buscandoUsuario()"
-                (clickEventButton)="buscarUsuarioRol()"
-              ></app-button>
-            </div>
-          </form>
+<div class="overlay" (click)="cerrarUsuariosModal()">
 
-          @if (searchUsuarioError()) {
-            <div class="search-usuario-error">{{ searchUsuarioError() }}</div>
-          }
+  <div class="modal modal-usuarios" (click)="$event.stopPropagation()">
 
-          @if (usuarioBuscado(); as user) {
-            <div class="usuario-encontrado">
-              <div class="usuario-info">
-                <i class="bi bi-person-check-fill"></i>
-                <div>
-                  <strong>{{ user.nombre }}</strong>
-                  <span class="usuario-red">{{ user.usuarioRed }}</span>
-                </div>
-              </div>
-              <app-button
-                [text]="'Asociar al rol'"
-                [icon]="'bi bi-link-45deg'"
-                [class]="['btn', 'btn-primary']"
-                [type]="'button'"
-                (clickEventButton)="asociarUsuarioRol()"
-              ></app-button>
-            </div>
-          }
-        </div>
+    <div class="modal-header">
 
-        <!-- Sección B: Listado y desvinculación -->
-        <div class="usuarios-section">
-          <div class="section-title-usuarios">
-            <i class="bi bi-people"></i> Usuarios asignados ({{ usuariosRol().length }})
-          </div>
+      <h2>
+        Usuarios asignados al rol:
+        {{ rolSeleccionado()?.nombre }}
+      </h2>
 
-          @if (usuariosRol().length === 0) {
-            <div class="empty-usuarios">No hay usuarios asignados a este rol.</div>
-          } @else {
-            <!-- Buscador interno en tiempo real -->
-            <div class="filtro-interno-row">
-              <div class="filtro-input-wrapper">
-                <i class="bi bi-search filtro-icon"></i>
-                <input
-                  type="text"
-                  class="filtro-input"
-                  placeholder="Buscar por nombre, usuario o correo…"
-                  [ngModel]="filtroInterno()"
-                  (ngModelChange)="filtrarUsuariosAsignados($event)"
-                />
-              </div>
-            </div>
+      <app-button [icon]="'bi bi-x-lg'" [class]="['btn', 'btn-primary-secondary']" [type]="'button'"
+        (clickEventButton)="cerrarUsuariosModal()">
+      </app-button>
 
-            <form [formGroup]="seleccionForm">
-              <div class="usuarios-list-header">
-                <app-checkbox
-                  [id]="'select-all'"
-                  [textLabel]="'Seleccionar página actual'"
-                  [checked]="seleccionForm.get('selectAll')?.value"
-                  (checkedChange)="toggleSelectAll($event)"
-                ></app-checkbox>
-                <div class="header-right">
-                  @if (haySeleccionados) {
-                    <span class="seleccion-count">{{ cantidadSeleccionados }} seleccionado(s)</span>
-                  }
-                  <app-button
-                    [text]="'Quitar seleccionados'"
-                    [icon]="'bi bi-trash'"
-                    [class]="['btn', 'btn-primary']"
-                    [type]="'button'"
-                    [disabled]="!haySeleccionados"
-                    (clickEventButton)="quitarSeleccionados()"
-                  ></app-button>
-                </div>
-              </div>
-
-              <!-- Indicador de rango -->
-              <div class="rango-mostrado">{{ rangoMostrado() }}</div>
-
-              <!-- Lista con scroll -->
-              <div class="usuarios-list-scroll">
-                @if (paginatedUsuarios().length === 0) {
-                  <div class="empty-usuarios">No se encontraron usuarios con ese filtro.</div>
-                } @else {
-                  @for (u of paginatedUsuarios(); track u.id; let i = $index) {
-                    @let globalIndex = (currentPageUsuarios() - 1) * itemsPerPageUsuarios + i;
-                    <div class="usuario-row" [class.selected]="isUsuarioSelected(globalIndex)">
-                      <app-checkbox
-                        [id]="'chk-' + u.id"
-                        [checked]="isUsuarioSelected(globalIndex)"
-                        (checkedChange)="toggleSeleccionUsuario(globalIndex, $event)"
-                      ></app-checkbox>
-                      <div class="usuario-row-info">
-                        <span class="usuario-row-nombre">{{ u.nombre }}</span>
-                        <span class="usuario-row-red">{{ u.usuarioRed }}</span>
-                        <span class="usuario-row-correo">{{ u.correo || '—' }}</span>
-                      </div>
-                    </div>
-                  }
-                }
-              </div>
-            </form>
-
-            <!-- Controles de paginación -->
-            @if (totalPagesUsuarios() > 1) {
-              <div class="paginacion-usuarios">
-                <button class="page-btn" (click)="onPageChangeUsuarios(1)" [disabled]="currentPageUsuarios() === 1">«</button>
-                <button class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() - 1)" [disabled]="currentPageUsuarios() === 1">‹</button>
-                <span class="page-info">Página {{ currentPageUsuarios() }} de {{ totalPagesUsuarios() }}</span>
-                <button class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() + 1)" [disabled]="currentPageUsuarios() === totalPagesUsuarios()">›</button>
-                <button class="page-btn" (click)="onPageChangeUsuarios(totalPagesUsuarios())" [disabled]="currentPageUsuarios() === totalPagesUsuarios()">»</button>
-              </div>
-            }
-          }
-        </div>
-      </div>
     </div>
+
+    <div class="modal-body">
+
+      <!-- Sección A: Búsqueda y asignación -->
+      <div class="usuarios-section">
+
+        <div class="section-title-usuarios">
+          <i class="bi bi-person-plus"></i>
+          Asignar nuevo usuario
+        </div>
+
+        <form [formGroup]="searchUsuarioForm" (ngSubmit)="buscarUsuarioRol()">
+
+          <div class="search-usuario-row">
+
+            <app-input [textLabel]="'Usuario de Red'" [form]="searchUsuarioForm" [controlName]="'usuarioRed'"
+              [placeholder]="'ej: maria.gomez'" [type]="'text'" [showRequiredMark]="false">
+            </app-input>
+
+            <app-button [text]="buscandoUsuario() ? 'Buscando…' : 'Buscar'"
+              [icon]="buscandoUsuario() ? 'bi bi-arrow-clockwise' : 'bi bi-search'" [class]="['btn', 'btn-primary']"
+              [type]="'submit'" [disabled]="buscandoUsuario()" (clickEventButton)="buscarUsuarioRol()">
+            </app-button>
+
+          </div>
+
+        </form>
+
+        @if (searchUsuarioError()) {
+        <div class="search-usuario-error">
+          {{ searchUsuarioError() }}
+        </div>
+        }
+
+        @if (usuarioBuscado(); as user) {
+
+        <div class="usuario-encontrado">
+
+          <div class="usuario-info">
+
+            <i class="bi bi-person-check-fill"></i>
+
+            <div>
+              <strong>{{ user.nombre }}</strong>
+              <span class="usuario-red">
+                {{ user.usuarioRed }}
+              </span>
+            </div>
+
+          </div>
+
+          <app-button [text]="'Asociar al rol'" [icon]="'bi bi-link-45deg'" [class]="['btn', 'btn-primary']"
+            [type]="'button'" (clickEventButton)="asociarUsuarioRol()">
+          </app-button>
+
+        </div>
+
+        }
+
+      </div>
+
+      <!-- Sección B: Listado y desvinculación -->
+      <div class="usuarios-section">
+
+        <div class="section-title-usuarios">
+          <i class="bi bi-people"></i>
+          Usuarios asignados ({{ usuariosRol().length }})
+        </div>
+
+        @if (usuariosRol().length === 0) {
+
+        <div class="empty-usuarios">
+          No hay usuarios asignados a este rol.
+        </div>
+
+        } @else {
+
+        <!-- Buscador interno -->
+        <div class="filtro-interno-row">
+
+          <div class="filtro-input-wrapper">
+
+            <i class="bi bi-search filtro-icon"></i>
+
+            <input type="text" class="filtro-input" placeholder="Buscar por nombre, usuario o correo…"
+              [ngModel]="filtroInterno()" [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="filtrarUsuariosAsignados($event)" />
+
+          </div>
+
+        </div>
+
+        <form [formGroup]="seleccionForm">
+
+          <div class="usuarios-list-header">
+
+            <app-checkbox [id]="'select-all'" [textLabel]="'Seleccionar página actual'"
+              [checked]="seleccionForm.get('selectAll')?.value" (checkedChange)="toggleSelectAll($event)">
+            </app-checkbox>
+
+            <div class="header-right">
+
+              @if (haySeleccionados) {
+              <span class="seleccion-count">
+                {{ cantidadSeleccionados }} seleccionado(s)
+              </span>
+              }
+
+              <app-button [text]="'Quitar seleccionados'" [icon]="'bi bi-trash'" [class]="['btn', 'btn-primary']"
+                [type]="'button'" [disabled]="!haySeleccionados" (clickEventButton)="quitarSeleccionados()">
+              </app-button>
+
+            </div>
+
+          </div>
+
+          <!-- Indicador de rango -->
+          <div class="rango-mostrado">
+            {{ rangoMostrado() }}
+          </div>
+
+          <!-- Lista con scroll -->
+          <div class="usuarios-list-scroll">
+
+            @if (paginatedUsuarios().length === 0) {
+
+            <div class="empty-usuarios">
+              No se encontraron usuarios con ese filtro.
+            </div>
+
+            } @else {
+
+            @for (
+            u of paginatedUsuarios();
+            track u.id;
+            let i = $index
+            ) {
+
+            @let globalIndex =
+            (currentPageUsuarios() - 1) *
+            itemsPerPageUsuarios + i;
+
+            <div class="usuario-row" [class.selected]="isUsuarioSelected(globalIndex)">
+
+              <app-checkbox [id]="'chk-' + u.id" [checked]="isUsuarioSelected(globalIndex)"
+                (checkedChange)="toggleSeleccionUsuario(globalIndex, $event)">
+              </app-checkbox>
+
+              <div class="usuario-row-info">
+
+                <span class="usuario-row-nombre">
+                  {{ u.nombre }}
+                </span>
+
+                <span class="usuario-row-red">
+                  {{ u.usuarioRed }}
+                </span>
+
+                <span class="usuario-row-correo">
+                  {{ u.correo || '—' }}
+                </span>
+
+              </div>
+
+            </div>
+
+            }
+
+            }
+
+          </div>
+
+        </form>
+
+        <!-- Controles de paginación -->
+        @if (totalPagesUsuarios() > 1) {
+
+        <div class="paginacion-usuarios">
+
+          <button type="button" class="page-btn" (click)="onPageChangeUsuarios(1)"
+            [disabled]="currentPageUsuarios() === 1">
+            «
+          </button>
+
+          <button type="button" class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() - 1)"
+            [disabled]="currentPageUsuarios() === 1">
+            ‹
+          </button>
+
+          <span class="page-info">
+            Página {{ currentPageUsuarios() }} de {{ totalPagesUsuarios() }}
+          </span>
+
+          <button type="button" class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() + 1)"
+            [disabled]="currentPageUsuarios() === totalPagesUsuarios()">
+            ›
+          </button>
+
+          <button type="button" class="page-btn" (click)="onPageChangeUsuarios(totalPagesUsuarios())"
+            [disabled]="currentPageUsuarios() === totalPagesUsuarios()">
+            »
+          </button>
+
+        </div>
+
+        }
+
+        }
+
+      </div>
+
+    </div>
+
   </div>
+
+</div>
+
 }
