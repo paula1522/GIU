@@ -1,40 +1,86 @@
 <div class="page">
   <h1 class="page-title">Auditoría</h1>
-  <form [formGroup]="filterForm" (ngSubmit)="consultar()">
-    <div class="filters-panel">
-      <div class="filters-row">
-        <div class="filter"><app-input [textLabel]="'Fecha inicio'" [form]="filterForm" [controlName]="'fechaInicio'" [type]="'date'" [showRequiredMark]="false"></app-input></div>
-        <div class="filter"><app-input [textLabel]="'Fecha fin'" [form]="filterForm" [controlName]="'fechaFin'" [type]="'date'" [showRequiredMark]="false"></app-input></div>
-        <div class="filter"><app-input [textLabel]="'Usuario'" [form]="filterForm" [controlName]="'usuarioRed'" [type]="'text'" [showRequiredMark]="false"></app-input></div>
-        <div class="filter"><app-input [textLabel]="'Aplicación'" [form]="filterForm" [controlName]="'aplicacion'" [type]="'text'" [showRequiredMark]="false"></app-input></div>
-      </div>
-      <div class="filters-row">
-        <div class="filter"><app-input [textLabel]="'Acción'" [form]="filterForm" [controlName]="'accion'" [type]="'text'" [showRequiredMark]="false"></app-input></div>
-        <div class="filter">
-          <label class="form-label">Entidad</label>
-          <select class="input" formControlName="entidad"><option value="">Todas</option><option value="APLICACION">Aplicación</option><option value="USUARIO">Usuario</option><option value="ROL">Rol</option><option value="ADMINISTRADOR">Administrador</option></select>
-        </div>
-        <div class="filter">
-          <label class="form-label">Resultado</label>
-          <select class="input" formControlName="resultado"><option value="">Todos</option><option value="EXITOSO">Exitoso</option><option value="ERROR">Error</option></select>
-        </div>
-        <div class="filter-actions">
-          <app-button
-            [text]="'Buscar'"
-            [icon]="'bi bi-search'"
-            [class]="['btn', 'btn-primary']"
-            [type]="'submit'"
-            (clickEventButton)="consultar()"
-          ></app-button>
-          <app-button
-            [text]="'Limpiar'"
-            [icon]="'bi bi-arrow-counterclockwise'"
-            [class]="['btn', 'btn-primary-secondary']"
-            [type]="'button'"
-            (clickEventButton)="limpiar()"
-          ></app-button>
-        </div>
-      </div>
+  <form [formGroup]="filterForm" (ngSubmit)="consultar()" class="filters-bar">
+    <app-input
+      [textLabel]="'Fecha inicio'"
+      [form]="filterForm"
+      [controlName]="'fechaInicio'"
+      [type]="'date'"
+      [showRequiredMark]="false"
+    ></app-input>
+
+    <app-input
+      [textLabel]="'Fecha fin'"
+      [form]="filterForm"
+      [controlName]="'fechaFin'"
+      [type]="'date'"
+      [showRequiredMark]="false"
+    ></app-input>
+
+    <app-input
+      [textLabel]="'Usuario'"
+      [form]="filterForm"
+      [controlName]="'usuarioRed'"
+      [placeholder]="'Usuario de red…'"
+      [type]="'text'"
+      [showRequiredMark]="false"
+    ></app-input>
+
+    <app-input
+      [textLabel]="'Aplicación'"
+      [form]="filterForm"
+      [controlName]="'aplicacion'"
+      [placeholder]="'Nombre de aplicación…'"
+      [type]="'text'"
+      [showRequiredMark]="false"
+    ></app-input>
+
+    <app-input
+      [textLabel]="'Acción'"
+      [form]="filterForm"
+      [controlName]="'accion'"
+      [placeholder]="'Acción realizada…'"
+      [type]="'text'"
+      [showRequiredMark]="false"
+    ></app-input>
+
+    <app-select
+      [id]="'filtro-entidad'"
+      [textLabel]="'Entidad'"
+      [control]="entidadControl"
+      [options]="entidadOptions"
+      [displayKey]="'nameSelect'"
+      [valueKey]="'id'"
+      [defaultOption]="'Todas'"
+      [showRequiredMark]="false"
+    ></app-select>
+
+    <app-select
+      [id]="'filtro-resultado'"
+      [textLabel]="'Resultado'"
+      [control]="resultadoControl"
+      [options]="resultadoOptions"
+      [displayKey]="'nameSelect'"
+      [valueKey]="'id'"
+      [defaultOption]="'Todos'"
+      [showRequiredMark]="false"
+    ></app-select>
+
+    <div class="filter-actions">
+      <app-button
+        [text]="'Buscar'"
+        [icon]="'bi bi-search'"
+        [class]="['btn', 'btn-primary']"
+        [type]="'submit'"
+        (clickEventButton)="consultar()"
+      ></app-button>
+      <app-button
+        [text]="'Limpiar filtros'"
+        [icon]="'bi bi-arrow-counterclockwise'"
+        [class]="['btn', 'btn-primary-secondary']"
+        [type]="'button'"
+        (clickEventButton)="limpiar()"
+      ></app-button>
     </div>
   </form>
   @if (loading()) { <div class="loading">Cargando…</div> }

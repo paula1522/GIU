@@ -1,17 +1,18 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { AuditMockService } from '../../services/mock/audit-mock.service';
 import { AuditEvent, AuditFilter } from '../../models/domain/giu.models';
 import { TableComponent } from '../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../shared/atomic-desing/atoms/table/table.interface';
 import { InputComponent } from '../../shared/atomic-desing/atoms/inputs/input-general/input.component';
+import { SelectComponent } from '../../shared/atomic-desing/atoms/select/select.component';
 import { ButtonComponent } from '../../shared/atomic-desing/atoms/button/button.component';
 
 @Component({
   selector: 'app-audit',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, SelectComponent, ButtonComponent],
   templateUrl: './audit.html',
   styleUrl: './audit.scss',
 })
@@ -24,6 +25,23 @@ export class Audit implements OnInit {
   readonly eventoSeleccionado = signal<AuditEvent | null>(null);
 
   filterForm!: FormGroup;
+
+  // Opciones para los selects
+  readonly entidadOptions = [
+    { id: '', nameSelect: 'Todas' },
+    { id: 'APLICACION', nameSelect: 'Aplicación' },
+    { id: 'USUARIO', nameSelect: 'Usuario' },
+    { id: 'ROL', nameSelect: 'Rol' },
+    { id: 'ADMINISTRADOR', nameSelect: 'Administrador' },
+  ];
+  readonly resultadoOptions = [
+    { id: '', nameSelect: 'Todos' },
+    { id: 'EXITOSO', nameSelect: 'Exitoso' },
+    { id: 'ERROR', nameSelect: 'Error' },
+  ];
+
+  get entidadControl(): FormControl { return this.filterForm.get('entidad') as FormControl; }
+  get resultadoControl(): FormControl { return this.filterForm.get('resultado') as FormControl; }
 
   // ---------- Configuración del átomo de Tabla ----------
   readonly tableColumnTitle = ['Fecha', 'Usuario', 'Acción', 'Entidad', 'Resultado', 'Acciones'];

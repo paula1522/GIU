@@ -6,14 +6,35 @@
 ></app-header-pages>
 
 <div class="page">
-  <div class="filters-bar">
-    <input type="text" class="input" placeholder="Buscar…" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); filtrar()" />
-    <select class="input" [ngModel]="estadoFiltro()" (ngModelChange)="estadoFiltro.set($event); filtrar()">
-      <option value="">Todos</option>
-      <option value="ACTIVO">Activo</option>
-      <option value="INACTIVO">Inactivo</option>
-    </select>
-  </div>
+  <form [formGroup]="filtrosForm" class="filters-bar">
+    <app-input
+      [textLabel]="'Buscar'"
+      [form]="filtrosForm"
+      [controlName]="'searchTerm'"
+      [placeholder]="'Nombre o código…'"
+      [type]="'text'"
+      [showRequiredMark]="false"
+    ></app-input>
+
+    <app-select
+      [id]="'filtro-estado-app'"
+      [textLabel]="'Estado'"
+      [control]="estadoFiltroControl"
+      [options]="estadoOptions"
+      [displayKey]="'nameSelect'"
+      [valueKey]="'id'"
+      [defaultOption]="'Todos'"
+      [showRequiredMark]="false"
+    ></app-select>
+
+    <app-button
+      [text]="'Limpiar filtros'"
+      [icon]="'bi bi-arrow-counterclockwise'"
+      [class]="['btn', 'btn-primary-secondary']"
+      [type]="'button'"
+      (clickEventButton)="limpiarFiltros()"
+    ></app-button>
+  </form>
 
   @if (loading()) {
     <div class="loading">Cargando…</div>

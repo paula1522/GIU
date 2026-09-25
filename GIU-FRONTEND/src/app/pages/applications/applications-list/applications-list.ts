@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApplicationMockService } from '../../../services/mock/application-mock.service';
 import { AuthService } from '../../../services/logic/auth.service';
@@ -10,6 +10,7 @@ import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
 import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input-general/input.component';
+import { SelectComponent } from '../../../shared/atomic-desing/atoms/select/select.component';
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { HeaderPagesComponent, HeaderButton } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
@@ -17,7 +18,7 @@ import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/co
 @Component({
   selector: 'app-applications-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent, HeaderPagesComponent, ConfirmModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, SelectComponent, ButtonComponent, HeaderPagesComponent, ConfirmModalComponent],
   templateUrl: './applications-list.html',
   styleUrl: './applications-list.scss',
 })
@@ -30,9 +31,19 @@ export class ApplicationsList implements OnInit {
 
   readonly loading = signal(false);
   readonly aplicaciones = signal<Application[]>([]);
-  readonly searchTerm = signal('');
-  readonly estadoFiltro = signal('');
   readonly filteredApps = signal<Application[]>([]);
+
+  // Formulario reactivo de filtros
+  filtrosForm!: FormGroup;
+
+  // Opciones para el select de estado
+  readonly estadoOptions = [
+    { id: '', nameSelect: 'Todos' },
+    { id: 'ACTIVO', nameSelect: 'Activo' },
+    { id: 'INACTIVO', nameSelect: 'Inactivo' },
+  ];
+
+  get estadoFiltroControl(): FormControl { return this.filtrosForm.get('estado') as FormControl; }
 
   // ---------- Configuración del átomo de Tabla ----------
   readonly tableColumnTitle = ['Nombre', 'Código', 'Descripción', 'Estado', 'Administración', 'Acciones'];
@@ -125,6 +136,11 @@ export class ApplicationsList implements OnInit {
   readonly confirmMsg = signal('');
 
   ngOnInit(): void {
+    this.filtrosForm = this.fb.group({
+      searchTerm: [''],
+      estado: [''],
+    });
+    this.filtrosForm.valueChanges.subscribe(() => this.filtrar());
     this.cargar();
     this.appForm = this.fb.group({
       codigo: ['', [Validators.required, Validators.maxLength(50)]],
@@ -147,8 +163,9 @@ export class ApplicationsList implements OnInit {
   }
 
   filtrar(): void {
-    const term = this.searchTerm().toLowerCase();
-    const estado = this.estadoFiltro();
+    const v = this.filtrosForm?.getRawValue() ?? {};
+    const term = (v.searchTerm ?? '').toLowerCase();
+    const estado = v.estado ?? '';
     this.filteredApps.set(
       this.aplicaciones().filter(
         (a) =>
@@ -156,6 +173,12 @@ export class ApplicationsList implements OnInit {
           (!estado || a.estado === estado)
       )
     );
+  }
+
+  /** Limpia todos los filtros. */
+  limpiarFiltros(): void {
+    this.filtrosForm?.reset({ searchTerm: '', estado: '' });
+    this.filtrar();
   }
 
   seleccionar(app: Application): void {
