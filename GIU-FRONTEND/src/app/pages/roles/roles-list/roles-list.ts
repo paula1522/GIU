@@ -89,10 +89,8 @@ export class RolesList implements OnInit {
   readonly roles = signal<Role[]>([]);
   readonly apliId = signal(0);
 
-  /** Recursos/permisos disponibles para la aplicación. */
   readonly recursos = signal<RecursoResponseDTO[]>([]);
 
-  /** Cache de recursos asignados por rol (evita repetir obtenerDetalleRol). */
   private readonly roleDetalleCache = signal<Record<number, number[]>>({});
 
   // ==================== Filtros ====================
@@ -116,7 +114,6 @@ export class RolesList implements OnInit {
     initialValue: '',
   });
 
-  /** Roles filtrados reactivamente por texto y estado. */
   readonly filteredRoles = computed(() => {
     const term = this.searchSignal().toLowerCase().trim();
     const estado = this.estadoFiltroSignal();
@@ -135,10 +132,8 @@ export class RolesList implements OnInit {
 
   // ==================== Configuración de permisos ====================
 
-  /** Búsqueda interna de permisos en tiempo real. */
   readonly filtroPermisos = signal('');
 
-  /** Permisos filtrados por la búsqueda interna. */
   readonly recursosFiltrados = computed(() => {
     const term = this.filtroPermisos().toLowerCase().trim();
 
@@ -155,7 +150,6 @@ export class RolesList implements OnInit {
     );
   });
 
-  /** Índices globales de los permisos filtrados para mapear al FormArray. */
   readonly recursosFiltradosIndices = computed(() => {
     const term = this.filtroPermisos().toLowerCase().trim();
 
@@ -297,10 +291,21 @@ export class RolesList implements OnInit {
 
     this.apliId.set(id);
 
+    // Form del rol (crear/editar)
     this.roleForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(50)]],
       descripcion: ['', [Validators.maxLength(200)]],
       permisos: this.fb.array([], minSelectedValidator()),
+    });
+
+    // Forms del modal de usuarios por rol — se crean UNA sola vez en ngOnInit
+    this.searchUsuarioForm = this.fb.group({
+      usuarioRed: ['', [Validators.required, Validators.minLength(2)]],
+    });
+
+    this.seleccionForm = this.fb.group({
+      selectAll: [false],
+      usuarios: this.fb.array([]),
     });
 
     this.cargar();
@@ -726,19 +731,11 @@ export class RolesList implements OnInit {
 
   readonly selectedIndices = signal<Set<number>>(new Set());
 
+  /** FormGroup del buscador de usuario — se crea en ngOnInit. */
   searchUsuarioForm!: FormGroup;
+
+  /** FormGroup de selección de usuarios del listado — se crea en ngOnInit. */
   seleccionForm!: FormGroup;
-
-  private initUsuariosForms(): void {
-    this.searchUsuarioForm = this.fb.group({
-      usuarioRed: ['', [Validators.required, Validators.minLength(2)]],
-    });
-
-    this.seleccionForm = this.fb.group({
-      selectAll: [false],
-      usuarios: this.fb.array([]),
-    });
-  }
 
   get seleccionArray(): FormArray {
     return this.seleccionForm.get('usuarios') as FormArray;
@@ -759,7 +756,13 @@ export class RolesList implements OnInit {
       this.searchUsuarioError.set('');
     }
 
-    this.initUsuariosForms();
+    // Resetea los forms existentes (no los recrea)
+    this.searchUsuarioForm.reset({ usuarioRed: '' });
+    this.searchUsuarioForm.get('usuarioRed')?.markAsUntouched();
+    this.searchUsuarioForm.get('usuarioRed')?.markAsPristine();
+
+    this.seleccionForm.reset({ selectAll: false });
+    this.seleccionArray.clear();
 
     this.modalUsuarios?.open();
 
