@@ -49,13 +49,3 @@ export interface RolResponseDTO {
   usuarioModificacion: string;
 }
 
-export interface RecursoResponseDTO {
-  id: number;
-  apliId: number;
-  recuIdPadre: number | undefined;
-  codigo: string;
-  nombre: string;
-  descripcion: string;
-  tipo: string;
-  estado: string;
-}

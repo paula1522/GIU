@@ -116,10 +116,10 @@
                 <span class="detalle-label">Super Administrador</span>
                 <span class="badge" [class.badge-success]="u.superAdministrador === 1" [class.badge-info]="u.superAdministrador !== 1">{{ u.superAdministrador === 1 ? 'Sí' : 'No' }}</span>
               </div>
-              <div class="detalle-item">
+              <!--<div class="detalle-item">
                 <span class="detalle-label">Perfil</span>
                 <span class="detalle-value">{{ u.perfilNombre || '—' }}</span>
-              </div>
+              </div>-->
               <div class="detalle-item">
                 <span class="detalle-label">Fecha de creación</span>
                 <span class="detalle-value">{{ u.fechaCreacion ? (u.fechaCreacion | date: 'short') : '—' }}</span>

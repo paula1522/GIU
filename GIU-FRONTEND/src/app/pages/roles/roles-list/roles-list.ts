@@ -39,7 +39,6 @@ import { RoleService } from '../../../services/api/roles.service';
 import {
   CrearRolRequest,
   ModificarRolRequest,
-  RecursoResponseDTO,
   RecursosRolResponse,
 } from '../../../models/api/roles.model';
 import {
@@ -50,6 +49,8 @@ import {
 
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { RecursoResponseDTO } from '../../../models/api/recursos.model';
+import { ResourcesService } from '../../../services/api/resources.service';
 
 @Component({
   selector: 'app-roles-list',
@@ -73,6 +74,7 @@ import { switchMap } from 'rxjs/operators';
 export class RolesList implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly roleService = inject(RoleService);
+    private readonly recursosService = inject(ResourcesService);
   private readonly userService = inject(UserService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
@@ -201,7 +203,7 @@ export class RolesList implements OnInit {
     const buttons: ActionButton[] = [];
 
     buttons.push({
-      label: 'Usuarios',
+      label: '',
       action: 'VER_USUARIOS',
       title: 'Ver usuarios asociados',
       icon: 'bi bi-people',
@@ -210,7 +212,7 @@ export class RolesList implements OnInit {
     });
 
     buttons.push({
-      label: 'Ver detalle',
+      label: '',
       action: 'VER_DETALLE',
       title: 'Ver detalle del rol',
       icon: 'bi bi-eye',
@@ -220,7 +222,7 @@ export class RolesList implements OnInit {
 
     if (this.canEdit) {
       buttons.push({
-        label: 'Editar',
+        label: '',
         action: 'EDITAR',
         title: r.estado === 'ACTIVO' ? 'Editar rol' : 'El rol está inactivo — actívelo para editar',
         icon: 'bi bi-pencil-square',
@@ -335,7 +337,7 @@ export class RolesList implements OnInit {
   }
 
   cargarRecursos(): void {
-    this.roleService.listarRecursos(this.apliId()).subscribe({
+    this.recursosService.listarRecursos(this.apliId()).subscribe({
       next: (res) => {
         this.recursos.set(res.data ?? []);
         this.buildPermisosCheckboxes();

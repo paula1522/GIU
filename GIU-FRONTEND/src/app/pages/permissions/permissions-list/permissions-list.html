@@ -25,103 +25,104 @@
   }
 </div>
 
+
 <!-- Modal crear/editar -->
-@if (showForm()) {
-  <div class="overlay" (click)="cerrarForm()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ editingResource() ? 'Editar permiso' : 'Nuevo permiso' }}</h2>
-        <app-button
-          [icon]="'bi bi-x-lg'"
-          [class]="['btn', 'btn-primary-secondary']"
-          [type]="'button'"
-          (clickEventButton)="cerrarForm()"
-        ></app-button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="resourceForm" (ngSubmit)="guardar()">
-          <app-input
-            [textLabel]="'Código'"
-            [form]="resourceForm"
-            [controlName]="'codigo'"
-            [validationMessages]="validationMessages"
-            [placeholder]="'Código único del permiso'"
-            [type]="'text'"
-          ></app-input>
+<app-modal
+  #modalForm
+  [title]="editingResource() ? 'Editar permiso' : 'Nuevo permiso'"
+  [size]="'large'"
+  [showFooter]="false"
+  (closeMeEvent)="cerrarForm()">
 
-          <app-input
-            [textLabel]="'Nombre'"
-            [form]="resourceForm"
-            [controlName]="'nombre'"
-            [validationMessages]="validationMessages"
-            [placeholder]="'Nombre del permiso'"
-            [type]="'text'"
-          ></app-input>
+  <form [formGroup]="resourceForm" (ngSubmit)="guardar()">
 
-          <app-input
-            [textLabel]="'Descripción'"
-            [form]="resourceForm"
-            [controlName]="'descripcion'"
-            [placeholder]="'Descripción opcional'"
-            [isTextArea]="true"
-            [showRequiredMark]="false"
-          ></app-input>
+    <app-input
+      [textLabel]="'Código'"
+      [form]="resourceForm"
+      [controlName]="'codigo'"
+      [validationMessages]="validationMessages"
+      [placeholder]="'Código único del permiso'"
+      [type]="'text'"
+    ></app-input>
 
-          <div class="form-field">
-            <label class="form-label">Tipo *</label>
-            <select class="input" formControlName="tipo">
-              @for (tipo of tipoOptions; track tipo) {
-                <option [value]="tipo">{{ tipo }}</option>
-              }
-            </select>
-            @if (resourceForm.get('tipo')?.touched && resourceForm.get('tipo')?.invalid) {
-              <span class="field-error">El tipo es obligatorio.</span>
+    <app-input
+      [textLabel]="'Nombre'"
+      [form]="resourceForm"
+      [controlName]="'nombre'"
+      [validationMessages]="validationMessages"
+      [placeholder]="'Nombre del permiso'"
+      [type]="'text'"
+    ></app-input>
+
+    <app-input
+      [textLabel]="'Descripción'"
+      [form]="resourceForm"
+      [controlName]="'descripcion'"
+      [placeholder]="'Descripción opcional'"
+      [isTextArea]="true"
+      [showRequiredMark]="false"
+    ></app-input>
+
+    <div class="form-field">
+      <label class="form-label">Tipo *</label>
+      <select class="input" formControlName="tipo">
+        @for (tipo of tipoOptions; track tipo) {
+          <option [value]="tipo">{{ tipo }}</option>
+        }
+      </select>
+
+      @if (resourceForm.get('tipo')?.touched && resourceForm.get('tipo')?.invalid) {
+        <span class="field-error">El tipo es obligatorio.</span>
+      }
+    </div>
+
+    <!-- Sección de roles asociados (solo en modo edición) -->
+    @if (editingResource()) {
+      <div class="roles-asociados-section">
+        <div class="roles-asociados-title">
+          <i class="bi bi-person-badge"></i>
+          Roles asociados a este permiso
+        </div>
+
+        @if (rolesAsociados().length === 0) {
+          <div class="roles-empty">Este permiso no está asociado a ningún rol actualmente.</div>
+        } @else {
+          <div class="roles-chips">
+            @for (rol of rolesAsociados(); track rol.id) {
+              <span class="role-chip" [class.inactive]="rol.rolEstado === 'INACTIVO'">
+                <i class="bi"
+                  [class.bi-check-circle-fill]="rol.rolEstado === 'ACTIVO'"
+                  [class.bi-x-circle-fill]="rol.rolEstado !== 'ACTIVO'"></i>
+                {{ rol.rolNombre }}
+              </span>
             }
           </div>
-
-          <!-- Sección de roles asociados (solo en modo edición) -->
-          @if (editingResource()) {
-            <div class="roles-asociados-section">
-              <div class="roles-asociados-title">
-                <i class="bi bi-person-badge"></i>
-                Roles asociados a este permiso
-              </div>
-              @if (rolesAsociados().length === 0) {
-                <div class="roles-empty">Este permiso no está asociado a ningún rol actualmente.</div>
-              } @else {
-                <div class="roles-chips">
-                  @for (rol of rolesAsociados(); track rol.id) {
-                    <span class="role-chip" [class.inactive]="rol.estado === 'INACTIVO'">
-                      <i class="bi bi-person-badge"></i>
-                      {{ rol.nombre }}
-                    </span>
-                  }
-                </div>
-              }
-            </div>
-          }
-
-          <div class="modal-actions">
-            <app-button
-              [text]="'Cancelar'"
-              [class]="['btn', 'btn-primary-secondary']"
-              [type]="'button'"
-              (clickEventButton)="cerrarForm()"
-            ></app-button>
-            <app-button
-              [text]="saving() ? 'Guardando…' : 'Guardar'"
-              [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
-              [class]="['btn', 'btn-primary']"
-              [type]="'submit'"
-              [disabled]="saving() || resourceForm.invalid"
-              (clickEventButton)="guardar()"
-            ></app-button>
-          </div>
-        </form>
+        }
       </div>
+    }
+
+    <div class="modal-actions">
+      <app-button
+        [text]="'Cancelar'"
+        [class]="['btn', 'btn-primary-secondary']"
+        [type]="'button'"
+        (clickEventButton)="cerrarForm()"
+      ></app-button>
+
+      <app-button
+        [text]="saving() ? 'Guardando…' : 'Guardar'"
+        [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
+        [class]="['btn', 'btn-primary']"
+        [type]="'submit'"
+        [disabled]="saving() || resourceForm.invalid"
+        (clickEventButton)="guardar()"
+      ></app-button>
     </div>
-  </div>
-}
+
+  </form>
+
+</app-modal>
+
 
 <!-- Confirmación de eliminación -->
 <app-confirm-modal

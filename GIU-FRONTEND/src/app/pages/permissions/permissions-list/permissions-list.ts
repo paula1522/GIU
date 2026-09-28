@@ -1,10 +1,10 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { RoleMockService } from '../../../services/mock/role-mock.service';
+import { ResourcesService } from '../../../services/api/resources.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { Resource, Role } from '../../../models/domain/giu.models';
+import { RecursoResponseDTO, RolRecursoResponseDTO } from '../../../models/api/recursos.model';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
@@ -12,26 +12,28 @@ import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
 import { HeaderButton, HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
+import { ModalComponent } from '../../../shared/atomic-desing/molecule/modal/modal.component';
 
 @Component({
   selector: 'app-permissions-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent, ConfirmModalComponent, HeaderPagesComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent, ConfirmModalComponent, HeaderPagesComponent, ModalComponent],
   templateUrl: './permissions-list.html',
   styleUrl: './permissions-list.scss',
 })
 export class PermissionsList implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly roleService = inject(RoleMockService);
+  private readonly resourcesService = inject(ResourcesService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(false);
-  readonly recursos = signal<Resource[]>([]);
+  readonly recursos = signal<RecursoResponseDTO[]>([]);
   readonly searchTerm = signal('');
-  readonly filteredRecursos = signal<Resource[]>([]);
+  readonly filteredRecursos = signal<RecursoResponseDTO[]>([]);
   readonly apliId = signal(0);
 
+  @ViewChild('modalForm') modalForm!: ModalComponent;
   // ---------- Configuración del átomo de Tabla ----------
   readonly tableColumnTitle = ['Código', 'Nombre', 'Descripción', 'Tipo', 'Estado', 'Acciones'];
   readonly columnsToDisplay = ['codigo', 'nombre', 'descripcion', 'tipo', 'estado', 'acciones'];
@@ -66,13 +68,13 @@ export class PermissionsList implements OnInit {
     return this.filteredRecursos().map((r) => this.buildRow(r));
   });
 
-  private buildRow(r: Resource): ColumnConfig {
+  private buildRow(r: RecursoResponseDTO): ColumnConfig {
     const buttons: ActionButton[] = [];
     if (this.canEdit) {
-      buttons.push({ label: 'Editar', action: 'EDITAR', title: 'Editar permiso', icon: 'bi bi-pencil-square', styles: 'btn-table-edit', type: 'button' });
+      buttons.push({ label: 'Editar', action: 'EDITAR', title: 'Editar permiso', icon: 'bi bi-pencil-square', class: 'btn-table-edit', type: 'button' });
     }
     if (this.canDelete) {
-      buttons.push({ label: 'Eliminar', action: 'ELIMINAR', title: 'Eliminar permiso', icon: 'bi bi-trash', styles: 'btn-table-danger', type: 'button' });
+      buttons.push({ label: 'Eliminar', action: 'ELIMINAR', title: 'Eliminar permiso', icon: 'bi bi-trash', class: 'btn-table-danger', type: 'button' });
     }
 
     return {
@@ -87,7 +89,7 @@ export class PermissionsList implements OnInit {
   }
 
   onTableAction(event: { action: string; row: any; idTable: string }): void {
-    const resource: Resource = event.row._resource;
+    const resource: RecursoResponseDTO = event.row._resource;
     if (event.action === 'EDITAR') {
       this.abrirEditar(resource);
     } else if (event.action === 'ELIMINAR') {
@@ -96,13 +98,13 @@ export class PermissionsList implements OnInit {
   }
 
   // ---------- Modal crear/editar ----------
-  readonly showForm = signal(false);
-  readonly editingResource = signal<Resource | null>(null);
+  
+  readonly editingResource = signal<RecursoResponseDTO | null>(null);
   readonly saving = signal(false);
   resourceForm!: FormGroup;
 
   /** Roles asociados al permiso en edición (solo lectura). */
-  readonly rolesAsociados = signal<Role[]>([]);
+  readonly rolesAsociados = signal<RolRecursoResponseDTO[]>([]);
 
   readonly validationMessages: Record<string, { type: string; message: string }[]> = {
     codigo: [{ type: 'required', message: 'El código es obligatorio.' }],
@@ -115,7 +117,7 @@ export class PermissionsList implements OnInit {
 
   // ---------- Modal confirmación eliminación ----------
   readonly confirmVisible = signal(false);
-  readonly confirmResource = signal<Resource | null>(null);
+  readonly confirmResource = signal<RecursoResponseDTO | null>(null);
   readonly confirmMsg = signal('');
 
   ngOnInit(): void {
@@ -132,7 +134,7 @@ export class PermissionsList implements OnInit {
 
   cargar(): void {
     this.loading.set(true);
-    this.roleService.listarRecursos(this.apliId()).subscribe({
+    this.resourcesService.listarRecursos(this.apliId()).subscribe({
       next: (res) => { this.recursos.set(res.data ?? []); this.filtrar(); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
@@ -149,10 +151,10 @@ export class PermissionsList implements OnInit {
     this.editingResource.set(null);
     this.rolesAsociados.set([]);
     this.resourceForm?.reset({ codigo: '', nombre: '', descripcion: '', tipo: 'MENU' });
-    this.showForm.set(true);
+    this.modalForm?.open();
   }
 
-  abrirEditar(resource: Resource): void {
+  abrirEditar(resource: RecursoResponseDTO): void {
     this.editingResource.set(resource);
     this.rolesAsociados.set([]);
     this.resourceForm?.patchValue({
@@ -162,14 +164,14 @@ export class PermissionsList implements OnInit {
       tipo: resource.tipo,
     });
     // Cargar los roles asociados a este permiso
-    this.roleService.obtenerRolesPorRecurso(this.apliId(), resource.id).subscribe({
+    this.resourcesService.obtenerRolesPorRecurso(resource.id).subscribe({
       next: (res) => this.rolesAsociados.set(res.data ?? []),
       error: () => this.rolesAsociados.set([]),
     });
-    this.showForm.set(true);
+    this.modalForm?.open();
   }
 
-  cerrarForm(): void { this.showForm.set(false); }
+  cerrarForm(): void { this.modalForm?.close(); }
 
   guardar(): void {
     if (this.resourceForm.invalid) return;
@@ -177,34 +179,33 @@ export class PermissionsList implements OnInit {
     const formValue = this.resourceForm.getRawValue();
     const resource = this.editingResource();
     if (resource) {
-      this.roleService.actualizarRecurso(resource.id, {
+      this.resourcesService.modificarRecurso(this.apliId(), resource.id, {
         codigo: formValue.codigo,
         nombre: formValue.nombre,
         descripcion: formValue.descripcion || undefined,
         tipo: formValue.tipo,
-      }, this.auth.usuarioRed())
+        estado: resource.estado,
+      })
         .subscribe({
-          next: () => { this.saving.set(false); this.showForm.set(false); this.cargar(); },
+          next: () => { this.saving.set(false); this.cerrarForm(); this.cargar(); },
           error: () => this.saving.set(false),
         });
     } else {
-      this.roleService.crearRecurso({
-        apliId: this.apliId(),
+      this.resourcesService.crearRecurso(this.apliId(), {
         codigo: formValue.codigo,
         nombre: formValue.nombre,
         descripcion: formValue.descripcion || undefined,
         tipo: formValue.tipo,
-        estado: 'ACTIVO',
-      }, this.auth.usuarioRed())
+      })
         .subscribe({
-          next: () => { this.saving.set(false); this.showForm.set(false); this.cargar(); },
+          next: () => { this.saving.set(false); this.cerrarForm(); this.cargar(); },
           error: () => this.saving.set(false),
         });
     }
   }
 
   // ---------- Eliminación ----------
-  confirmarEliminar(resource: Resource): void {
+  confirmarEliminar(resource: RecursoResponseDTO): void {
     this.confirmResource.set(resource);
     this.confirmMsg.set(`¿Desea eliminar el permiso "${resource.nombre}" (${resource.codigo})? Esta acción no se puede deshacer.`);
     this.confirmVisible.set(true);
@@ -214,6 +215,7 @@ export class PermissionsList implements OnInit {
     const resource = this.confirmResource();
     if (!resource) return;
     this.confirmVisible.set(false);
-    this.roleService.eliminarRecurso(resource.id).subscribe(() => this.cargar());
+  
+    console.warn('Endpoint de eliminación de recursos no disponible.');
   }
 }

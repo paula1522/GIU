@@ -11,11 +11,12 @@ import {
   UsuarioRolResponseDTO,
 } from '../../models/api/users.model';
 import { RespuestaGenerica } from '../../models/api/RespuestaGenerica.model';
+import { Constantes } from '../../utils/constants/Constantes';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.url_bff}/api`;
+  private readonly apiUrl = `${Constantes.CONST_ENDPOINT_BFF}/api`;
 
   listarUsuarios(filtros?: {
     usuarioRed?: string;

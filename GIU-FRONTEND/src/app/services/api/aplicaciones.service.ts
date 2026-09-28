@@ -7,11 +7,12 @@ import {
 } from '../../models/api/aplicaciones.model';
 import { RespuestaGenerica } from '../../models/api/RespuestaGenerica.model';
 import { environment } from '../../../environments/environment';
+import { Constantes } from '../../utils/constants/Constantes';
 
 @Injectable({ providedIn: 'root' })
 export class AplicacionesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.url_bff}/api`;
+  private readonly apiUrl = `${Constantes.CONST_ENDPOINT_BFF}/api/aplicaciones/administradores`;
 
   listarAdministradores(filtros?: {
     usuarioRed?: string;
@@ -24,7 +25,7 @@ export class AplicacionesService {
     if (filtros?.vigente != null) params.vigente = filtros.vigente;
 
     return this.http.get<RespuestaGenerica<AdministradorAplicacionResponseDTO[]>>(
-      `${this.apiUrl}/aplicaciones/administradores`,
+      `${this.apiUrl}`,
       { params }
     );
   }
@@ -34,7 +35,7 @@ export class AplicacionesService {
     usuarioModificacion: string
   ) {
     return this.http.post<RespuestaGenerica<AdministradorAplicacionResponseDTO>>(
-      `${this.apiUrl}/aplicaciones/administradores`,
+      `${this.apiUrl}`,
       request,
       { headers: { usuarioModificacion } }
     );
@@ -45,7 +46,7 @@ export class AplicacionesService {
     usuarioModificacion: string
   ) {
     return this.http.put<RespuestaGenerica<AdministradorAplicacionResponseDTO>>(
-      `${this.apiUrl}/aplicaciones/administradores`,
+      `${this.apiUrl}`,
       request,
       { headers: { usuarioModificacion } }
     );

@@ -4,7 +4,6 @@ import { inject, Injectable } from '@angular/core';
 import {
   CrearRolRequest,
   GestionarRecursosRolRequest,
-  RecursoResponseDTO,
   RecursosRolResponse,
   RolDetalleResponse,
   RolResponseDTO,
@@ -13,6 +12,7 @@ import {
 
 import { environment } from '../../../environments/environment';
 import { RespuestaGenerica } from '../../models/api/RespuestaGenerica.model';
+import { Constantes } from '../../utils/constants/Constantes';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +20,8 @@ import { RespuestaGenerica } from '../../models/api/RespuestaGenerica.model';
 export class RoleService {
 
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.url_bff}/api`;
+  private readonly apiUrl = `${Constantes.CONST_ENDPOINT_BFF}/api`;
+  
 
   listarRoles(apliId: number) {
     return this.http.get<RespuestaGenerica<RolResponseDTO[]>>(
@@ -28,14 +29,7 @@ export class RoleService {
     );
   }
 
-  listarRecursos(apliId: number, estado: string = 'ACTIVO') {
-    return this.http.get<RespuestaGenerica<RecursoResponseDTO[]>>(
-      `${this.apiUrl}/aplicaciones/${apliId}/recursos`,
-      {
-        params: { estado }
-      }
-    );
-  }
+
 
   crearRol(
     apliId: number,
