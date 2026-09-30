@@ -31,7 +31,6 @@
 
   <form [formGroup]="roleForm" (ngSubmit)="guardar()">
 
-    <!-- Sección A: Datos del Rol -->
     <div class="detalle-section">
       <div class="detalle-section-title">
         <i class="bi bi-shield-lock"></i>
@@ -57,7 +56,6 @@
       </div>
     </div>
 
-    <!-- Sección B: Permisos de la aplicación -->
     <div class="detalle-section">
       <div class="detalle-section-title">
         <i class="bi bi-key"></i>
@@ -66,13 +64,11 @@
 
       <div class="permisos-section" formArrayName="permisos">
 
-        <!-- Buscador de permisos -->
         <app-input [form]="filtrosInternosForm" [controlName]="'filtroPermisos'"
           [placeholder]="'Buscar permiso por nombre, código o tipo…'" [type]="'text'"
           [showRequiredMark]="false">
         </app-input>
 
-        <!-- Seleccionar todos los permisos -->
         <div class="select-all-permisos">
           <app-checkbox [id]="'select-all-permisos'" [textLabel]="'Seleccionar todos los permisos'"
             [checked]="allPermisosSelected" (checkedChange)="toggleSelectAllPermisos($event)">
@@ -83,7 +79,6 @@
           </span>
         </div>
 
-        <!-- Tabla de permisos -->
         <div class="permisos-grid">
           <div class="permiso-header">
             <span>Nombre</span>
@@ -154,7 +149,6 @@
 <app-modal #modalUsuarios [title]="'Usuarios asignados al rol: ' + (rolSeleccionado()?.nombre ?? '')" [size]="'large'"
   [showFooter]="false" (closeMeEvent)="cerrarUsuariosModal()">
 
-  <!-- Sección A: Búsqueda y asignación -->
   <div class="usuarios-section">
 
     <div class="section-title-usuarios">
@@ -210,7 +204,6 @@
     }
   </div>
 
-  <!-- Sección B: Listado y desvinculación -->
   <div class="usuarios-section">
 
     <div class="section-title-usuarios">
@@ -224,7 +217,6 @@
     </div>
     } @else {
 
-    <!-- Buscador interno -->
     <app-input [form]="filtrosInternosForm" [controlName]="'filtroInterno'"
       [placeholder]="'Buscar por nombre, usuario o correo…'" [type]="'text'" [showRequiredMark]="false">
     </app-input>
@@ -251,12 +243,10 @@
         </div>
       </div>
 
-      <!-- Indicador de rango -->
       <div class="rango-mostrado">
         {{ rangoMostrado() }}
       </div>
 
-      <!-- Lista con scroll -->
       <div class="usuarios-list-scroll">
         @if (paginatedUsuarios().length === 0) {
         <div class="empty-usuarios">
@@ -296,7 +286,6 @@
       </div>
     </form>
 
-    <!-- Controles de paginación -->
     @if (totalPagesUsuarios() > 1) {
     <div class="paginacion-usuarios">
       <button type="button" class="page-btn" (click)="onPageChangeUsuarios(1)"
@@ -327,7 +316,6 @@
 
   @if (rolDetalle(); as r) {
 
-  <!-- Sección A: Datos del Rol -->
   <div class="detalle-section">
     <div class="detalle-section-title">
       <i class="bi bi-shield-lock"></i>
@@ -353,7 +341,6 @@
     </div>
   </div>
 
-  <!-- Sección B: Permisos Asignados -->
   <div class="detalle-section">
     <div class="detalle-section-title">
       <i class="bi bi-key"></i>
@@ -397,7 +384,6 @@
     }
   </div>
 
-  <!-- Sección C: Usuarios Asignados -->
   <div class="detalle-section">
     <div class="detalle-section-title">
       <i class="bi bi-people"></i>
@@ -443,7 +429,7 @@
 
   }
 
-  
+
 
 </app-modal>
 

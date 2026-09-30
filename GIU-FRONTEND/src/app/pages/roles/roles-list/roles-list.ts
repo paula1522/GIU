@@ -218,25 +218,17 @@ export class RolesList implements OnInit {
     const buttons: ActionButton[] = [];
     const activo = r.estado === 'ACTIVO';
 
-    // ==================== Rol ACTIVO ====================
     if (activo) {
       buttons.push({
         label: '',
         action: 'VER_USUARIOS',
         title: 'Ver usuarios asociados',
         icon: 'bi bi-people',
-        class: 'btn-table-view',
+        class: 'btn-action-users',
         type: 'button',
       });
 
-      buttons.push({
-        label: '',
-        action: 'VER_DETALLE',
-        title: 'Ver detalle del rol',
-        icon: 'bi bi-eye',
-        class: 'btn-table-view',
-        type: 'button',
-      });
+  
 
       if (this.canEdit) {
         buttons.push({
@@ -244,7 +236,7 @@ export class RolesList implements OnInit {
           action: 'EDITAR',
           title: 'Editar rol',
           icon: 'bi bi-pencil-square',
-          class: 'btn-table-edit',
+          class: 'btn-action-edit',
           type: 'button',
         });
 
@@ -253,7 +245,7 @@ export class RolesList implements OnInit {
           action: 'TOGGLE',
           title: 'Inactivar rol',
           icon: 'bi bi-toggle-off',
-          class: 'btn-table-danger',
+          class: 'btn-action-deactivate',
           type: 'button',
         });
       }
@@ -271,23 +263,23 @@ export class RolesList implements OnInit {
       } as ColumnConfig;
     }
 
-    // ==================== Rol INACTIVO ====================
-    buttons.push({
-      label: '',
-      action: 'VER_DETALLE',
-      title: 'Ver detalle del rol',
-      icon: 'bi bi-eye',
-      class: 'btn-table-view',
-      type: 'button',
-    });
+
 
     if (this.canEdit) {
+      buttons.push({
+        label: '',
+        action: 'VER_DETALLE',
+        title: 'Ver detalle del rol',
+        icon: 'bi bi-eye',
+        class: 'btn-action-view',
+        type: 'button',
+      });
       buttons.push({
         label: '',
         action: 'TOGGLE',
         title: 'Activar rol',
         icon: 'bi bi-toggle-on',
-        class: 'btn-table-success',
+        class: 'btn-action-activate',
         type: 'button',
       });
     }
@@ -946,24 +938,6 @@ export class RolesList implements OnInit {
     this.usuariosAQuitar.set(seleccionados);
     this.confirmQuitarMsg.set(
       `¿Desea quitar ${seleccionados.length} usuario(s) de este rol? Esta acción no se puede deshacer.`
-    );
-    this.confirmQuitarVisible.set(true);
-  }
-
-  quitarUsuario(usuario: UsuarioAsignadoRol): void {
-    const role = this.rolSeleccionado();
-    if (!role) return;
-
-    if (role.estado !== 'ACTIVO') {
-      this.searchUsuarioError.set(
-        `El rol "${role.nombre}" no está habilitado. Actívelo antes de quitar usuarios.`
-      );
-      return;
-    }
-
-    this.usuariosAQuitar.set([usuario]);
-    this.confirmQuitarMsg.set(
-      `¿Desea quitar a "${usuario.nombre}" (${usuario.usuarioRed}) de este rol?`
     );
     this.confirmQuitarVisible.set(true);
   }

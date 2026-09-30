@@ -5,29 +5,30 @@
   (buttonClick)="onHeaderButtonClick($event)"
 ></app-header-pages>
 
-
 <div class="page">
   <div class="filters-bar">
-  <app-input
-    [form]="searchForm"
-    [controlName]="'search'"
-    [placeholder]="'Buscar por nombre, código o tipo…'"
-    [showRequiredMark]="false">
-  </app-input>
+    <app-input
+      [form]="searchForm"
+      [controlName]="'search'"
+      [placeholder]="'Buscar por nombre, código o tipo…'"
+      [showRequiredMark]="false">
+    </app-input>
 
-  <app-select
-    [id]="'filtro-estado'"
-    [textLabel]="'Estado'"
-    [control]="estadoFiltro"
-    [options]="estadoOptions"
-    [displayKey]="'nombre'"
-    [valueKey]="'id'"
-    [defaultOption]="'Todos'"
-    [showRequiredMark]="false">
-  </app-select>
-</div>
-  @if (loading()) { <div class="loading">Cargando…</div> }
-  @else {
+    <app-select
+      [id]="'filtro-estado'"
+      [textLabel]="'Estado'"
+      [control]="estadoFiltro"
+      [options]="estadoOptions"
+      [displayKey]="'nombre'"
+      [valueKey]="'id'"
+      [defaultOption]="'Todos'"
+      [showRequiredMark]="false">
+    </app-select>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Cargando…</div>
+  } @else {
     <app-table
       [tableTitle]="'Permisos / Recursos'"
       [tableColumnTitle]="tableColumnTitle"
@@ -41,8 +42,7 @@
   }
 </div>
 
-
-<!-- Modal crear/editar -->
+<!-- ==================== Modal: Crear / Editar permiso ==================== -->
 <app-modal
   #modalForm
   [title]="editingResource() ? 'Editar permiso' : 'Nuevo permiso'"
@@ -52,59 +52,85 @@
 
   <form [formGroup]="resourceForm" (ngSubmit)="guardar()">
 
-    <app-input
-      [textLabel]="'Código'"
-      [form]="resourceForm"
-      [controlName]="'codigo'"
-      [validationMessages]="validationMessages"
-      [placeholder]="'Código único del permiso'"
-      [type]="'text'"
-    ></app-input>
+    <div class="detalle-section">
+      <div class="detalle-section-title">
+        <i class="bi bi-key"></i>
+        <span>Datos del Permiso</span>
+      </div>
 
-    <app-input
-      [textLabel]="'Nombre'"
-      [form]="resourceForm"
-      [controlName]="'nombre'"
-      [validationMessages]="validationMessages"
-      [placeholder]="'Nombre del permiso'"
-      [type]="'text'"
-    ></app-input>
+      <div class="form-stack">
+        <app-input
+          [textLabel]="'Código'"
+          [form]="resourceForm"
+          [controlName]="'codigo'"
+          [validationMessages]="validationMessages"
+          [placeholder]="'Código único del permiso'"
+          [type]="'text'"
+        ></app-input>
 
-    <app-input
-      [textLabel]="'Descripción'"
-      [form]="resourceForm"
-      [controlName]="'descripcion'"
-      [placeholder]="'Descripción opcional'"
-      [isTextArea]="true"
-      [showRequiredMark]="false"
-    ></app-input>
+        <app-input
+          [textLabel]="'Nombre'"
+          [form]="resourceForm"
+          [controlName]="'nombre'"
+          [validationMessages]="validationMessages"
+          [placeholder]="'Nombre del permiso'"
+          [type]="'text'"
+        ></app-input>
 
-    <div class="form-field">
-      <label class="form-label">Tipo *</label>
-      <select class="input" formControlName="tipo">
-        @for (tipo of tipoOptions; track tipo) {
-          <option [value]="tipo">{{ tipo }}</option>
+        <app-input
+          [textLabel]="'Descripción'"
+          [form]="resourceForm"
+          [controlName]="'descripcion'"
+          [placeholder]="'Descripción opcional'"
+          [isTextArea]="true"
+          [showRequiredMark]="false"
+        ></app-input>
+
+        <app-select
+          [id]="'tipo-select'"
+          [textLabel]="'Tipo'"
+          [control]="tipoControl"
+          [options]="tipoOptions"
+          [displayKey]="'nombre'"
+          [valueKey]="'id'"
+          [showRequiredMark]="true"
+        ></app-select>
+
+        @if (tipoControl.touched && tipoControl.invalid) {
+          <span class="field-error">El tipo es obligatorio.</span>
         }
-      </select>
 
-      @if (resourceForm.get('tipo')?.touched && resourceForm.get('tipo')?.invalid) {
-        <span class="field-error">El tipo es obligatorio.</span>
-      }
+        <!-- Estado (solo en modo edición; al crear queda activo por defecto) -->
+        @if (editingResource()) {
+          <div class="form-field form-field-checkbox">
+            <app-checkbox
+              [id]="'chk-estado-permiso'"
+              [textLabel]="'Permiso activo'"
+              [form]="resourceForm"
+              [controlName]="'estado'"
+            ></app-checkbox>
+            <small class="checkbox-hint">
+              Si está desmarcado, el permiso quedará inactivo y no podrá asignarse a nuevos roles.
+            </small>
+          </div>
+        }
+      </div>
     </div>
 
-    <!-- Sección de roles asociados (solo en modo edición) -->
+    <!-- Roles asociados (solo lectura, solo en modo edición) -->
     @if (editingResource()) {
-      <div class="roles-asociados-section">
-        <div class="roles-asociados-title">
+      <div class="detalle-section">
+        <div class="detalle-section-title">
           <i class="bi bi-person-badge"></i>
-          Roles asociados a este permiso
+          <span>Roles asociados a este permiso</span>
+          <span class="detalle-count-text">{{ rolesAsociados().length }} roles</span>
         </div>
 
         @if (rolesAsociados().length === 0) {
           <div class="roles-empty">Este permiso no está asociado a ningún rol actualmente.</div>
         } @else {
           <div class="roles-chips">
-            @for (rol of rolesAsociados(); track rol.id) {
+            @for (rol of rolesAsociados(); track rol.rolId) {
               <span class="role-chip" [class.inactive]="rol.rolEstado === 'INACTIVO'">
                 <i class="bi"
                   [class.bi-check-circle-fill]="rol.rolEstado === 'ACTIVO'"
@@ -131,22 +157,101 @@
         [class]="['btn', 'btn-primary']"
         [type]="'submit'"
         [disabled]="saving() || resourceForm.invalid"
-        (clickEventButton)="guardar()"
       ></app-button>
     </div>
 
   </form>
-
 </app-modal>
 
+<!-- ==================== Modal: Detalle del permiso ==================== -->
+<app-modal
+  #modalDetalle
+  [title]="'Detalle del permiso'"
+  [size]="'large'"
+  [showFooter]="false"
+  (closeMeEvent)="cerrarDetalle()">
 
-<!-- Confirmación de eliminación -->
+  @if (detalleResource(); as r) {
+    <div class="detalle-section">
+      <div class="detalle-section-title">
+        <i class="bi bi-key"></i>
+        <span>Datos del Permiso</span>
+      </div>
+
+      <div class="detalle-grid">
+        <div class="detalle-item">
+          <span class="detalle-label">Código</span>
+          <span class="detalle-value">{{ r.codigo }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="detalle-label">Nombre</span>
+          <span class="detalle-value">{{ r.nombre }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="detalle-label">Tipo</span>
+          <span class="detalle-value">{{ r.tipo }}</span>
+        </div>
+        <div class="detalle-item">
+          <span class="detalle-label">Estado</span>
+          <span class="badge" [class.badge-success]="r.estado === 'ACTIVO'"
+            [class.badge-danger]="r.estado !== 'ACTIVO'">
+            {{ r.estado }}
+          </span>
+        </div>
+        <div class="detalle-item" style="grid-column: 1 / -1;">
+          <span class="detalle-label">Descripción</span>
+          <span class="detalle-value">{{ r.descripcion || '—' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detalle-section">
+      <div class="detalle-section-title">
+        <i class="bi bi-person-badge"></i>
+        <span>Roles Asociados</span>
+        <span class="detalle-count-text">{{ rolesAsociados().length }} roles</span>
+      </div>
+
+      @if (rolesAsociados().length === 0) {
+        <div class="detalle-empty">Este permiso no está asociado a ningún rol actualmente.</div>
+      } @else {
+        <div class="permisos-grid permisos-grid--readonly">
+          <div class="permiso-header">
+            <span>Rol</span>
+            <span>Descripción</span>
+            <span>Estado</span>
+          </div>
+
+          <div class="permisos-list">
+            @for (rol of rolesAsociados(); track rol.rolId) {
+              <div class="permiso-item" style="grid-template-columns: 2fr 2fr 1fr;">
+                <div class="permiso-nombre">
+                  <i class="bi bi-shield-lock"></i>
+                  <span>{{ rol.rolNombre }}</span>
+                </div>
+                <span>{{ rol.rolDescripcion || '—' }}</span>
+                <span class="badge" [class.badge-success]="rol.rolEstado === 'ACTIVO'"
+                  [class.badge-danger]="rol.rolEstado !== 'ACTIVO'">
+                  {{ rol.rolEstado }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    
+  }
+</app-modal>
+
+<!-- ==================== Confirmación toggle estado ==================== -->
 <app-confirm-modal
   [visible]="confirmVisible()"
-  title="Eliminar permiso"
+  [title]="confirmTitle()"
   [message]="confirmMsg()"
-  confirmText="Eliminar"
-  [isDestructive]="true"
-  (confirm)="ejecutarEliminar()"
+  [confirmText]="confirmResource()?.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'"
+  [isDestructive]="confirmResource()?.estado === 'ACTIVO'"
+  (confirm)="ejecutarToggle()"
   (cancel)="confirmVisible.set(false)"
 ></app-confirm-modal>

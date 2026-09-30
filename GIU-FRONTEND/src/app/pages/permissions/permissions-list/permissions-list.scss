@@ -1,3 +1,4 @@
+// ============ Página y layout ============
 .page {
   max-width: 1200px;
   margin: 0 auto;
@@ -5,16 +6,13 @@
 
 .filters-bar {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-bottom: 1rem;
-}
+  align-items: flex-start;
+  width: 100%;
 
-.input {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  flex: 1;
+  app-input  { flex: 6 1 0; min-width: 0; }
+  app-select { flex: 4 1 0; min-width: 0; }
 }
 
 .loading {
@@ -23,10 +21,29 @@
   color: #64748b;
 }
 
+// ============ Formularios dentro de modales ============
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .form-field {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+
+.form-field-checkbox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .checkbox-hint {
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.35;
+  }
 }
 
 .form-label {
@@ -39,8 +56,10 @@
   font-size: 0.75rem;
   color: #dc3545;
   font-weight: 500;
+  margin-top: -0.5rem;
 }
 
+// ============ Acciones de modales (botones a la derecha) ============
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -48,50 +67,93 @@
   margin-top: 0.5rem;
 }
 
-/* ===== Estilos para botones dentro del átomo de tabla ===== */
-::ng-deep .btn-table-edit {
-  background: #fff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #1a1a2e !important;
-  padding: 0.3rem 0.7rem !important;
-  border-radius: 6px !important;
-  font-size: 0.75rem !important;
-  cursor: pointer !important;
-  font-weight: 500 !important;
-}
-
-::ng-deep .btn-table-danger {
-  background: #dc3545 !important;
-  color: #fff !important;
-  border: none !important;
-  padding: 0.3rem 0.7rem !important;
-  border-radius: 6px !important;
-  font-size: 0.75rem !important;
-  cursor: pointer !important;
-  font-weight: 500 !important;
-}
-
-/* ===== Sección de roles asociados (solo lectura) ===== */
-.roles-asociados-section {
+// ============ Secciones de modal (mismo diseño que Roles) ============
+.detalle-section {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+
+  & + .detalle-section {
+    margin-top: 1rem;
+  }
 }
 
-.roles-asociados-title {
+.detalle-section-title {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #1a1a2e;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 0.75rem;
-  margin-top: 0.25rem;
+  border-bottom: 2px solid #e92012;
+  padding-bottom: 0.4rem;
 
   i { color: #e92012; }
 }
 
+.detalle-count-text {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+// ============ Grid de pares label/value (detalle) ============
+.detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.detalle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.detalle-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.detalle-value {
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+.detalle-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+// ============ Badges ============
+.badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-danger  { background: #fee2e2; color: #991b1b; }
+
+// ============ Roles asociados (chips) ============
 .roles-empty {
   padding: 1rem;
   text-align: center;
@@ -131,4 +193,74 @@
     color: #64748b;
     border-color: #cbd5e1;
   }
+}
+
+// ============ Grid readonly (detalle) ============
+.permisos-grid {
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.permiso-header,
+.permiso-item {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.permiso-header {
+  padding: 10px 0;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.permiso-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child { border-bottom: none; }
+}
+
+.permiso-nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  i { color: #e92012; font-size: 0.8rem; }
+}
+
+.permisos-grid--readonly {
+  .permiso-item { cursor: default; }
+}
+
+// ============ Botones dentro de la tabla (override ng-deep) ============
+::ng-deep .btn-table-edit {
+  background: #fff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #1a1a2e !important;
+  padding: 0.3rem 0.7rem !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+}
+
+::ng-deep .btn-table-danger {
+  background: #dc3545 !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 0.3rem 0.7rem !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
 }
