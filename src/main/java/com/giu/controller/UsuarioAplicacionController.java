@@ -470,7 +470,7 @@ public class UsuarioAplicacionController {
         @GetMapping("/recursos")
         public ResponseEntity<RespuestaGenerica<List<RecursoResponseDTO>>> obtenerRecursos(
                         @PathVariable Long apliId,
-                        @RequestParam(required = false, defaultValue = Constantes.ESTADO_ACTIVO) String estado) {
+                        @RequestParam(required = false /*, defaultValue = Constantes.ESTADO_ACTIVO*/) String estado) {
 
                 logger.info("GET /aplicaciones/{}/recursos - estado={}",
                                 apliId,

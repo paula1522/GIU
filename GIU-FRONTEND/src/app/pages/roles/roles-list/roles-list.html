@@ -5,7 +5,8 @@
 <div class="page">
 
   <div class="filters-bar">
-    <app-input [form]="searchForm" [controlName]="'search'" [placeholder]="'Buscar rol…'" [showRequiredMark]="false">
+    <app-input [form]="searchForm" [controlName]="'search'" [placeholder]="'Buscar rol…'"
+      [showRequiredMark]="false">
     </app-input>
 
     <app-select [id]="'filtro-estado'" [textLabel]="'Estado'" [control]="estadoFiltro" [options]="estadoOptions"
@@ -30,118 +31,95 @@
 
   <form [formGroup]="roleForm" (ngSubmit)="guardar()">
 
-    <app-input [textLabel]="'Nombre'" [form]="roleForm" [controlName]="'nombre'"
-      [validationMessages]="validationMessages" [placeholder]="'Nombre del rol'" [type]="'text'">
-    </app-input>
-
-    <app-input [textLabel]="'Descripción'" [form]="roleForm" [controlName]="'descripcion'"
-      [placeholder]="'Descripción del rol'" [isTextArea]="true" [showRequiredMark]="false">
-    </app-input>
-
-    <!-- Sección de permisos -->
-    <div class="permisos-section" formArrayName="permisos">
-
-      <div class="permisos-header">
-        <span class="permisos-title">
-          <i class="bi bi-key"></i>
-          Permisos de la aplicación
-        </span>
-
-        <span class="permisos-hint">
-          Seleccione al menos un permiso
-        </span>
+    <!-- Sección A: Datos del Rol -->
+    <div class="detalle-section">
+      <div class="detalle-section-title">
+        <i class="bi bi-shield-lock"></i>
+        <span>Datos del Rol</span>
       </div>
 
-      <div class="permisos-grid">
+      <div class="form-stack">
+        <app-input [textLabel]="'Nombre'" [form]="roleForm" [controlName]="'nombre'"
+          [validationMessages]="validationMessages" [placeholder]="'Nombre del rol'" [type]="'text'">
+        </app-input>
 
-        
+        <app-input [textLabel]="'Descripción'" [form]="roleForm" [controlName]="'descripcion'"
+          [placeholder]="'Descripción del rol'" [isTextArea]="true" [showRequiredMark]="false">
+        </app-input>
+
+        <div class="form-field form-field-checkbox">
+          <app-checkbox [id]="'chk-estado-rol'" [textLabel]="'Rol activo'" [form]="roleForm"
+            [controlName]="'estado'"></app-checkbox>
+          <small class="checkbox-hint">
+            Si está desmarcado, el rol quedará inactivo y no podrá asignarse a usuarios.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección B: Permisos de la aplicación -->
+    <div class="detalle-section">
+      <div class="detalle-section-title">
+        <i class="bi bi-key"></i>
+        <span>Permisos de la aplicación</span>
+      </div>
+
+      <div class="permisos-section" formArrayName="permisos">
 
         <!-- Buscador de permisos -->
-        <div class="filtro-permisos-row">
-          <div class="filtro-permisos-wrapper">
-
-            <i class="bi bi-search filtro-permisos-icon"></i>
-
-            <input type="text" class="filtro-permisos-input" placeholder="Buscar permiso por nombre, código o tipo…"
-              [ngModel]="filtroPermisos()" [ngModelOptions]="{ standalone: true }"
-              (ngModelChange)="filtrarPermisos($event)" />
-
-            @if (filtroPermisos()) {
-            <button type="button" class="filtro-clear" (click)="filtrarPermisos('')" title="Limpiar búsqueda">
-              <i class="bi bi-x-circle"></i>
-            </button>
-            }
-
-          </div>
-        </div>
-
-        
+        <app-input [form]="filtrosInternosForm" [controlName]="'filtroPermisos'"
+          [placeholder]="'Buscar permiso por nombre, código o tipo…'" [type]="'text'"
+          [showRequiredMark]="false">
+        </app-input>
 
         <!-- Seleccionar todos los permisos -->
         <div class="select-all-permisos">
-
           <app-checkbox [id]="'select-all-permisos'" [textLabel]="'Seleccionar todos los permisos'"
             [checked]="allPermisosSelected" (checkedChange)="toggleSelectAllPermisos($event)">
           </app-checkbox>
 
           <span class="permisos-count">
-            {{ cantidadSeleccionadosPermisos }}
-            de
-            {{ recursos().length }}
-            seleccionado(s)
+            {{ cantidadSeleccionadosPermisos }} de {{ recursos().length }} seleccionado(s)
           </span>
-
         </div>
 
-        <div class="permiso-header">
-          <span>Nombre</span>
-          <span>Tipo</span>
-          <span>Estado</span>
-        </div>
-
-        <!-- Listado de permisos -->
-        <div class="permisos-list">
-
-          @if (recursosFiltrados().length === 0) {
-
-          <div class="permisos-no-results">
-            No se encontraron permisos con ese criterio.
+        <!-- Tabla de permisos -->
+        <div class="permisos-grid">
+          <div class="permiso-header">
+            <span>Nombre</span>
+            <span>Código</span>
+            <span>Tipo</span>
+            <span>Estado</span>
           </div>
 
-          } @else {
-
-          @for (
-          recursoIndex of recursosFiltradosIndices();
-          track recursoIndex
-          ) {
-
-          <div class="permiso-item">
-
-            <div class="permiso-nombre">
-
-              <app-checkbox [id]="'permiso-' + recursos()[recursoIndex].id"
-                [textLabel]="recursos()[recursoIndex].nombre" [checked]="permisosArray.at(recursoIndex).value"
-                (checkedChange)="togglePermiso(recursoIndex, $event)">
-              </app-checkbox>
-
+          <div class="permisos-list">
+            @if (recursosFiltrados().length === 0) {
+            <div class="permisos-no-results">
+              No se encontraron permisos con ese criterio.
             </div>
+            } @else {
+            @for (recursoIndex of recursosFiltradosIndices(); track recursoIndex) {
+            <div class="permiso-item">
+              <div class="permiso-nombre">
+                <app-checkbox [id]="'permiso-' + recursos()[recursoIndex].id"
+                  [textLabel]="recursos()[recursoIndex].nombre" [checked]="permisosArray.at(recursoIndex).value"
+                  (checkedChange)="togglePermiso(recursoIndex, $event)">
+                </app-checkbox>
+              </div>
 
-            <span>
-              {{ recursos()[recursoIndex].tipo }}
-            </span>
+              <span>{{ recursos()[recursoIndex].codigo }}</span>
 
-            <span>
-              {{ recursos()[recursoIndex].estado }}
-            </span>
+              <span>{{ recursos()[recursoIndex].tipo }}</span>
 
+              <span class="badge" [class.badge-success]="recursos()[recursoIndex].estado === 'ACTIVO'"
+                [class.badge-danger]="recursos()[recursoIndex].estado !== 'ACTIVO'">
+                {{ recursos()[recursoIndex].estado }}
+              </span>
+            </div>
+            }
+            }
           </div>
-
-          }
-
-          }
-
         </div>
-
       </div>
 
       @if (permisosInvalid) {
@@ -150,20 +128,15 @@
         Debe seleccionar al menos un permiso para este rol.
       </div>
       }
-
     </div>
 
     <div class="modal-actions">
-
       <app-button [text]="'Cancelar'" [class]="['btn', 'btn-primary-secondary']" [type]="'button'"
-        (clickEventButton)="cerrarForm()">
-      </app-button>
+        (clickEventButton)="cerrarForm()"></app-button>
 
       <app-button [text]="saving() ? 'Guardando…' : 'Guardar'"
         [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'" [class]="['btn', 'btn-primary']"
-        [type]="'submit'" [disabled]="saving() || roleForm.invalid">
-      </app-button>
-
+        [type]="'submit'" [disabled]="saving() || roleForm.invalid"></app-button>
     </div>
 
   </form>
@@ -190,9 +163,7 @@
     </div>
 
     <form [formGroup]="searchUsuarioForm" (ngSubmit)="buscarUsuarioRol()">
-
       <div class="search-usuario-row">
-
         <app-input [textLabel]="'Usuario de Red'" [form]="searchUsuarioForm" [controlName]="'usuarioRed'"
           [placeholder]="'ej: maria.gomez'" [type]="'text'" [showRequiredMark]="false">
         </app-input>
@@ -202,9 +173,7 @@
           [type]="'submit'" [disabled]="buscandoUsuario() || !rolSeleccionadoActivo()"
           (clickEventButton)="buscarUsuarioRol()">
         </app-button>
-
       </div>
-
     </form>
 
     @if (searchUsuarioError()) {
@@ -214,12 +183,10 @@
     }
 
     @if (usuarioBuscado(); as user) {
-
     <div class="usuario-encontrado" [class.usuario-encontrado--activo]="user.estado === 'ACTIVO'"
       [class.usuario-encontrado--inactivo]="user.estado !== 'ACTIVO'">
 
       <div class="usuario-info">
-
         <i class="bi bi-person-check-fill"></i>
 
         <div>
@@ -233,18 +200,14 @@
           [class.badge-danger]="user.estado !== 'ACTIVO'">
           {{ user.estado }}
         </span>
-
       </div>
 
       <app-button [text]="'Asociar al rol'" [icon]="'bi bi-link-45deg'" [class]="['btn', 'btn-primary']"
         [type]="'button'" [disabled]="user.estado !== 'ACTIVO' || !rolSeleccionadoActivo()"
         (clickEventButton)="asociarUsuarioRol()">
       </app-button>
-
     </div>
-
     }
-
   </div>
 
   <!-- Sección B: Listado y desvinculación -->
@@ -256,39 +219,24 @@
     </div>
 
     @if (usuariosRol().length === 0) {
-
     <div class="empty-usuarios">
       No hay usuarios asignados a este rol.
     </div>
-
     } @else {
 
     <!-- Buscador interno -->
-    <div class="filtro-interno-row">
-
-      <div class="filtro-input-wrapper">
-
-        <i class="bi bi-search filtro-icon"></i>
-
-        <input type="text" class="filtro-input" placeholder="Buscar por nombre, usuario o correo…"
-          [ngModel]="filtroInterno()" [ngModelOptions]="{ standalone: true }"
-          (ngModelChange)="filtrarUsuariosAsignados($event)" />
-
-      </div>
-
-    </div>
+    <app-input [form]="filtrosInternosForm" [controlName]="'filtroInterno'"
+      [placeholder]="'Buscar por nombre, usuario o correo…'" [type]="'text'" [showRequiredMark]="false">
+    </app-input>
 
     <form [formGroup]="seleccionForm">
-
       <div class="usuarios-list-header">
-
         <app-checkbox [id]="'select-all'" [textLabel]="'Seleccionar página actual'"
           [checked]="seleccionForm.get('selectAll')?.value" [disabled]="!rolSeleccionadoActivo()"
           (checkedChange)="toggleSelectAll($event)">
         </app-checkbox>
 
         <div class="header-right">
-
           @if (haySeleccionados) {
           <span class="seleccion-count">
             {{ cantidadSeleccionados }} seleccionado(s)
@@ -300,9 +248,7 @@
             [type]="'button'" [disabled]="!haySeleccionados || quitandoUsuarios() || !rolSeleccionadoActivo()"
             (clickEventButton)="quitarSeleccionados()">
           </app-button>
-
         </div>
-
       </div>
 
       <!-- Indicador de rango -->
@@ -312,122 +258,83 @@
 
       <!-- Lista con scroll -->
       <div class="usuarios-list-scroll">
-
         @if (paginatedUsuarios().length === 0) {
-
         <div class="empty-usuarios">
           No se encontraron usuarios con ese filtro.
         </div>
-
         } @else {
 
-        @for (
-        u of paginatedUsuarios();
-        track u.usuarioRed;
-        let i = $index
-        ) {
-
-        @let globalIndex =
-        (currentPageUsuarios() - 1) *
-        itemsPerPageUsuarios + i;
+        @for (u of paginatedUsuarios(); track u.usuarioRed; let i = $index) {
+        @let globalIndex = (currentPageUsuarios() - 1) * itemsPerPageUsuarios + i;
 
         <div class="usuario-row" [class.selected]="isUsuarioSelected(globalIndex)">
-
           <app-checkbox [id]="'chk-' + u.usuarioRed" [checked]="isUsuarioSelected(globalIndex)"
             [disabled]="!rolSeleccionadoActivo()" (checkedChange)="toggleSeleccionUsuario(globalIndex, $event)">
           </app-checkbox>
 
           <div class="usuario-row-info">
-
             <div class="usuario-row-text">
-
               <span class="usuario-row-nombre">
                 {{ u.nombre }}
               </span>
-
               <span class="usuario-row-red">
                 {{ u.usuarioRed }}
               </span>
-
               <span class="usuario-row-correo">
                 {{ u.correo || '—' }}
               </span>
-
             </div>
 
             <span class="badge" [class.badge-success]="u.estado === 'ACTIVO'"
               [class.badge-danger]="u.estado !== 'ACTIVO'">
               {{ u.estado }}
             </span>
-
           </div>
-
         </div>
-
         }
-
         }
-
       </div>
-
     </form>
 
     <!-- Controles de paginación -->
     @if (totalPagesUsuarios() > 1) {
-
     <div class="paginacion-usuarios">
-
       <button type="button" class="page-btn" (click)="onPageChangeUsuarios(1)"
-        [disabled]="currentPageUsuarios() === 1">
-        «
-      </button>
+        [disabled]="currentPageUsuarios() === 1">«</button>
 
       <button type="button" class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() - 1)"
-        [disabled]="currentPageUsuarios() === 1">
-        ‹
-      </button>
+        [disabled]="currentPageUsuarios() === 1">‹</button>
 
       <span class="page-info">
         Página {{ currentPageUsuarios() }} de {{ totalPagesUsuarios() }}
       </span>
 
       <button type="button" class="page-btn" (click)="onPageChangeUsuarios(currentPageUsuarios() + 1)"
-        [disabled]="currentPageUsuarios() === totalPagesUsuarios()">
-        ›
-      </button>
+        [disabled]="currentPageUsuarios() === totalPagesUsuarios()">›</button>
 
       <button type="button" class="page-btn" (click)="onPageChangeUsuarios(totalPagesUsuarios())"
-        [disabled]="currentPageUsuarios() === totalPagesUsuarios()">
-        »
-      </button>
-
+        [disabled]="currentPageUsuarios() === totalPagesUsuarios()">»</button>
     </div>
-
     }
-
     }
-
   </div>
 
 </app-modal>
 
 <!-- ==================== Modal: Detalle del rol ==================== -->
-<app-modal #modalDetalle [title]="'Detalle del rol — ' + (rolDetalle()?.nombre ?? '')" [size]="'large'"
-  [showFooter]="false" (closeMeEvent)="cerrarDetalleRol()">
+<app-modal #modalDetalle [title]="'Detalle del rol'" [size]="'large'" [showFooter]="false"
+  (closeMeEvent)="cerrarDetalleRol()">
 
   @if (rolDetalle(); as r) {
 
   <!-- Sección A: Datos del Rol -->
   <div class="detalle-section">
     <div class="detalle-section-title">
-      <i class="bi bi-shield-lock"></i> Datos del Rol
+      <i class="bi bi-shield-lock"></i>
+      <span>Datos del Rol</span>
     </div>
 
     <div class="detalle-grid">
-      <div class="detalle-item">
-        <span class="detalle-label">ID</span>
-        <span class="detalle-value">#{{ r.id }}</span>
-      </div>
       <div class="detalle-item">
         <span class="detalle-label">Nombre</span>
         <span class="detalle-value">{{ r.nombre }}</span>
@@ -443,17 +350,15 @@
           {{ r.estado }}
         </span>
       </div>
-      <div class="detalle-item">
-        <span class="detalle-label">Cantidad de permisos</span>
-        <span class="detalle-value">{{ permisosRol().length }}</span>
-      </div>
     </div>
   </div>
 
   <!-- Sección B: Permisos Asignados -->
   <div class="detalle-section">
     <div class="detalle-section-title">
-      <i class="bi bi-key"></i> Permisos Asignados
+      <i class="bi bi-key"></i>
+      <span>Permisos Asignados</span>
+      <span class="detalle-count-text">{{ permisosRol().length }} permisos</span>
     </div>
 
     @if (cargandoDetalleRol()) {
@@ -461,63 +366,89 @@
     } @else if (permisosRol().length === 0) {
     <div class="detalle-empty">Este rol no tiene permisos asignados actualmente.</div>
     } @else {
-    <div class="apps-table-wrapper">
-      <table class="apps-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Código</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of permisosRol(); track p.recuId) {
-          <tr>
-            <td>
-              <div class="app-cell">
-                <i class="bi bi-key"></i>
-                <span>{{ p.recuNombre || '—' }}</span>
-              </div>
-            </td>
-            <td>
-              <span class="role-chip">
-                <i class="bi bi-tag"></i>
-                {{ p.recuTipo || '—' }}
-              </span>
-            </td>
-            <td>{{ p.recuCodigo || '—' }}</td>
-            <td>
-              <span class="badge" [class.badge-success]="p.recuEstado === 'ACTIVO'"
-                [class.badge-danger]="p.recuEstado !== 'ACTIVO'">
-                {{ p.recuEstado || '—' }}
-              </span>
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
+    <div class="permisos-grid permisos-grid--readonly">
+      <div class="permiso-header">
+        <span>Nombre</span>
+        <span>Código</span>
+        <span>Tipo</span>
+        <span>Estado</span>
+      </div>
+
+      <div class="permisos-list">
+        @for (p of permisosRol(); track p.recuId) {
+        <div class="permiso-item">
+          <div class="permiso-nombre">
+            <i class="bi bi-key"></i>
+            <span>{{ p.recuNombre || '—' }}</span>
+          </div>
+
+          <span>{{ p.recuCodigo || '—' }}</span>
+
+          <span>{{ p.recuTipo || '—' }}</span>
+
+          <span class="badge" [class.badge-success]="p.recuEstado === 'ACTIVO'"
+            [class.badge-danger]="p.recuEstado !== 'ACTIVO'">
+            {{ p.recuEstado || '—' }}
+          </span>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Sección C: Usuarios Asignados -->
+  <div class="detalle-section">
+    <div class="detalle-section-title">
+      <i class="bi bi-people"></i>
+      <span>Usuarios Asignados</span>
+      <span class="detalle-count-text">{{ usuariosAsignadosDetalle().length }} usuarios</span>
+    </div>
+
+    @if (cargandoUsuariosDetalle()) {
+    <div class="detalle-loading">Cargando usuarios…</div>
+    } @else if (usuariosAsignadosDetalle().length === 0) {
+    <div class="detalle-empty">Este rol no tiene usuarios asignados actualmente.</div>
+    } @else {
+    <div class="permisos-grid permisos-grid--readonly usuarios-grid">
+      <div class="permiso-header">
+        <span>Usuario</span>
+        <span>Nombre</span>
+        <span>Correo</span>
+        <span>Estado</span>
+      </div>
+
+      <div class="permisos-list">
+        @for (u of usuariosAsignadosDetalle(); track u.usuarioRed) {
+        <div class="permiso-item">
+          <div class="permiso-nombre">
+            <i class="bi bi-person"></i>
+            <span>{{ u.usuarioRed }}</span>
+          </div>
+
+          <span>{{ u.nombre || '—' }}</span>
+
+          <span>{{ u.correo || '—' }}</span>
+
+          <span class="badge" [class.badge-success]="u.estado === 'ACTIVO'"
+            [class.badge-danger]="u.estado !== 'ACTIVO'">
+            {{ u.estado }}
+          </span>
+        </div>
+        }
+      </div>
     </div>
     }
   </div>
 
   }
 
-  <!-- Acciones del modal de detalle -->
-  <div class="modal-actions">
-    <app-button [text]="'Cerrar'" [icon]="'bi bi-x-lg'" [class]="['btn', 'btn-primary-secondary']" [type]="'button'"
-      (clickEventButton)="cerrarDetalleRol()"></app-button>
-  </div>
+  
 
 </app-modal>
 
 <!-- ==================== Confirmación quitar usuarios del rol ==================== -->
-<app-confirm-modal
-  [visible]="confirmQuitarVisible()"
-  [title]="'Quitar usuarios del rol'"
-  [message]="confirmQuitarMsg()"
-  [confirmText]="quitandoUsuarios() ? 'Quitando…' : 'Quitar'"
-  [isDestructive]="true"
-  (confirm)="ejecutarQuitarUsuarios()"
-  (cancel)="cancelarQuitarUsuarios()">
+<app-confirm-modal [visible]="confirmQuitarVisible()" [title]="'Quitar usuarios del rol'"
+  [message]="confirmQuitarMsg()" [confirmText]="quitandoUsuarios() ? 'Quitando…' : 'Quitar'"
+  [isDestructive]="true" (confirm)="ejecutarQuitarUsuarios()" (cancel)="cancelarQuitarUsuarios()">
 </app-confirm-modal>

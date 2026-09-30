@@ -8,8 +8,24 @@
 
 <div class="page">
   <div class="filters-bar">
-    <input type="text" class="input" placeholder="Buscar…" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); filtrar()" />
-  </div>
+  <app-input
+    [form]="searchForm"
+    [controlName]="'search'"
+    [placeholder]="'Buscar por nombre, código o tipo…'"
+    [showRequiredMark]="false">
+  </app-input>
+
+  <app-select
+    [id]="'filtro-estado'"
+    [textLabel]="'Estado'"
+    [control]="estadoFiltro"
+    [options]="estadoOptions"
+    [displayKey]="'nombre'"
+    [valueKey]="'id'"
+    [defaultOption]="'Todos'"
+    [showRequiredMark]="false">
+  </app-select>
+</div>
   @if (loading()) { <div class="loading">Cargando…</div> }
   @else {
     <app-table

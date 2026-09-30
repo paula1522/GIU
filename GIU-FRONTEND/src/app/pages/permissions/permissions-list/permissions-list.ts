@@ -1,7 +1,8 @@
 import { Component, inject, signal, computed, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ResourcesService } from '../../../services/api/resources.service';
 import { AuthService } from '../../../services/logic/auth.service';
 import { RecursoResponseDTO, RolRecursoResponseDTO } from '../../../models/api/recursos.model';
@@ -9,6 +10,7 @@ import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
 import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input-general/input.component';
+import { SelectComponent } from '../../../shared/atomic-desing/atoms/select/select.component';
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
 import { HeaderButton, HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
@@ -17,7 +19,7 @@ import { ModalComponent } from '../../../shared/atomic-desing/molecule/modal/mod
 @Component({
   selector: 'app-permissions-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, ButtonComponent, ConfirmModalComponent, HeaderPagesComponent, ModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TableComponent, InputComponent, SelectComponent, ButtonComponent, ConfirmModalComponent, HeaderPagesComponent, ModalComponent],
   templateUrl: './permissions-list.html',
   styleUrl: './permissions-list.scss',
 })
@@ -29,11 +31,10 @@ export class PermissionsList implements OnInit {
 
   readonly loading = signal(false);
   readonly recursos = signal<RecursoResponseDTO[]>([]);
-  readonly searchTerm = signal('');
-  readonly filteredRecursos = signal<RecursoResponseDTO[]>([]);
   readonly apliId = signal(0);
 
   @ViewChild('modalForm') modalForm!: ModalComponent;
+
   // ---------- Configuración del átomo de Tabla ----------
   readonly tableColumnTitle = ['Código', 'Nombre', 'Descripción', 'Tipo', 'Estado', 'Acciones'];
   readonly columnsToDisplay = ['codigo', 'nombre', 'descripcion', 'tipo', 'estado', 'acciones'];
@@ -41,6 +42,44 @@ export class PermissionsList implements OnInit {
   readonly canCreate = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
   readonly canEdit = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
   readonly canDelete = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
+
+  // ---------- Filtros ----------
+  readonly searchForm = this.fb.nonNullable.group({
+    search: [''],
+  });
+
+  readonly searchSignal = toSignal(this.searchForm.get('search')!.valueChanges, {
+    initialValue: '',
+  });
+
+  readonly estadoOptions = [
+    { id: 'ACTIVO', nombre: 'Activo' },
+    { id: 'INACTIVO', nombre: 'Inactivo' },
+  ];
+
+  readonly estadoFiltro = new FormControl('', { nonNullable: true });
+
+  readonly estadoFiltroSignal = toSignal(this.estadoFiltro.valueChanges, {
+    initialValue: '',
+  });
+
+  /** Recursos filtrados reactivamente por texto y estado. */
+  readonly filteredRecursos = computed(() => {
+    const term = this.searchSignal().toLowerCase().trim();
+    const estado = this.estadoFiltroSignal();
+
+    return this.recursos().filter((r) => {
+      const coincideTexto =
+        !term ||
+        r.nombre.toLowerCase().includes(term) ||
+        r.codigo.toLowerCase().includes(term) ||
+        r.tipo.toLowerCase().includes(term);
+
+      const coincideEstado = !estado || r.estado === estado;
+
+      return coincideTexto && coincideEstado;
+    });
+  });
 
   /** Botones dinámicos para el header-pages. */
   readonly headerButtons = computed<HeaderButton[]>(() => {
@@ -70,11 +109,27 @@ export class PermissionsList implements OnInit {
 
   private buildRow(r: RecursoResponseDTO): ColumnConfig {
     const buttons: ActionButton[] = [];
+
     if (this.canEdit) {
-      buttons.push({ label: 'Editar', action: 'EDITAR', title: 'Editar permiso', icon: 'bi bi-pencil-square', class: 'btn-table-edit', type: 'button' });
+      buttons.push({
+        label: 'Editar',
+        action: 'EDITAR',
+        title: 'Editar permiso',
+        icon: 'bi bi-pencil-square',
+        class: 'btn-table-edit',
+        type: 'button',
+      });
     }
+
     if (this.canDelete) {
-      buttons.push({ label: 'Eliminar', action: 'ELIMINAR', title: 'Eliminar permiso', icon: 'bi bi-trash', class: 'btn-table-danger', type: 'button' });
+      buttons.push({
+        label: 'Eliminar',
+        action: 'ELIMINAR',
+        title: 'Eliminar permiso',
+        icon: 'bi bi-trash',
+        class: 'btn-table-danger',
+        type: 'button',
+      });
     }
 
     return {
@@ -90,6 +145,7 @@ export class PermissionsList implements OnInit {
 
   onTableAction(event: { action: string; row: any; idTable: string }): void {
     const resource: RecursoResponseDTO = event.row._resource;
+
     if (event.action === 'EDITAR') {
       this.abrirEditar(resource);
     } else if (event.action === 'ELIMINAR') {
@@ -98,7 +154,7 @@ export class PermissionsList implements OnInit {
   }
 
   // ---------- Modal crear/editar ----------
-  
+
   readonly editingResource = signal<RecursoResponseDTO | null>(null);
   readonly saving = signal(false);
   resourceForm!: FormGroup;
@@ -124,6 +180,7 @@ export class PermissionsList implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('apliId'));
     this.apliId.set(id);
     this.cargar();
+
     this.resourceForm = this.fb.group({
       codigo: ['', [Validators.required, Validators.maxLength(50)]],
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
@@ -134,20 +191,17 @@ export class PermissionsList implements OnInit {
 
   cargar(): void {
     this.loading.set(true);
+
     this.resourcesService.listarRecursos(this.apliId()).subscribe({
-      next: (res) => { this.recursos.set(res.data ?? []); this.filtrar(); this.loading.set(false); },
+      next: (res) => {
+        this.recursos.set(res.data ?? []);
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false),
     });
   }
 
-  filtrar(): void {
-    const term = this.searchTerm().toLowerCase();
-    this.filteredRecursos.set(
-      this.recursos().filter((r) => !term || r.nombre.toLowerCase().includes(term) || r.codigo.toLowerCase().includes(term) || r.tipo.toLowerCase().includes(term))
-    );
-  }
-
-    abrirCrear(): void {
+  abrirCrear(): void {
     this.editingResource.set(null);
     this.rolesAsociados.set([]);
     this.resourceForm?.reset({ codigo: '', nombre: '', descripcion: '', tipo: 'MENU' });
@@ -157,51 +211,71 @@ export class PermissionsList implements OnInit {
   abrirEditar(resource: RecursoResponseDTO): void {
     this.editingResource.set(resource);
     this.rolesAsociados.set([]);
+
     this.resourceForm?.patchValue({
       codigo: resource.codigo,
       nombre: resource.nombre,
       descripcion: resource.descripcion ?? '',
       tipo: resource.tipo,
     });
+
     // Cargar los roles asociados a este permiso
     this.resourcesService.obtenerRolesPorRecurso(resource.id).subscribe({
       next: (res) => this.rolesAsociados.set(res.data ?? []),
       error: () => this.rolesAsociados.set([]),
     });
+
     this.modalForm?.open();
   }
 
-  cerrarForm(): void { this.modalForm?.close(); }
+  cerrarForm(): void {
+    this.modalForm?.close();
+  }
 
   guardar(): void {
     if (this.resourceForm.invalid) return;
+
     this.saving.set(true);
+
     const formValue = this.resourceForm.getRawValue();
     const resource = this.editingResource();
+
     if (resource) {
-      this.resourcesService.modificarRecurso(this.apliId(), resource.id, {
-        codigo: formValue.codigo,
-        nombre: formValue.nombre,
-        descripcion: formValue.descripcion || undefined,
-        tipo: formValue.tipo,
-        estado: resource.estado,
-      })
+      this.resourcesService
+        .modificarRecurso(this.apliId(), resource.id, {
+          codigo: formValue.codigo,
+          nombre: formValue.nombre,
+          descripcion: formValue.descripcion || undefined,
+          tipo: formValue.tipo,
+          estado: resource.estado,
+        })
         .subscribe({
-          next: () => { this.saving.set(false); this.cerrarForm(); this.cargar(); },
+          next: () => {
+            this.saving.set(false);
+            this.cerrarForm();
+            this.cargar();
+          },
           error: () => this.saving.set(false),
         });
-    } else {
-      this.resourcesService.crearRecurso(this.apliId(), {
-        codigo: formValue.codigo,
-        nombre: formValue.nombre,
-        descripcion: formValue.descripcion || undefined,
-        tipo: formValue.tipo,
-      })
-        .subscribe({
-          next: () => { this.saving.set(false); this.cerrarForm(); this.cargar(); },
-          error: () => this.saving.set(false),
-        });
+
+      return;
     }
+
+    this.resourcesService
+      .crearRecurso(this.apliId(), {
+        codigo: formValue.codigo,
+        nombre: formValue.nombre,
+        descripcion: formValue.descripcion || undefined,
+        tipo: formValue.tipo,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.cerrarForm();
+          this.cargar();
+        },
+        error: () => this.saving.set(false),
+      });
   }
 
   // ---------- Eliminación ----------
@@ -214,8 +288,9 @@ export class PermissionsList implements OnInit {
   ejecutarEliminar(): void {
     const resource = this.confirmResource();
     if (!resource) return;
+
     this.confirmVisible.set(false);
-  
+
     console.warn('Endpoint de eliminación de recursos no disponible.');
   }
 }

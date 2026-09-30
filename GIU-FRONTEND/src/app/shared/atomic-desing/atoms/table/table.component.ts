@@ -24,7 +24,7 @@ export class TableComponent {
   @Output() clickEventButton = new EventEmitter<{ action: string; row: any, idTable: string }>();
   @Input() idTable:string = '';// id de la tabla
   @Input() enableSort: boolean = true; // Habilita ordenamiento por columnas
-
+  @Input() variant: 'default' | 'modal' = 'default';
   // Variables para paginación
   currentPageIndex:any = 1; // Índice de la primera página
   paginatedData: any[] = [];

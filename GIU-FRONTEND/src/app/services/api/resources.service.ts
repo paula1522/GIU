@@ -19,14 +19,10 @@ export class ResourcesService {
 
   listarRecursos(
     apliId: number,
-    estado = 'ACTIVO'
   ): Observable<RespuestaGenerica<RecursoResponseDTO[]>> {
-    const params = new HttpParams().set('estado', estado);
 
     return this.http.get<RespuestaGenerica<RecursoResponseDTO[]>>(
-      `${this.apiUrl}/${apliId}/recursos`,
-      { params }
-    );
+      `${this.apiUrl}/${apliId}/recursos`    );
   }
 
 obtenerRolesPorRecurso(

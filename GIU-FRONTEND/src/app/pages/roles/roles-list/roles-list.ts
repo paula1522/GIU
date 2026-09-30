@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ViewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -46,11 +46,11 @@ import {
   UsuarioAsignadoRol,
   UsuarioResponseDTO,
 } from '../../../models/api/users.model';
+import { RecursoResponseDTO } from '../../../models/api/recursos.model';
+import { ResourcesService } from '../../../services/api/resources.service';
 
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { RecursoResponseDTO } from '../../../models/api/recursos.model';
-import { ResourcesService } from '../../../services/api/resources.service';
 
 @Component({
   selector: 'app-roles-list',
@@ -74,7 +74,7 @@ import { ResourcesService } from '../../../services/api/resources.service';
 export class RolesList implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly roleService = inject(RoleService);
-    private readonly recursosService = inject(ResourcesService);
+  private readonly recursosService = inject(ResourcesService);
   private readonly userService = inject(UserService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
@@ -132,9 +132,24 @@ export class RolesList implements OnInit {
     });
   });
 
-  // ==================== Configuración de permisos ====================
+  // ==================== Filtros internos (modales) ====================
 
-  readonly filtroPermisos = signal('');
+  readonly filtrosInternosForm = this.fb.nonNullable.group({
+    filtroPermisos: [''],
+    filtroInterno: [''],
+  });
+
+  readonly filtroPermisos = toSignal(
+    this.filtrosInternosForm.get('filtroPermisos')!.valueChanges,
+    { initialValue: '' }
+  );
+
+  readonly filtroInterno = toSignal(
+    this.filtrosInternosForm.get('filtroInterno')!.valueChanges,
+    { initialValue: '' }
+  );
+
+  // ==================== Configuración de permisos ====================
 
   readonly recursosFiltrados = computed(() => {
     const term = this.filtroPermisos().toLowerCase().trim();
@@ -201,16 +216,62 @@ export class RolesList implements OnInit {
 
   private buildRow(r: Role): ColumnConfig {
     const buttons: ActionButton[] = [];
+    const activo = r.estado === 'ACTIVO';
 
-    buttons.push({
-      label: '',
-      action: 'VER_USUARIOS',
-      title: 'Ver usuarios asociados',
-      icon: 'bi bi-people',
-      class: 'btn-table-view',
-      type: 'button',
-    });
+    // ==================== Rol ACTIVO ====================
+    if (activo) {
+      buttons.push({
+        label: '',
+        action: 'VER_USUARIOS',
+        title: 'Ver usuarios asociados',
+        icon: 'bi bi-people',
+        class: 'btn-table-view',
+        type: 'button',
+      });
 
+      buttons.push({
+        label: '',
+        action: 'VER_DETALLE',
+        title: 'Ver detalle del rol',
+        icon: 'bi bi-eye',
+        class: 'btn-table-view',
+        type: 'button',
+      });
+
+      if (this.canEdit) {
+        buttons.push({
+          label: '',
+          action: 'EDITAR',
+          title: 'Editar rol',
+          icon: 'bi bi-pencil-square',
+          class: 'btn-table-edit',
+          type: 'button',
+        });
+
+        buttons.push({
+          label: '',
+          action: 'TOGGLE',
+          title: 'Inactivar rol',
+          icon: 'bi bi-toggle-off',
+          class: 'btn-table-danger',
+          type: 'button',
+        });
+      }
+
+      return {
+        _role: r,
+        nombre: { typeColum: typeColum.string, columValue: r.nombre },
+        descripcion: { typeColum: typeColum.string, columValue: r.descripcion || '—' },
+        estado: {
+          typeColum: typeColum.status,
+          columValue: r.estado,
+          satusValue: true,
+        },
+        acciones: { typeColum: typeColum.button, actionButtons: buttons },
+      } as ColumnConfig;
+    }
+
+    // ==================== Rol INACTIVO ====================
     buttons.push({
       label: '',
       action: 'VER_DETALLE',
@@ -223,20 +284,10 @@ export class RolesList implements OnInit {
     if (this.canEdit) {
       buttons.push({
         label: '',
-        action: 'EDITAR',
-        title: r.estado === 'ACTIVO' ? 'Editar rol' : 'El rol está inactivo — actívelo para editar',
-        icon: 'bi bi-pencil-square',
-        class: 'btn-table-edit',
-        type: 'button',
-        disabled: r.estado !== 'ACTIVO',
-      });
-
-      buttons.push({
-        label: r.estado === 'ACTIVO' ? 'Inactivar' : 'Activar',
         action: 'TOGGLE',
-        title: r.estado === 'ACTIVO' ? 'Inactivar rol' : 'Activar rol',
-        icon: r.estado === 'ACTIVO' ? 'bi bi-toggle-on' : 'bi bi-toggle-off',
-        class: r.estado === 'ACTIVO' ? 'btn-table-danger' : 'btn-table-success',
+        title: 'Activar rol',
+        icon: 'bi bi-toggle-on',
+        class: 'btn-table-success',
         type: 'button',
       });
     }
@@ -248,7 +299,7 @@ export class RolesList implements OnInit {
       estado: {
         typeColum: typeColum.status,
         columValue: r.estado,
-        satusValue: r.estado === 'ACTIVO',
+        satusValue: false,
       },
       acciones: { typeColum: typeColum.button, actionButtons: buttons },
     } as ColumnConfig;
@@ -288,19 +339,26 @@ export class RolesList implements OnInit {
 
   // ==================== Ciclo de vida ====================
 
+  constructor() {
+    // Reset automático de la paginación cuando cambia el filtro interno
+    effect(() => {
+      this.filtroInterno();
+      this.currentPageUsuarios.set(1);
+    });
+  }
+
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('apliId'));
 
     this.apliId.set(id);
 
-    // Form del rol (crear/editar)
     this.roleForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.maxLength(50)]],
       descripcion: ['', [Validators.maxLength(200)]],
+      estado: [true],
       permisos: this.fb.array([], minSelectedValidator()),
     });
 
-    // Forms del modal de usuarios por rol — se crean UNA sola vez en ngOnInit
     this.searchUsuarioForm = this.fb.group({
       usuarioRed: ['', [Validators.required, Validators.minLength(2)]],
     });
@@ -378,10 +436,6 @@ export class RolesList implements OnInit {
     this.permisosArray.updateValueAndValidity();
   }
 
-  filtrarPermisos(term: string): void {
-    this.filtroPermisos.set(term);
-  }
-
   toggleSelectAllPermisos(checked: boolean): void {
     const indices = this.recursosFiltradosIndices();
 
@@ -436,9 +490,9 @@ export class RolesList implements OnInit {
 
   abrirCrear(): void {
     this.editingRole.set(null);
-    this.filtroPermisos.set('');
+    this.filtrosInternosForm.get('filtroPermisos')?.setValue('');
 
-    this.roleForm?.reset({ nombre: '', descripcion: '' });
+    this.roleForm?.reset({ nombre: '', descripcion: '', estado: true });
     this.buildPermisosCheckboxes([]);
 
     this.modalForm?.open();
@@ -446,35 +500,42 @@ export class RolesList implements OnInit {
 
   abrirEditar(role: Role): void {
     this.editingRole.set(role);
-    this.filtroPermisos.set('');
+    this.filtrosInternosForm.get('filtroPermisos')?.setValue('');
 
     this.roleForm?.patchValue({
       nombre: role.nombre,
       descripcion: role.descripcion ?? '',
+      estado: role.estado === 'ACTIVO',
     });
 
-    this.roleService.obtenerDetalleRol(role.id).subscribe({
-      next: (res) => {
-        const assignedIds = (res.data?.recursos ?? []).map((recurso) => recurso.recuId);
+    const cached = this.roleDetalleCache()[role.id];
 
-        this.roleDetalleCache.update((cache) => ({
-          ...cache,
-          [role.id]: assignedIds,
-        }));
+    if (cached) {
+      this.buildPermisosCheckboxes(cached);
+    } else {
+      this.roleService.obtenerDetalleRol(role.id).subscribe({
+        next: (res) => {
+          const assignedIds = (res.data?.recursos ?? []).map((recurso) => recurso.recuId);
 
-        this.buildPermisosCheckboxes(assignedIds);
-      },
-      error: (error) => {
-        console.error('ERROR AL OBTENER DETALLE DEL ROL:', error);
+          this.roleDetalleCache.update((cache) => ({
+            ...cache,
+            [role.id]: assignedIds,
+          }));
 
-        this.roleDetalleCache.update((cache) => ({
-          ...cache,
-          [role.id]: [],
-        }));
+          this.buildPermisosCheckboxes(assignedIds);
+        },
+        error: (error) => {
+          console.error('ERROR AL OBTENER DETALLE DEL ROL:', error);
 
-        this.buildPermisosCheckboxes([]);
-      },
-    });
+          this.roleDetalleCache.update((cache) => ({
+            ...cache,
+            [role.id]: [],
+          }));
+
+          this.buildPermisosCheckboxes([]);
+        },
+      });
+    }
 
     this.modalForm?.open();
   }
@@ -521,13 +582,14 @@ export class RolesList implements OnInit {
       return;
     }
 
-    this.editarRol(role.id, formValue.nombre, formValue.descripcion, selectedIds);
+    this.editarRol(role.id, formValue.nombre, formValue.descripcion, formValue.estado, selectedIds);
   }
 
   private editarRol(
     rolId: number,
     nombre: string,
     descripcion: string,
+    estado: boolean,
     selectedIds: number[]
   ): void {
     const cached = this.roleDetalleCache()[rolId];
@@ -543,12 +605,10 @@ export class RolesList implements OnInit {
         const recursosAsignar = selectedIds.filter((id) => !currentIds.includes(id));
         const recursosRetirar = currentIds.filter((id) => !selectedIds.includes(id));
 
-        const estadoActual = this.editingRole()?.estado === 'ACTIVO';
-
         const modificarRequest: ModificarRolRequest = {
           nombre,
           descripcion,
-          estado: estadoActual,
+          estado,
         };
 
         this.roleService
@@ -650,10 +710,15 @@ export class RolesList implements OnInit {
   readonly permisosRol = signal<RecursosRolResponse[]>([]);
   readonly cargandoDetalleRol = signal(false);
 
+  readonly usuariosAsignadosDetalle = signal<UsuarioAsignadoRol[]>([]);
+  readonly cargandoUsuariosDetalle = signal(false);
+
   abrirDetalleRol(role: Role): void {
     this.rolDetalle.set(role);
     this.permisosRol.set([]);
+    this.usuariosAsignadosDetalle.set([]);
     this.cargandoDetalleRol.set(true);
+    this.cargandoUsuariosDetalle.set(true);
 
     this.modalDetalle?.open();
 
@@ -668,11 +733,24 @@ export class RolesList implements OnInit {
         this.cargandoDetalleRol.set(false);
       },
     });
+
+    this.userService.listarUsuariosPorRol(role.id).subscribe({
+      next: (usuarios) => {
+        this.usuariosAsignadosDetalle.set(usuarios);
+        this.cargandoUsuariosDetalle.set(false);
+      },
+      error: (err) => {
+        console.error('ERROR AL CARGAR USUARIOS DEL ROL:', err);
+        this.usuariosAsignadosDetalle.set([]);
+        this.cargandoUsuariosDetalle.set(false);
+      },
+    });
   }
 
   cerrarDetalleRol(): void {
     this.rolDetalle.set(null);
     this.permisosRol.set([]);
+    this.usuariosAsignadosDetalle.set([]);
     this.modalDetalle?.close();
   }
 
@@ -692,8 +770,6 @@ export class RolesList implements OnInit {
   readonly rolSeleccionadoActivo = computed(
     () => this.rolSeleccionado()?.estado === 'ACTIVO'
   );
-
-  readonly filtroInterno = signal('');
 
   readonly usuariosFiltrados = computed(() => {
     const term = this.filtroInterno().toLowerCase().trim();
@@ -733,10 +809,7 @@ export class RolesList implements OnInit {
 
   readonly selectedIndices = signal<Set<number>>(new Set());
 
-  /** FormGroup del buscador de usuario — se crea en ngOnInit. */
   searchUsuarioForm!: FormGroup;
-
-  /** FormGroup de selección de usuarios del listado — se crea en ngOnInit. */
   seleccionForm!: FormGroup;
 
   get seleccionArray(): FormArray {
@@ -746,7 +819,7 @@ export class RolesList implements OnInit {
   abrirUsuariosRol(role: Role): void {
     this.rolSeleccionado.set(role);
     this.usuarioBuscado.set(null);
-    this.filtroInterno.set('');
+    this.filtrosInternosForm.get('filtroInterno')?.setValue('');
     this.currentPageUsuarios.set(1);
     this.selectedIndices.set(new Set());
 
@@ -758,7 +831,6 @@ export class RolesList implements OnInit {
       this.searchUsuarioError.set('');
     }
 
-    // Resetea los forms existentes (no los recrea)
     this.searchUsuarioForm.reset({ usuarioRed: '' });
     this.searchUsuarioForm.get('usuarioRed')?.markAsUntouched();
     this.searchUsuarioForm.get('usuarioRed')?.markAsPristine();
@@ -781,11 +853,6 @@ export class RolesList implements OnInit {
       },
       error: (err) => console.error('ERROR AL CARGAR USUARIOS DEL ROL:', err),
     });
-  }
-
-  filtrarUsuariosAsignados(term: string): void {
-    this.filtroInterno.set(term);
-    this.currentPageUsuarios.set(1);
   }
 
   onPageChangeUsuarios(page: number): void {
@@ -1048,7 +1115,7 @@ export class RolesList implements OnInit {
     this.usuariosRol.set([]);
     this.usuarioBuscado.set(null);
     this.searchUsuarioError.set('');
-    this.filtroInterno.set('');
+    this.filtrosInternosForm.get('filtroInterno')?.setValue('');
     this.selectedIndices.set(new Set());
     this.confirmQuitarVisible.set(false);
     this.usuariosAQuitar.set([]);
