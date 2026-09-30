@@ -1,11 +1,9 @@
 // Página y layout
-
 .page {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-// Barra de filtros superior (input búsqueda + select estado)
 .filters-bar {
   display: flex;
   gap: 1rem;
@@ -17,60 +15,19 @@
   app-select { flex: 4 1 0; min-width: 0; }
 }
 
-// Estado de carga
 .loading {
   padding: 2rem;
   text-align: center;
   color: #64748b;
 }
 
-// Badges de estado (reutilizables)
-.badge {
-  display: inline-flex;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-.badge-success { background: #d1fae5; color: #065f46; }
-.badge-danger  { background: #fee2e2; color: #991b1b; }
-
-// Acciones de modales
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-// Stack de campos dentro de secciones de modal
-.form-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-field-checkbox {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-
-  .checkbox-hint {
-    font-size: 0.75rem;
-    color: #64748b;
-    margin-left: auto;
-    line-height: 1.35;
-  }
-}
-
-// Sección de permisos (modal Editar/Crear rol)
+//  Gestión de permisos (modal Crear/Editar) 
 .permisos-section {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-// Contenedor con scroll de la lista de permisos
 .permisos-grid {
   padding: 1rem;
   background: #f8fafc;
@@ -80,7 +37,6 @@
   overflow-y: auto;
 }
 
-// Fila de permisos (encabezado y cada ítem comparten grid)
 .permiso-header,
 .permiso-item {
   display: grid;
@@ -132,7 +88,7 @@
   font-size: 0.8125rem;
 }
 
-// Mensaje de error: "Debe seleccionar al menos un permiso"
+// Mensaje de error
 .permisos-error {
   display: flex;
   align-items: center;
@@ -146,7 +102,7 @@
   i { font-size: 1rem; }
 }
 
-// Modal de Usuarios por Rol
+//  Modal Usuarios 
 .usuarios-section {
   display: flex;
   flex-direction: column;
@@ -166,7 +122,6 @@
   i { color: #e92012; }
 }
 
-// Fila "usuario de red + botón buscar"
 .search-usuario-row {
   display: flex;
   gap: 0.75rem;
@@ -174,7 +129,6 @@
   app-input { flex: 1; }
 }
 
-// Mensaje de error al buscar usuario
 .search-usuario-error {
   font-size: 0.8125rem;
   color: #dc3545;
@@ -183,7 +137,6 @@
   border-radius: 6px;
 }
 
-// Card del usuario encontrado — cambia de color según estado
 .usuario-encontrado {
   display: flex;
   align-items: center;
@@ -216,7 +169,6 @@
   .usuario-red { font-size: 0.75rem; color: #64748b; }
 }
 
-// Estado vacío
 .empty-usuarios {
   padding: 1.5rem;
   text-align: center;
@@ -227,7 +179,6 @@
   border: 1px solid #e2e8f0;
 }
 
-// Barra superior de la lista
 .usuarios-list-header {
   display: flex;
   align-items: center;
@@ -259,7 +210,6 @@
   font-weight: 500;
 }
 
-// Lista con scroll
 .usuarios-list-scroll {
   display: flex;
   flex-direction: column;
@@ -272,7 +222,6 @@
   border-radius: 8px;
 }
 
-// Fila de usuario
 .usuario-row {
   display: flex;
   align-items: center;
@@ -310,7 +259,6 @@
   .usuario-row-correo { font-size: 0.7rem;    color: #94a3b8; }
 }
 
-// Paginación del listado de usuarios
 .paginacion-usuarios {
   display: flex;
   align-items: center;
@@ -340,84 +288,11 @@
   padding: 0 0.5rem;
 }
 
-// Modal de Detalle del Rol
-.detalle-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.detalle-section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1a1a2e;
-  border-bottom: 2px solid #e92012;
-  padding-bottom: 0.4rem;
-  i { color: #e92012; }
-}
-
-.detalle-count-text {
-  margin-left: auto;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #64748b;
-}
-
-// Grid de pares label/value
-.detalle-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-
-  @media (max-width: 600px) { grid-template-columns: 1fr; }
-}
-
-.detalle-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.5rem 0.75rem;
-  background: #f8fafc;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.detalle-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.detalle-value {
-  font-size: 0.875rem;
-  color: #1a1a2e;
-  font-weight: 500;
-}
-
-// Estados de carga / vacío dentro de una sección de detalle
-.detalle-loading,
-.detalle-empty {
-  padding: 1.5rem;
-  text-align: center;
-  color: #64748b;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-}
-
-// Variante readonly del grid de permisos (para el detalle)
+//  Detalle del rol (overrides) 
 .permisos-grid--readonly {
   max-height: 320px;
 
-  .permiso-item {
-    cursor: default;
-  }
+  .permiso-item { cursor: default; }
 
   .permiso-nombre i {
     color: #e92012;
@@ -426,7 +301,6 @@
   }
 }
 
-// Variante para la tabla de usuarios — correo más ancho
 .usuarios-grid {
   .permiso-header,
   .permiso-item {

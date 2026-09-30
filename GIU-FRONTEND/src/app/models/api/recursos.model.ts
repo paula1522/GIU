@@ -1,3 +1,9 @@
+
+//  Responses 
+
+import { Estado } from "../../utils/constants/estados.constants";
+import { TipoRecurso } from "../../utils/constants/tipo-recurso.constants";
+
 export interface RecursoResponseDTO {
   id: number;
   apliId: number;
@@ -5,25 +11,8 @@ export interface RecursoResponseDTO {
   codigo: string;
   nombre: string;
   descripcion: string | null;
-  tipo: string;
-  estado: string;
-}
-
-export interface CrearRecursoRequest {
-  recuIdPadre?: number | null;
-  codigo: string;
-  nombre: string;
-  descripcion?: string;
-  tipo: string;
-}
-
-export interface ModificarRecursoRequest {
-  recuIdPadre?: number | null;
-  codigo: string;
-  nombre: string;
-  descripcion?: string;
-  tipo: string;
-  estado: string;
+  tipo: TipoRecurso;          
+  estado: Estado;             
 }
 
 export interface RolRecursoResponseDTO {
@@ -33,5 +22,24 @@ export interface RolRecursoResponseDTO {
   apliId: number;
   rolNombre: string;
   rolDescripcion: string | null;
-  rolEstado: string;
+  rolEstado: Estado;          
+}
+
+//  Requests 
+
+export interface CrearRecursoRequest {
+  recuIdPadre?: number | null;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  tipo: TipoRecurso;          
+}
+
+export interface ModificarRecursoRequest {
+  recuIdPadre?: number | null;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  tipo: TipoRecurso;          
+  estado: Estado;             
 }

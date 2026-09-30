@@ -51,37 +51,37 @@ public class Constantes {
         public static final String WS_SER_GENERAL_CARGUE_MANUAL_PASSWORD_SFTP = "system.app.cargue.manual.puntos.contrasena.Sftp";
         public static final String WS_SER_GENERAL_CARGUE_MANUAL_PATH_SFTP = "system.app.cargue.manual.puntos.path.Sftp";
 
-        // ==================== OPERACIONES ===================
+        // ======== OPERACIONES =======
         public static final int OPERACION_ASIGNAR = 0;
         public static final int OPERACION_RETIRAR = 1;
         public static final int OPERACION_VIGENCIA = 2;
 
-        // ==================== OPERACIONES ESTADO ====================
+        // ======== OPERACIONES ESTADO ========
         public static final int OPERACION_ACTIVAR = 0;
         public static final int OPERACION_BLOQUEAR = 1;
         public static final int OPERACION_INACTIVAR = 2;
 
-        // ==================== VIGENCIA ====================
+        // ======== VIGENCIA ========
         public static final int VIGENCIA_ACTIVO = 1;
         public static final int VIGENCIA_TODOS = 0;
 
 
-        // ==================== ESTADOS ====================
+        // ======== ESTADOS ========
         public static final String ESTADO_ACTIVO = "ACTIVO";
         public static final String ESTADO_INACTIVO = "INACTIVO";
 
-        // ==================== HEADERS ====================
+        // ======== HEADERS ========
         public static final String HDR_USUARIO_CREACION = "usuarioCreacion";
         public static final String HDR_USUARIO_MODIFICACION = "usuarioModificacion";
 
-        // ==================== APLICACIONES ====================
+        // ======== APLICACIONES ========
         public static final String SQL_APLICACIONES_OBTENER = "system.pl.aplicaciones.obtener";
         public static final String SQL_APLICACIONES_OBTENER_ADMIN = "system.pl.aplicaciones.obtenerAdministrador";
         public static final String SQL_APLICACIONES_CREAR = "system.pl.aplicaciones.crear";
         public static final String SQL_APLICACIONES_MODIFICAR = "system.pl.aplicaciones.modificar";
         public static final String SQL_APLICACIONES_GESTIONAR_ADMIN = "system.pl.aplicaciones.gestionarAdministrador";
 
-        // ==================== USUARIOS ====================
+        // ======== USUARIOS ========
         public static final String SQL_USUARIOS_OBTENER = "system.pl.usuarios.obtener";
         public static final String SQL_USUARIOS_OBTENER_X_APLI = "system.pl.usuarios.obtenerXAplicacion";
         public static final String SQL_USUARIOS_OBTENER_ROL = "system.pl.usuarios.obtenerRol";
@@ -89,17 +89,17 @@ public class Constantes {
         public static final String SQL_USUARIOS_MODIFICAR = "system.pl.usuarios.modificar";
         public static final String SQL_USUARIOS_GESTIONAR_ROL = "system.pl.usuarios.gestionarRol";
 
-        // ==================== SEGURIDAD ====================
+        // ======== SEGURIDAD ========
         public static final String SQL_SEGURIDAD_GESTIONAR_ESTADO = "system.pl.seguridad.gestionarEstado";
 
-        // ==================== ROLES ====================
+        // ======== ROLES ========
         public static final String SQL_ROLES_OBTENER = "system.pl.roles.obtener";
         public static final String SQL_ROLES_RECURSOS = "system.pl.roles.recursos";
         public static final String SQL_ROLES_CREAR = "system.pl.roles.crear";
         public static final String SQL_ROLES_MODIFICAR = "system.pl.roles.modificar";
         public static final String SQL_ROLES_GESTIONAR_RECURSOS = "system.pl.roles.gestionar.recursos";
 
-        // ==================== RECURSOS ====================
+        // ======== RECURSOS ========
         public static final String SQL_RECURSOS_OBTENER = "system.pl.recursos.obtener";
         public static final String SQL_ROLES_RECURSO = "system.pl.recuros.roles";
         public static final String SQL_RECURSOS_OBTENER_USUARIO = "system.pl.recursos.obtenerUsuario";

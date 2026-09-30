@@ -1,3 +1,7 @@
+import { Estado } from './../../utils/constants/estados.constants';
+
+//  Requests 
+
 export interface CrearRolRequest {
   nombre: string;
   descripcion: string;
@@ -14,6 +18,8 @@ export interface GestionarRecursosRolRequest {
   recursos: number[];
 }
 
+//  Responses 
+
 export interface RecursosRolResponse {
   id: number;
   rolId: number;
@@ -21,7 +27,7 @@ export interface RecursosRolResponse {
   recuCodigo: string;
   recuNombre: string;
   recuTipo: string;
-  recuEstado: string;
+  recuEstado: Estado;         
 }
 
 export interface RolDetalleResponse {
@@ -29,7 +35,7 @@ export interface RolDetalleResponse {
   apliId: number;
   nombre: string;
   descripcion: string;
-  estado: string;
+  estado: Estado;             
   fechaCreacion: string;
   usuarioCreacion: string;
   fechaModificacion: string;
@@ -42,10 +48,9 @@ export interface RolResponseDTO {
   apliId: number;
   nombre: string;
   descripcion: string;
-  estado: 'ACTIVO' | 'INACTIVO';
+  estado: Estado;             
   fechaCreacion: string;
   usuarioCreacion: string;
   fechaModificacion: string;
   usuarioModificacion: string;
 }
-

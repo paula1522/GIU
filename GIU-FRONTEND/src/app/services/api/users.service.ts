@@ -3,7 +3,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { environment } from '../../../environments/environment';
 import {
   AsignarRolRequest,
   UsuarioAsignadoRol,
@@ -12,6 +11,7 @@ import {
 } from '../../models/api/users.model';
 import { RespuestaGenerica } from '../../models/api/RespuestaGenerica.model';
 import { Constantes } from '../../utils/constants/Constantes';
+import { EstadoUsuario } from '../../utils/constants/estados.constants';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -20,7 +20,7 @@ export class UserService {
 
   listarUsuarios(filtros?: {
     usuarioRed?: string;
-    estado?: string;
+    estado?: EstadoUsuario;
   }): Observable<RespuestaGenerica<UsuarioResponseDTO[]>> {
     let params = new HttpParams();
 
@@ -45,6 +45,10 @@ export class UserService {
     );
   }
 
+  /**
+   * Combina las asignaciones del rol con el detalle de cada usuario
+   * para construir el view model `UsuarioAsignadoRol`.
+   */
   listarUsuariosPorRol(rolId: number): Observable<UsuarioAsignadoRol[]> {
     return forkJoin({
       asignaciones: this.listarAsignacionesPorRol(rolId),
@@ -65,7 +69,7 @@ export class UserService {
             nombre:               info?.nombre ?? '—',
             correo:               info?.correo ?? '—',
             numeroIdentificacion: info?.numeroIdentificacion ?? '—',
-            estado:               info?.estado ?? '—',
+            estado:               info?.estado ?? EstadoUsuario.INACTIVO,
             apliId:               a.apliId,
             rolId:                a.rolId,
             fechaIn:              a.fechaIn,

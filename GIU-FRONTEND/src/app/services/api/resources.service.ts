@@ -1,8 +1,7 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
 import { RespuestaGenerica } from '../../models/api/RespuestaGenerica.model';
 import {
   RecursoResponseDTO,
@@ -17,21 +16,17 @@ export class ResourcesService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${Constantes.CONST_ENDPOINT_BFF}/api/aplicaciones`;
 
-  listarRecursos(
-    apliId: number,
-  ): Observable<RespuestaGenerica<RecursoResponseDTO[]>> {
-
+  listarRecursos(apliId: number): Observable<RespuestaGenerica<RecursoResponseDTO[]>> {
     return this.http.get<RespuestaGenerica<RecursoResponseDTO[]>>(
-      `${this.apiUrl}/${apliId}/recursos`    );
+      `${this.apiUrl}/${apliId}/recursos`
+    );
   }
 
-obtenerRolesPorRecurso(
-  recuId: number
-): Observable<RespuestaGenerica<RolRecursoResponseDTO[]>> {
-  return this.http.get<RespuestaGenerica<RolRecursoResponseDTO[]>>(
-    `${this.apiUrl}/recurso/${recuId}/roles`
-  );
-}
+  obtenerRolesPorRecurso(recuId: number): Observable<RespuestaGenerica<RolRecursoResponseDTO[]>> {
+    return this.http.get<RespuestaGenerica<RolRecursoResponseDTO[]>>(
+      `${this.apiUrl}/recurso/${recuId}/roles`
+    );
+  }
 
   crearRecurso(
     apliId: number,

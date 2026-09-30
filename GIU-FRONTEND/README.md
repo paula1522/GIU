@@ -86,7 +86,7 @@ Los servicios mock simulan respuestas del backend hasta que los endpoints REST e
 
 | Servicio | Descripción |
 |---|---|
-| `ApplicationMockService` | CRUD de aplicaciones |
+| `AplicacionesService` | CRUD de aplicaciones |
 | `UserMockService` | CRUD de usuarios |
 | `RoleMockService` | CRUD de roles y recursos |
 | `AuditMockService` | Consulta de eventos de auditoría |

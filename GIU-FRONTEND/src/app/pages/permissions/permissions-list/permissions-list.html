@@ -42,7 +42,7 @@
   }
 </div>
 
-<!-- ==================== Modal: Crear / Editar permiso ==================== -->
+<!--  Modal: Crear / Editar permiso  -->
 <app-modal
   #modalForm
   [title]="editingResource() ? 'Editar permiso' : 'Nuevo permiso'"
@@ -131,10 +131,10 @@
         } @else {
           <div class="roles-chips">
             @for (rol of rolesAsociados(); track rol.rolId) {
-              <span class="role-chip" [class.inactive]="rol.rolEstado === 'INACTIVO'">
+              <span class="role-chip" [class.inactive]="rol.rolEstado === Estado.INACTIVO">
                 <i class="bi"
-                  [class.bi-check-circle-fill]="rol.rolEstado === 'ACTIVO'"
-                  [class.bi-x-circle-fill]="rol.rolEstado !== 'ACTIVO'"></i>
+                  [class.bi-check-circle-fill]="rol.rolEstado === Estado.ACTIVO"
+                  [class.bi-x-circle-fill]="rol.rolEstado !== Estado.ACTIVO"></i>
                 {{ rol.rolNombre }}
               </span>
             }
@@ -163,7 +163,7 @@
   </form>
 </app-modal>
 
-<!-- ==================== Modal: Detalle del permiso ==================== -->
+<!--  Modal: Detalle del permiso  -->
 <app-modal
   #modalDetalle
   [title]="'Detalle del permiso'"
@@ -193,8 +193,8 @@
         </div>
         <div class="detalle-item">
           <span class="detalle-label">Estado</span>
-          <span class="badge" [class.badge-success]="r.estado === 'ACTIVO'"
-            [class.badge-danger]="r.estado !== 'ACTIVO'">
+          <span class="badge" [class.badge-success]="r.estado === Estado.ACTIVO"
+            [class.badge-danger]="r.estado !== Estado.ACTIVO">
             {{ r.estado }}
           </span>
         </div>
@@ -222,36 +222,32 @@
             <span>Estado</span>
           </div>
 
-          <div class="permisos-list">
-            @for (rol of rolesAsociados(); track rol.rolId) {
-              <div class="permiso-item" style="grid-template-columns: 2fr 2fr 1fr;">
-                <div class="permiso-nombre">
-                  <i class="bi bi-shield-lock"></i>
-                  <span>{{ rol.rolNombre }}</span>
-                </div>
-                <span>{{ rol.rolDescripcion || '—' }}</span>
-                <span class="badge" [class.badge-success]="rol.rolEstado === 'ACTIVO'"
-                  [class.badge-danger]="rol.rolEstado !== 'ACTIVO'">
-                  {{ rol.rolEstado }}
-                </span>
+          @for (rol of rolesAsociados(); track rol.rolId) {
+            <div class="permiso-item" style="grid-template-columns: 2fr 2fr 1fr;">
+              <div class="permiso-nombre">
+                <i class="bi bi-shield-lock"></i>
+                <span>{{ rol.rolNombre }}</span>
               </div>
-            }
-          </div>
+              <span>{{ rol.rolDescripcion || '—' }}</span>
+              <span class="badge" [class.badge-success]="rol.rolEstado === Estado.ACTIVO"
+                [class.badge-danger]="rol.rolEstado !== Estado.ACTIVO">
+                {{ rol.rolEstado }}
+              </span>
+            </div>
+          }
         </div>
       }
     </div>
-
-    
   }
 </app-modal>
 
-<!-- ==================== Confirmación toggle estado ==================== -->
+<!--  Confirmación toggle estado  -->
 <app-confirm-modal
   [visible]="confirmVisible()"
   [title]="confirmTitle()"
   [message]="confirmMsg()"
-  [confirmText]="confirmResource()?.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'"
-  [isDestructive]="confirmResource()?.estado === 'ACTIVO'"
+  [confirmText]="confirmResource()?.estado === Estado.ACTIVO ? 'Inactivar' : 'Activar'"
+  [isDestructive]="confirmResource()?.estado === Estado.ACTIVO"
   (confirm)="ejecutarToggle()"
   (cancel)="confirmVisible.set(false)"
 ></app-confirm-modal>

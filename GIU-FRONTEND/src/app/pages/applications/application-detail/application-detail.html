@@ -1,12 +1,16 @@
 <div class="detail">
   @if (loading()) {
     <div class="loading">Cargando…</div>
-  } @else if (app()) {
+  } @else if (app(); as a) {
     <div class="detail-header">
       <div class="detail-title-row">
-        <h1 class="page-title">{{ app()?.nombre }}</h1>
-        <span class="badge" [class.badge-success]="app()?.estado === 'ACTIVO'" [class.badge-danger]="app()?.estado === 'INACTIVO'">{{ app()?.estado }}</span>
+        <h1 class="page-title">{{ a.nombre }}</h1>
+        <span class="badge" [class.badge-success]="a.estado === Estado.ACTIVO"
+          [class.badge-danger]="a.estado === Estado.INACTIVO">
+          {{ a.estado }}
+        </span>
       </div>
+
       @if (canEdit) {
         <app-button
           [text]="'Editar'"
@@ -17,105 +21,110 @@
         ></app-button>
       }
     </div>
+
     <div class="info-card">
-      <div><strong>Código:</strong> {{ app()?.codigo }}</div>
-      <div><strong>Descripción:</strong> {{ app()?.descripcion || '—' }}</div>
-      <div><strong>Administración:</strong> {{ app()?.administracion }}</div>
+      <div><strong>Código:</strong> {{ a.codigo }}</div>
+      <div><strong>Descripción:</strong> {{ a.descripcion || '—' }}</div>
+      <div><strong>Administración:</strong> {{ a.administracion }}</div>
     </div>
+
     <h2 class="actions-heading">MÓDULOS</h2>
     <div class="actions-grid">
       <a [routerLink]="['/aplicaciones', apliId(), 'usuarios']" class="action-card">
-        <div class="action-icon">
-          <i class="bi bi-people"></i>
-        </div>
+        <div class="action-icon"><i class="bi bi-people"></i></div>
         <span class="action-label">Gestionar<br>usuarios</span>
       </a>
       <a [routerLink]="['/aplicaciones', apliId(), 'roles']" class="action-card">
-        <div class="action-icon">
-          <i class="bi bi-person-badge"></i>
-        </div>
+        <div class="action-icon"><i class="bi bi-person-badge"></i></div>
         <span class="action-label">Gestionar<br>roles</span>
       </a>
       <a [routerLink]="['/aplicaciones', apliId(), 'permisos']" class="action-card">
-        <div class="action-icon">
-          <i class="bi bi-key"></i>
-        </div>
+        <div class="action-icon"><i class="bi bi-key"></i></div>
         <span class="action-label">Gestionar<br>permisos</span>
       </a>
       <a [routerLink]="['/aplicaciones', apliId(), 'administradores']" class="action-card">
-        <div class="action-icon">
-          <i class="bi bi-shield-check"></i>
-        </div>
+        <div class="action-icon"><i class="bi bi-shield-check"></i></div>
         <span class="action-label">Gestionar<br>administradores</span>
       </a>
     </div>
   }
 </div>
 
-<!-- Modal editar -->
-@if (showEditForm()) {
-  <div class="overlay" (click)="cerrarForm()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Editar aplicación</h2>
-        <app-button
-          [icon]="'bi bi-x-lg'"
-          [class]="['btn', 'btn-primary-secondary']"
-          [type]="'button'"
-          (clickEventButton)="cerrarForm()"
-        ></app-button>
+<!--  Modal: Editar aplicación  -->
+<app-modal
+  #modalForm
+  [title]="'Editar aplicación'"
+  [size]="'large'"
+  [showFooter]="false"
+  (closeMeEvent)="cerrarForm()">
+
+  <form [formGroup]="appForm" (ngSubmit)="guardar()">
+
+    <div class="detalle-section">
+      <div class="detalle-section-title">
+        <i class="bi bi-app-indicator"></i>
+        <span>Datos de la Aplicación</span>
       </div>
-      <div class="modal-body">
-        <form [formGroup]="appForm" (ngSubmit)="guardar()">
-          <app-input
-            [textLabel]="'Código'"
+
+      <div class="form-stack">
+        <app-input
+          [textLabel]="'Código'"
+          [form]="appForm"
+          [controlName]="'codigo'"
+          [validationMessages]="validationMessages"
+          [placeholder]="'Código único de la aplicación'"
+          [type]="'text'"
+        ></app-input>
+
+        <app-input
+          [textLabel]="'Nombre'"
+          [form]="appForm"
+          [controlName]="'nombre'"
+          [validationMessages]="validationMessages"
+          [placeholder]="'Nombre de la aplicación'"
+          [type]="'text'"
+        ></app-input>
+
+        <app-input
+          [textLabel]="'Descripción'"
+          [form]="appForm"
+          [controlName]="'descripcion'"
+          [placeholder]="'Descripción opcional'"
+          [isTextArea]="true"
+          [showRequiredMark]="false"
+        ></app-input>
+
+        <div class="form-field form-field-checkbox">
+          <app-checkbox
+            [id]="'chk-administracion-app'"
+            [textLabel]="'Administración propia'"
             [form]="appForm"
-            [controlName]="'codigo'"
-            [validationMessages]="validationMessages"
-            [type]="'text'"
-          ></app-input>
-
-          <app-input
-            [textLabel]="'Nombre'"
-            [form]="appForm"
-            [controlName]="'nombre'"
-            [validationMessages]="validationMessages"
-            [type]="'text'"
-          ></app-input>
-
-          <app-input
-            [textLabel]="'Descripción'"
-            [form]="appForm"
-            [controlName]="'descripcion'"
-            [isTextArea]="true"
-            [showRequiredMark]="false"
-          ></app-input>
-
-          <div class="form-field">
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="administracion" />
-              Administración vía Portal de Configuraciones
-            </label>
-          </div>
-
-          <div class="modal-actions">
-            <app-button
-              [text]="'Cancelar'"
-              [class]="['btn', 'btn-primary-secondary']"
-              [type]="'button'"
-              (clickEventButton)="cerrarForm()"
-            ></app-button>
-            <app-button
-              [text]="saving() ? 'Guardando…' : 'Guardar'"
-              [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
-              [class]="['btn', 'btn-primary']"
-              [type]="'submit'"
-              [disabled]="saving()"
-              (clickEventButton)="guardar()"
-            ></app-button>
-          </div>
-        </form>
+            [controlName]="'administracion'"
+          ></app-checkbox>
+          <small class="checkbox-hint">
+            Si está marcado, la aplicación es de administración propia.
+            Si no, se administra desde el Portal de Configuraciones.
+          </small>
+        </div>
       </div>
     </div>
-  </div>
-}
+
+    <div class="modal-actions">
+      <app-button
+        [text]="'Cancelar'"
+        [class]="['btn', 'btn-primary-secondary']"
+        [type]="'button'"
+        (clickEventButton)="cerrarForm()"
+      ></app-button>
+
+      <app-button
+        [text]="saving() ? 'Guardando…' : 'Guardar'"
+        [icon]="saving() ? 'bi bi-arrow-clockwise' : 'bi bi-check-lg'"
+        [class]="['btn', 'btn-primary']"
+        [type]="'submit'"
+        [disabled]="saving() || appForm.invalid"
+      ></app-button>
+    </div>
+
+  </form>
+</app-modal>

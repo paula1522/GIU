@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Application } from '../../models/domain/giu.models';
+import { AplicacionResponseDTO } from '../../models/api/aplicaciones.model';
 
 const APP_KEY = 'giu_current_app';
 
@@ -10,12 +10,12 @@ const APP_KEY = 'giu_current_app';
  */
 @Injectable({ providedIn: 'root' })
 export class ApplicationContextService {
-  readonly currentApp = signal<Application | null>(this.restore());
+  readonly currentApp = signal<AplicacionResponseDTO | null>(this.restore());
   readonly hasCurrentApp = computed(() => this.currentApp() !== null);
   readonly currentAppId = computed(() => this.currentApp()?.id ?? null);
   readonly currentAppName = computed(() => this.currentApp()?.nombre ?? '');
 
-  setCurrentApp(app: Application): void {
+  setCurrentApp(app: AplicacionResponseDTO): void {
     this.currentApp.set(app);
     sessionStorage.setItem(APP_KEY, JSON.stringify(app));
   }
@@ -25,10 +25,10 @@ export class ApplicationContextService {
     sessionStorage.removeItem(APP_KEY);
   }
 
-  private restore(): Application | null {
+  private restore(): AplicacionResponseDTO | null {
     try {
       const raw = sessionStorage.getItem(APP_KEY);
-      return raw ? (JSON.parse(raw) as Application) : null;
+      return raw ? (JSON.parse(raw) as AplicacionResponseDTO) : null;
     } catch {
       return null;
     }

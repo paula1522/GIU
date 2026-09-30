@@ -54,14 +54,14 @@ public class Configurador {
         Logger logger = obtenerLogger();
 
         logger.info(
-                "==================================================");
+                "==");
         logger.info(
                 "INICIO DE INICIALIZACION DE CONFIGURACION");
         logger.info(
                 "Archivo de propiedades resuelto: {}",
                 RUTA_PROPIEDADES);
         logger.info(
-                "==================================================");
+                "==");
 
         /*
          * Carga archivo + BD.

@@ -132,7 +132,7 @@ export class RoleMockService extends BaseMockService {
     }
   }
 
-  // ==================== CRUD de Recursos / Permisos ====================
+  // ======== CRUD de Recursos / Permisos ========
 
   crearRecurso(recurso: Partial<Resource> & { codigo: string; nombre: string; tipo: Resource['tipo'] }, usuarioCreacion: string): Observable<ApiResponse<Resource>> {
     const nuevo: Resource = {

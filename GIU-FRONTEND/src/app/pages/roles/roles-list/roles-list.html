@@ -25,7 +25,7 @@
 
 </div>
 
-<!-- ==================== Modal: Crear / Editar rol ==================== -->
+<!--  Modal: Crear / Editar rol  -->
 <app-modal #modalForm [title]="editingRole() ? 'Editar rol' : 'Nuevo rol'" [size]="'large'" [showFooter]="false"
   (closeMeEvent)="cerrarForm()">
 
@@ -87,33 +87,31 @@
             <span>Estado</span>
           </div>
 
-          <div class="permisos-list">
-            @if (recursosFiltrados().length === 0) {
-            <div class="permisos-no-results">
-              No se encontraron permisos con ese criterio.
-            </div>
-            } @else {
-            @for (recursoIndex of recursosFiltradosIndices(); track recursoIndex) {
-            <div class="permiso-item">
-              <div class="permiso-nombre">
-                <app-checkbox [id]="'permiso-' + recursos()[recursoIndex].id"
-                  [textLabel]="recursos()[recursoIndex].nombre" [checked]="permisosArray.at(recursoIndex).value"
-                  (checkedChange)="togglePermiso(recursoIndex, $event)">
-                </app-checkbox>
-              </div>
-
-              <span>{{ recursos()[recursoIndex].codigo }}</span>
-
-              <span>{{ recursos()[recursoIndex].tipo }}</span>
-
-              <span class="badge" [class.badge-success]="recursos()[recursoIndex].estado === 'ACTIVO'"
-                [class.badge-danger]="recursos()[recursoIndex].estado !== 'ACTIVO'">
-                {{ recursos()[recursoIndex].estado }}
-              </span>
-            </div>
-            }
-            }
+          @if (recursosFiltrados().length === 0) {
+          <div class="permisos-no-results">
+            No se encontraron permisos con ese criterio.
           </div>
+          } @else {
+          @for (recursoIndex of recursosFiltradosIndices(); track recursoIndex) {
+          <div class="permiso-item">
+            <div class="permiso-nombre">
+              <app-checkbox [id]="'permiso-' + recursos()[recursoIndex].id"
+                [textLabel]="recursos()[recursoIndex].nombre" [checked]="permisosArray.at(recursoIndex).value"
+                (checkedChange)="togglePermiso(recursoIndex, $event)">
+              </app-checkbox>
+            </div>
+
+            <span>{{ recursos()[recursoIndex].codigo }}</span>
+
+            <span>{{ recursos()[recursoIndex].tipo }}</span>
+
+            <span class="badge" [class.badge-success]="recursos()[recursoIndex].estado === Estado.ACTIVO"
+              [class.badge-danger]="recursos()[recursoIndex].estado !== Estado.ACTIVO">
+              {{ recursos()[recursoIndex].estado }}
+            </span>
+          </div>
+          }
+          }
         </div>
       </div>
 
@@ -138,14 +136,14 @@
 
 </app-modal>
 
-<!-- ==================== Confirmación toggle estado ==================== -->
+<!--  Confirmación toggle estado  -->
 <app-confirm-modal [visible]="confirmVisible()" [title]="confirmTitle()" [message]="confirmMsg()"
-  [confirmText]="confirmRole()?.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'"
-  [isDestructive]="confirmRole()?.estado === 'ACTIVO'" (confirm)="ejecutarToggle()"
+  [confirmText]="confirmRole()?.estado === Estado.ACTIVO ? 'Inactivar' : 'Activar'"
+  [isDestructive]="confirmRole()?.estado === Estado.ACTIVO" (confirm)="ejecutarToggle()"
   (cancel)="confirmVisible.set(false)">
 </app-confirm-modal>
 
-<!-- ==================== Modal: Usuarios por rol ==================== -->
+<!--  Modal: Usuarios por rol  -->
 <app-modal #modalUsuarios [title]="'Usuarios asignados al rol: ' + (rolSeleccionado()?.nombre ?? '')" [size]="'large'"
   [showFooter]="false" (closeMeEvent)="cerrarUsuariosModal()">
 
@@ -177,8 +175,8 @@
     }
 
     @if (usuarioBuscado(); as user) {
-    <div class="usuario-encontrado" [class.usuario-encontrado--activo]="user.estado === 'ACTIVO'"
-      [class.usuario-encontrado--inactivo]="user.estado !== 'ACTIVO'">
+    <div class="usuario-encontrado" [class.usuario-encontrado--activo]="user.estado === EstadoUsuario.ACTIVO"
+      [class.usuario-encontrado--inactivo]="user.estado !== EstadoUsuario.ACTIVO">
 
       <div class="usuario-info">
         <i class="bi bi-person-check-fill"></i>
@@ -190,14 +188,14 @@
           </span>
         </div>
 
-        <span class="badge" [class.badge-success]="user.estado === 'ACTIVO'"
-          [class.badge-danger]="user.estado !== 'ACTIVO'">
+        <span class="badge" [class.badge-success]="user.estado === EstadoUsuario.ACTIVO"
+          [class.badge-danger]="user.estado !== EstadoUsuario.ACTIVO">
           {{ user.estado }}
         </span>
       </div>
 
       <app-button [text]="'Asociar al rol'" [icon]="'bi bi-link-45deg'" [class]="['btn', 'btn-primary']"
-        [type]="'button'" [disabled]="user.estado !== 'ACTIVO' || !rolSeleccionadoActivo()"
+        [type]="'button'" [disabled]="user.estado !== EstadoUsuario.ACTIVO || !rolSeleccionadoActivo()"
         (clickEventButton)="asociarUsuarioRol()">
       </app-button>
     </div>
@@ -275,8 +273,8 @@
               </span>
             </div>
 
-            <span class="badge" [class.badge-success]="u.estado === 'ACTIVO'"
-              [class.badge-danger]="u.estado !== 'ACTIVO'">
+            <span class="badge" [class.badge-success]="u.estado === EstadoUsuario.ACTIVO"
+              [class.badge-danger]="u.estado !== EstadoUsuario.ACTIVO">
               {{ u.estado }}
             </span>
           </div>
@@ -310,7 +308,7 @@
 
 </app-modal>
 
-<!-- ==================== Modal: Detalle del rol ==================== -->
+<!--  Modal: Detalle del rol  -->
 <app-modal #modalDetalle [title]="'Detalle del rol'" [size]="'large'" [showFooter]="false"
   (closeMeEvent)="cerrarDetalleRol()">
 
@@ -333,8 +331,8 @@
       </div>
       <div class="detalle-item">
         <span class="detalle-label">Estado</span>
-        <span class="badge" [class.badge-success]="r.estado === 'ACTIVO'"
-          [class.badge-danger]="r.estado !== 'ACTIVO'">
+        <span class="badge" [class.badge-success]="r.estado === Estado.ACTIVO"
+          [class.badge-danger]="r.estado !== Estado.ACTIVO">
           {{ r.estado }}
         </span>
       </div>
@@ -361,25 +359,23 @@
         <span>Estado</span>
       </div>
 
-      <div class="permisos-list">
-        @for (p of permisosRol(); track p.recuId) {
-        <div class="permiso-item">
-          <div class="permiso-nombre">
-            <i class="bi bi-key"></i>
-            <span>{{ p.recuNombre || '—' }}</span>
-          </div>
-
-          <span>{{ p.recuCodigo || '—' }}</span>
-
-          <span>{{ p.recuTipo || '—' }}</span>
-
-          <span class="badge" [class.badge-success]="p.recuEstado === 'ACTIVO'"
-            [class.badge-danger]="p.recuEstado !== 'ACTIVO'">
-            {{ p.recuEstado || '—' }}
-          </span>
+      @for (p of permisosRol(); track p.recuId) {
+      <div class="permiso-item">
+        <div class="permiso-nombre">
+          <i class="bi bi-key"></i>
+          <span>{{ p.recuNombre || '—' }}</span>
         </div>
-        }
+
+        <span>{{ p.recuCodigo || '—' }}</span>
+
+        <span>{{ p.recuTipo || '—' }}</span>
+
+        <span class="badge" [class.badge-success]="p.recuEstado === Estado.ACTIVO"
+          [class.badge-danger]="p.recuEstado !== Estado.ACTIVO">
+          {{ p.recuEstado || '—' }}
+        </span>
       </div>
+      }
     </div>
     }
   </div>
@@ -404,36 +400,32 @@
         <span>Estado</span>
       </div>
 
-      <div class="permisos-list">
-        @for (u of usuariosAsignadosDetalle(); track u.usuarioRed) {
-        <div class="permiso-item">
-          <div class="permiso-nombre">
-            <i class="bi bi-person"></i>
-            <span>{{ u.usuarioRed }}</span>
-          </div>
-
-          <span>{{ u.nombre || '—' }}</span>
-
-          <span>{{ u.correo || '—' }}</span>
-
-          <span class="badge" [class.badge-success]="u.estado === 'ACTIVO'"
-            [class.badge-danger]="u.estado !== 'ACTIVO'">
-            {{ u.estado }}
-          </span>
+      @for (u of usuariosAsignadosDetalle(); track u.usuarioRed) {
+      <div class="permiso-item">
+        <div class="permiso-nombre">
+          <i class="bi bi-person"></i>
+          <span>{{ u.usuarioRed }}</span>
         </div>
-        }
+
+        <span>{{ u.nombre || '—' }}</span>
+
+        <span>{{ u.correo || '—' }}</span>
+
+        <span class="badge" [class.badge-success]="u.estado === EstadoUsuario.ACTIVO"
+          [class.badge-danger]="u.estado !== EstadoUsuario.ACTIVO">
+          {{ u.estado }}
+        </span>
       </div>
+      }
     </div>
     }
   </div>
 
   }
 
-
-
 </app-modal>
 
-<!-- ==================== Confirmación quitar usuarios del rol ==================== -->
+<!--  Confirmación quitar usuarios del rol  -->
 <app-confirm-modal [visible]="confirmQuitarVisible()" [title]="'Quitar usuarios del rol'"
   [message]="confirmQuitarMsg()" [confirmText]="quitandoUsuarios() ? 'Quitando…' : 'Quitar'"
   [isDestructive]="true" (confirm)="ejecutarQuitarUsuarios()" (cancel)="cancelarQuitarUsuarios()">

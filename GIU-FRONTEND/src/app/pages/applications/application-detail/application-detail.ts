@@ -1,36 +1,61 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApplicationMockService } from '../../../services/mock/application-mock.service';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+
+import { AplicacionesService } from '../../../services/api/aplicaciones.service';
 import { ApplicationContextService } from '../../../services/logic/application-context.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { Application } from '../../../models/domain/giu.models';
+import { AplicacionResponseDTO } from '../../../models/api/aplicaciones.model';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
+import { Estado } from '../../../utils/constants/estados.constants';
+import { Administracion } from '../../../utils/constants/administracion.constants';
+
 import { InputComponent } from '../../../shared/atomic-desing/atoms/inputs/input-general/input.component';
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
+import { CheckboxComponent } from '../../../shared/atomic-desing/atoms/checkbox/checkbox.component';
+import { ModalComponent } from '../../../shared/atomic-desing/molecule/modal/modal.component';
 
 @Component({
   selector: 'app-application-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, InputComponent, ButtonComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    ReactiveFormsModule,
+    InputComponent,
+    ButtonComponent,
+    CheckboxComponent,
+    ModalComponent,
+  ],
   templateUrl: './application-detail.html',
   styleUrl: './application-detail.scss',
 })
 export class ApplicationDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly appService = inject(ApplicationMockService);
+  private readonly appService = inject(AplicacionesService);
   private readonly appContext = inject(ApplicationContextService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
+  /** Expuestos para el template. */
+  readonly Estado = Estado;
+  readonly Administracion = Administracion;
+
+  @ViewChild('modalForm') modalForm!: ModalComponent;
+
   readonly loading = signal(false);
-  readonly app = signal<Application | null>(null);
+  readonly app = signal<AplicacionResponseDTO | null>(null);
   readonly apliId = signal(0);
   readonly canEdit = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
 
-  // Modal editar
-  readonly showEditForm = signal(false);
   readonly saving = signal(false);
   appForm!: FormGroup;
 
@@ -42,24 +67,29 @@ export class ApplicationDetail implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('apliId'));
     this.apliId.set(id);
-    this.cargar();
+
     this.appForm = this.fb.group({
       codigo: ['', [Validators.required, Validators.maxLength(50)]],
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
       descripcion: ['', [Validators.maxLength(200)]],
       administracion: [false],
     });
+
+    this.cargar();
   }
 
   cargar(): void {
     this.loading.set(true);
-    this.appService.obtenerPorId(this.apliId()).subscribe({
+
+    this.appService.listar().subscribe({
       next: (res) => {
-        const app = res.data;
-        this.app.set(app);
-        if (app) {
-          this.appContext.setCurrentApp(app);
+        const dto = (res.data ?? []).find((a) => a.id === this.apliId()) ?? null;
+        this.app.set(dto);
+
+        if (dto) {
+          this.appContext.setCurrentApp(dto);
         }
+
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -69,33 +99,49 @@ export class ApplicationDetail implements OnInit {
   abrirEditar(): void {
     const app = this.app();
     if (!app) return;
+
     this.appForm.patchValue({
       codigo: app.codigo,
       nombre: app.nombre,
       descripcion: app.descripcion ?? '',
-      administracion: app.administracion === 'PORTAL_CONFIGURACIONES',
+      // true = PROPIA / false = PORTAL_CONFIGURACIONES
+      administracion: app.administracion === Administracion.PROPIA,
     });
-    this.showEditForm.set(true);
+
+    this.modalForm?.open();
   }
 
-  cerrarForm(): void { this.showEditForm.set(false); }
+  cerrarForm(): void {
+    this.modalForm?.close();
+  }
 
   guardar(): void {
-    if (this.appForm.invalid) return;
+    if (this.appForm.invalid) {
+      this.appForm.markAllAsTouched();
+      return;
+    }
+
     this.saving.set(true);
     const formValue = this.appForm.getRawValue();
-    this.appService.actualizar(this.apliId(), {
-      nombre: formValue.nombre,
-      codigo: formValue.codigo,
-      descripcion: formValue.descripcion || undefined,
-      administracion: formValue.administracion,
-    }, this.auth.usuarioRed()).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.showEditForm.set(false);
-        this.cargar();
-      },
-      error: () => this.saving.set(false),
-    });
+
+    this.appService
+      .modificar(
+        this.apliId(),
+        {
+          nombre: formValue.nombre,
+          codigo: formValue.codigo,
+          descripcion: formValue.descripcion || undefined,
+          administracion: formValue.administracion,
+        },
+        this.auth.usuarioRed()
+      )
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.cerrarForm();
+          this.cargar();
+        },
+        error: () => this.saving.set(false),
+      });
   }
 }

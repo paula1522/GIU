@@ -470,7 +470,7 @@ export class UsersList implements OnInit, OnDestroy {
   get perfilControl(): FormControl { return this.userForm.get('perfilId') as FormControl; }
   get rolControl(): FormControl { return this.userForm.get('rolId') as FormControl; }
 
-  // ==================== Carga Masiva ====================
+  //  Carga Masiva 
 
   @ViewChild('cargaModal') cargaModal!: ModalComponent;
   readonly showCargaMasiva = signal(false);
@@ -859,7 +859,7 @@ export class UsersList implements OnInit, OnDestroy {
     this.cargar();
   }
 
-  // ==================== Eliminación / Desvinculación Masiva ====================
+  //  Eliminación / Desvinculación Masiva 
 
   /** Abre la confirmación de eliminación masiva. */
   confirmarEliminacionMasiva(): void {

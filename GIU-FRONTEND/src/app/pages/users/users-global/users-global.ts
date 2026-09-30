@@ -57,7 +57,7 @@ export class UsersGlobal implements OnInit {
     { id: 'NO', nameSelect: 'Super Admin: No' },
   ];
 
-  // ==================== Configuración del átomo de Tabla ====================
+  // ======== Configuración del átomo de Tabla ========
 
   readonly tableColumnTitle = ['Usuario Red', 'Nombre', 'Correo', 'Identificación', 'Estado', 'Super Admin', 'Acciones'];
   readonly columnsToDisplay = ['usuarioRed', 'nombre', 'correo', 'numeroIdentificacion', 'estado', 'superAdmin', 'acciones'];
@@ -108,7 +108,7 @@ export class UsersGlobal implements OnInit {
     }
   }
 
-  // ==================== Confirmación toggle super admin ====================
+  // ======== Confirmación toggle super admin ========
 
   readonly confirmVisible = signal(false);
   readonly confirmUser = signal<UsuarioResponseDTO | null>(null);
@@ -154,7 +154,7 @@ export class UsersGlobal implements OnInit {
     this.filtrar();
   }
 
-  // ==================== Modal de detalle ====================
+  // ======== Modal de detalle ========
 
   readonly showDetalle = signal(false);
   readonly usuarioDetalle = signal<UsuarioResponseDTO | null>(null);
@@ -176,7 +176,7 @@ export class UsersGlobal implements OnInit {
     this.aplicacionesUsuario.set([]);
   }
 
-  // ==================== Ciclo de vida ====================
+  // ======== Ciclo de vida ========
 
   ngOnInit(): void {
     this.filtrosForm = this.fb.group({
@@ -191,7 +191,7 @@ export class UsersGlobal implements OnInit {
     this.cargar();
   }
 
-  // ==================== Carga de datos ====================
+  // ======== Carga de datos ========
 
   cargar(): void {
     this.loading.set(true);
@@ -212,7 +212,7 @@ export class UsersGlobal implements OnInit {
     });
   }
 
-  // ==================== Filtros ====================
+  // ======== Filtros ========
 
   filtrar(): void {
     const v = this.filtrosForm?.getRawValue() ?? {};
@@ -256,7 +256,7 @@ export class UsersGlobal implements OnInit {
     this.filtrar();
   }
 
-  // ==================== Getters para los selects ====================
+  // ======== Getters para los selects ========
 
   get estadoControl(): FormControl {
     return this.filtrosForm.get('estado') as FormControl;

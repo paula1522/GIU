@@ -18,9 +18,9 @@ export class AuthLoginService {
     private msg: NotificationMessageService,
   ) { }
 
-  /* =========================
+  /* =
      Devuelve los recursos candidatos que el técnico puede elegir.
-  ========================= */
+  = */
   // login(user: string, password:string,id_apli:string,) {
 
   //   let params = new HttpParams()

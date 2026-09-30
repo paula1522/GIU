@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 import {
   CrearRolRequest,
@@ -7,41 +8,31 @@ import {
   RecursosRolResponse,
   RolDetalleResponse,
   RolResponseDTO,
-  ModificarRolRequest
+  ModificarRolRequest,
 } from '../../models/api/roles.model';
-
-import { environment } from '../../../environments/environment';
 import { RespuestaGenerica } from '../../models/api/RespuestaGenerica.model';
 import { Constantes } from '../../utils/constants/Constantes';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class RoleService {
-
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${Constantes.CONST_ENDPOINT_BFF}/api`;
-  
 
-  listarRoles(apliId: number) {
+  listarRoles(apliId: number): Observable<RespuestaGenerica<RolResponseDTO[]>> {
     return this.http.get<RespuestaGenerica<RolResponseDTO[]>>(
       `${this.apiUrl}/aplicaciones/${apliId}/roles`
     );
   }
 
-
-
   crearRol(
     apliId: number,
     request: CrearRolRequest,
     usuarioCreacion: string
-  ) {
+  ): Observable<RespuestaGenerica<RolResponseDTO>> {
     return this.http.post<RespuestaGenerica<RolResponseDTO>>(
       `${this.apiUrl}/aplicaciones/${apliId}/roles`,
       request,
-      {
-        headers: { usuarioCreacion }
-      }
+      { headers: { usuarioCreacion } }
     );
   }
 
@@ -50,13 +41,11 @@ export class RoleService {
     rolId: number,
     request: ModificarRolRequest,
     usuarioModificacion: string
-  ) {
+  ): Observable<RespuestaGenerica<RolResponseDTO>> {
     return this.http.put<RespuestaGenerica<RolResponseDTO>>(
       `${this.apiUrl}/aplicaciones/${apliId}/roles/${rolId}`,
       request,
-      {
-        headers: { usuarioModificacion }
-      }
+      { headers: { usuarioModificacion } }
     );
   }
 
@@ -64,13 +53,11 @@ export class RoleService {
     rolId: number,
     request: GestionarRecursosRolRequest,
     usuarioModificacion: string
-  ) {
+  ): Observable<RespuestaGenerica<RecursosRolResponse[]>> {
     return this.http.post<RespuestaGenerica<RecursosRolResponse[]>>(
       `${this.apiUrl}/roles/${rolId}/recursos`,
       request,
-      {
-        headers: { usuarioModificacion }
-      }
+      { headers: { usuarioModificacion } }
     );
   }
 
@@ -78,19 +65,19 @@ export class RoleService {
     rolId: number,
     request: GestionarRecursosRolRequest,
     usuarioModificacion: string
-  ) {
+  ): Observable<RespuestaGenerica<RecursosRolResponse[]>> {
     return this.http.delete<RespuestaGenerica<RecursosRolResponse[]>>(
       `${this.apiUrl}/roles/${rolId}/recursos`,
       {
         headers: { usuarioModificacion },
-        body: request
+        body: request,
       }
     );
   }
 
-  obtenerDetalleRol(rolId: number) {
-  return this.http.get<RespuestaGenerica<RolDetalleResponse>>(
-    `${this.apiUrl}/aplicaciones/roles/${rolId}`
-  );
-}
+  obtenerDetalleRol(rolId: number): Observable<RespuestaGenerica<RolDetalleResponse>> {
+    return this.http.get<RespuestaGenerica<RolDetalleResponse>>(
+      `${this.apiUrl}/aplicaciones/roles/${rolId}`
+    );
+  }
 }

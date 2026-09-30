@@ -15,6 +15,8 @@ import { ResourcesService } from '../../../services/api/resources.service';
 import { AuthService } from '../../../services/logic/auth.service';
 import { RecursoResponseDTO, RolRecursoResponseDTO } from '../../../models/api/recursos.model';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
+import { Estado, ESTADO_OPTIONS } from '../../../utils/constants/estados.constants';
+import { TipoRecurso, TIPO_RECURSO_OPTIONS } from '../../../utils/constants/tipo-recurso.constants';
 
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
@@ -51,6 +53,10 @@ export class PermissionsList implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
+  /** Expuestos para el template. */
+  readonly Estado = Estado;
+  readonly TipoRecurso = TipoRecurso;
+
   readonly loading = signal(false);
   readonly recursos = signal<RecursoResponseDTO[]>([]);
   readonly apliId = signal(0);
@@ -58,15 +64,14 @@ export class PermissionsList implements OnInit {
   @ViewChild('modalForm') modalForm!: ModalComponent;
   @ViewChild('modalDetalle') modalDetalle!: ModalComponent;
 
-  // ==================== Configuración de la tabla ====================
+  //  Configuración de la tabla 
   readonly tableColumnTitle = ['Código', 'Nombre', 'Descripción', 'Tipo', 'Estado', 'Acciones'];
   readonly columnsToDisplay = ['codigo', 'nombre', 'descripcion', 'tipo', 'estado', 'acciones'];
 
   readonly canCreate = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
   readonly canEdit = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
-  readonly canDelete = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
 
-  // ==================== Filtros ====================
+  //  Filtros 
   readonly searchForm = this.fb.nonNullable.group({
     search: [''],
   });
@@ -75,10 +80,7 @@ export class PermissionsList implements OnInit {
     initialValue: '',
   });
 
-  readonly estadoOptions = [
-    { id: 'ACTIVO', nombre: 'Activo' },
-    { id: 'INACTIVO', nombre: 'Inactivo' },
-  ];
+  readonly estadoOptions = ESTADO_OPTIONS;
 
   readonly estadoFiltro = new FormControl('', { nonNullable: true });
 
@@ -103,7 +105,7 @@ export class PermissionsList implements OnInit {
     });
   });
 
-  // ==================== Header ====================
+  //  Header 
   readonly headerButtons = computed<HeaderButton[]>(() => {
     const btns: HeaderButton[] = [];
     if (this.canCreate) {
@@ -122,17 +124,19 @@ export class PermissionsList implements OnInit {
     if (action === 'CREAR') this.abrirCrear();
   }
 
-  // ==================== Tabla ====================
+  //  Tabla 
   readonly tableData = computed<ColumnConfig[]>(() =>
     this.filteredRecursos().map((r) => this.buildRow(r))
   );
 
   private buildRow(r: RecursoResponseDTO): ColumnConfig {
     const buttons: ActionButton[] = [];
-    const activo = r.estado === 'ACTIVO';
+    const activo = r.estado === Estado.ACTIVO;
 
-    if (activo) {
-      if (this.canEdit) {
+    
+
+    if (this.canEdit) {
+      if (activo) {
         buttons.push({
           label: '',
           action: 'EDITAR',
@@ -150,9 +154,7 @@ export class PermissionsList implements OnInit {
           class: 'btn-action-deactivate',
           type: 'button',
         });
-      }
-    } else {
-      if (this.canEdit) {
+      } else {
         buttons.push({
       label: '',
       action: 'VER_DETALLE',
@@ -161,7 +163,6 @@ export class PermissionsList implements OnInit {
       class: 'btn-action-view',
       type: 'button',
     });
-    
         buttons.push({
           label: '',
           action: 'TOGGLE',
@@ -191,19 +192,15 @@ export class PermissionsList implements OnInit {
       case 'VER_DETALLE': this.abrirDetalle(resource); break;
       case 'EDITAR':      this.abrirEditar(resource); break;
       case 'TOGGLE':      this.toggleEstado(resource); break;
-      case 'ELIMINAR':    this.confirmarEliminar(resource); break;
     }
   }
 
-  // ==================== Modal crear/editar ====================
+  //  Modal crear/editar 
   readonly editingResource = signal<RecursoResponseDTO | null>(null);
   readonly saving = signal(false);
   resourceForm!: FormGroup;
 
-  /** Caché de roles asociados por recuId para evitar llamadas repetidas. */
   private readonly rolesCache = signal<Record<number, RolRecursoResponseDTO[]>>({});
-
-  /** Roles que se muestran en el modal (editar o detalle). */
   readonly rolesAsociados = signal<RolRecursoResponseDTO[]>([]);
 
   readonly validationMessages: Record<string, { type: string; message: string }[]> = {
@@ -212,14 +209,7 @@ export class PermissionsList implements OnInit {
     tipo:   [{ type: 'required', message: 'El tipo es obligatorio.' }],
   };
 
-  readonly tipoOptions = [
-    { id: 'MENU',          nombre: 'MENU' },
-    { id: 'PANTALLA',      nombre: 'PANTALLA' },
-    { id: 'BOTON',         nombre: 'BOTON' },
-    { id: 'OPCION',        nombre: 'OPCION' },
-    { id: 'SERVICIO',      nombre: 'SERVICIO' },
-    { id: 'FUNCIONALIDAD', nombre: 'FUNCIONALIDAD' },
-  ];
+  readonly tipoOptions = TIPO_RECURSO_OPTIONS;
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('apliId'));
@@ -235,7 +225,6 @@ export class PermissionsList implements OnInit {
     });
   }
 
-  /** Getter tipado para app-select. */
   get tipoControl(): FormControl {
     return this.resourceForm.get('tipo') as FormControl;
   }
@@ -252,7 +241,7 @@ export class PermissionsList implements OnInit {
     });
   }
 
-  // ==================== Abrir modales (sin refetch innecesario) ====================
+  //  Abrir modales 
 
   abrirCrear(): void {
     this.editingResource.set(null);
@@ -261,17 +250,12 @@ export class PermissionsList implements OnInit {
       codigo: '',
       nombre: '',
       descripcion: '',
-      tipo: 'MENU',
+      tipo: TipoRecurso.MENU,
       estado: true,
     });
     this.modalForm?.open();
   }
 
-  /**
-   * Abre el modal de edición reutilizando el objeto `resource` que ya viene de la tabla.
-   * No se vuelve a consultar el endpoint de detalle del recurso; solo se cargan
-   * (y cachean) los roles asociados.
-   */
   abrirEditar(resource: RecursoResponseDTO): void {
     this.editingResource.set(resource);
 
@@ -280,7 +264,7 @@ export class PermissionsList implements OnInit {
       nombre: resource.nombre,
       descripcion: resource.descripcion ?? '',
       tipo: resource.tipo,
-      estado: resource.estado === 'ACTIVO',
+      estado: resource.estado === Estado.ACTIVO,
     });
 
     this.cargarRolesAsociados(resource.id);
@@ -291,10 +275,6 @@ export class PermissionsList implements OnInit {
     this.modalForm?.close();
   }
 
-  /**
-   * Carga los roles asociados desde caché si existen; si no, hace la petición
-   * y guarda el resultado en la caché.
-   */
   private cargarRolesAsociados(recuId: number): void {
     const cached = this.rolesCache()[recuId];
 
@@ -313,7 +293,7 @@ export class PermissionsList implements OnInit {
     });
   }
 
-  // ==================== Guardar (crear / editar) ====================
+  //  Guardar 
   guardar(): void {
     if (this.resourceForm.invalid) {
       this.resourceForm.markAllAsTouched();
@@ -332,7 +312,7 @@ export class PermissionsList implements OnInit {
           nombre: formValue.nombre,
           descripcion: formValue.descripcion || undefined,
           tipo: formValue.tipo,
-          estado: formValue.estado ? 'ACTIVO' : 'INACTIVO',
+          estado: formValue.estado ? Estado.ACTIVO : Estado.INACTIVO,
         })
         .subscribe({
           next: () => {
@@ -363,7 +343,7 @@ export class PermissionsList implements OnInit {
       });
   }
 
-  // ==================== Modal Detalle ====================
+  //  Modal Detalle 
   readonly detalleResource = signal<RecursoResponseDTO | null>(null);
 
   abrirDetalle(resource: RecursoResponseDTO): void {
@@ -380,17 +360,19 @@ export class PermissionsList implements OnInit {
     this.modalDetalle?.close();
   }
 
-  // ==================== Toggle estado ====================
+  //  Toggle estado 
   readonly confirmVisible = signal(false);
   readonly confirmResource = signal<RecursoResponseDTO | null>(null);
   readonly confirmTitle = signal('');
   readonly confirmMsg = signal('');
 
   toggleEstado(resource: RecursoResponseDTO): void {
+    const activo = resource.estado === Estado.ACTIVO;
+
     this.confirmResource.set(resource);
-    this.confirmTitle.set(resource.estado === 'ACTIVO' ? 'Inactivar permiso' : 'Activar permiso');
+    this.confirmTitle.set(activo ? 'Inactivar permiso' : 'Activar permiso');
     this.confirmMsg.set(
-      resource.estado === 'ACTIVO'
+      activo
         ? `¿Desea inactivar el permiso "${resource.nombre}" (${resource.codigo})? No podrá asignarse a nuevos roles mientras esté inactivo.`
         : `¿Desea activar el permiso "${resource.nombre}" (${resource.codigo})?`
     );
@@ -409,27 +391,11 @@ export class PermissionsList implements OnInit {
         nombre: resource.nombre,
         descripcion: resource.descripcion ?? undefined,
         tipo: resource.tipo,
-        estado: resource.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO',
+        estado: resource.estado === Estado.ACTIVO ? Estado.INACTIVO : Estado.ACTIVO,
       })
       .subscribe({
         next: () => this.cargar(),
         error: (err) => console.error('ERROR AL CAMBIAR ESTADO:', err),
       });
-  }
-
-  // ==================== Eliminación ====================
-  confirmarEliminar(resource: RecursoResponseDTO): void {
-    this.confirmResource.set(resource);
-    this.confirmMsg.set(
-      `¿Desea eliminar el permiso "${resource.nombre}" (${resource.codigo})? Esta acción no se puede deshacer.`
-    );
-    this.confirmVisible.set(true);
-  }
-
-  ejecutarEliminar(): void {
-    const resource = this.confirmResource();
-    if (!resource) return;
-    this.confirmVisible.set(false);
-    console.warn('Endpoint de eliminación de recursos no disponible.');
   }
 }

@@ -14,8 +14,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { UserService } from '../../../services/api/users.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { Role } from '../../../models/domain/giu.models';
 import { PERMISSIONS } from '../../../utils/constants/permissions.constants';
+import { Estado, ESTADO_OPTIONS } from '../../../utils/constants/estados.constants';
+import { EstadoUsuario } from '../../../utils/constants/estados.constants';
 
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import {
@@ -40,6 +41,7 @@ import {
   CrearRolRequest,
   ModificarRolRequest,
   RecursosRolResponse,
+  RolResponseDTO,
 } from '../../../models/api/roles.model';
 import {
   AsignarRolRequest,
@@ -79,23 +81,27 @@ export class RolesList implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
-  // ==================== Refs de modales ====================
+  /** Expuestos para el template. */
+  readonly Estado = Estado;
+  readonly EstadoUsuario = EstadoUsuario;
+
+  //  Refs de modales 
 
   @ViewChild('modalForm') modalForm!: ModalComponent;
   @ViewChild('modalUsuarios') modalUsuarios!: ModalComponent;
   @ViewChild('modalDetalle') modalDetalle!: ModalComponent;
 
-  // ==================== Estado general ====================
+  //  Estado general 
 
   readonly loading = signal(false);
-  readonly roles = signal<Role[]>([]);
+  readonly roles = signal<RolResponseDTO[]>([]);
   readonly apliId = signal(0);
 
   readonly recursos = signal<RecursoResponseDTO[]>([]);
 
   private readonly roleDetalleCache = signal<Record<number, number[]>>({});
 
-  // ==================== Filtros ====================
+  //  Filtros 
 
   readonly searchForm = this.fb.nonNullable.group({
     search: [''],
@@ -105,10 +111,7 @@ export class RolesList implements OnInit {
     initialValue: '',
   });
 
-  readonly estadoOptions = [
-    { id: 'ACTIVO', nombre: 'Activo' },
-    { id: 'INACTIVO', nombre: 'Inactivo' },
-  ];
+  readonly estadoOptions = ESTADO_OPTIONS;
 
   readonly estadoFiltro = new FormControl('', { nonNullable: true });
 
@@ -132,7 +135,7 @@ export class RolesList implements OnInit {
     });
   });
 
-  // ==================== Filtros internos (modales) ====================
+  //  Filtros internos (modales) 
 
   readonly filtrosInternosForm = this.fb.nonNullable.group({
     filtroPermisos: [''],
@@ -149,7 +152,7 @@ export class RolesList implements OnInit {
     { initialValue: '' }
   );
 
-  // ==================== Configuración de permisos ====================
+  //  Configuración de permisos 
 
   readonly recursosFiltrados = computed(() => {
     const term = this.filtroPermisos().toLowerCase().trim();
@@ -186,7 +189,7 @@ export class RolesList implements OnInit {
       .map(({ i }) => i);
   });
 
-  // ==================== Configuración de la tabla ====================
+  //  Configuración de la tabla 
 
   readonly tableColumnTitle = ['Nombre', 'Descripción', 'Estado', 'Acciones'];
   readonly columnsToDisplay = ['nombre', 'descripcion', 'estado', 'acciones'];
@@ -214,10 +217,12 @@ export class RolesList implements OnInit {
     this.filteredRoles().map((r) => this.buildRow(r))
   );
 
-  private buildRow(r: Role): ColumnConfig {
+  private buildRow(r: RolResponseDTO): ColumnConfig {
     const buttons: ActionButton[] = [];
-    const activo = r.estado === 'ACTIVO';
+    const activo = r.estado === Estado.ACTIVO;
 
+
+    // Ver usuarios: solo roles activos
     if (activo) {
       buttons.push({
         label: '',
@@ -227,10 +232,10 @@ export class RolesList implements OnInit {
         class: 'btn-action-users',
         type: 'button',
       });
+    }
 
-  
-
-      if (this.canEdit) {
+    if (this.canEdit) {
+      if (activo) {
         buttons.push({
           label: '',
           action: 'EDITAR',
@@ -248,40 +253,24 @@ export class RolesList implements OnInit {
           class: 'btn-action-deactivate',
           type: 'button',
         });
+      } else {
+         buttons.push({
+      label: '',
+      action: 'VER_DETALLE',
+      title: 'Ver detalle del rol',
+      icon: 'bi bi-eye',
+      class: 'btn-action-view',
+      type: 'button',
+    });
+        buttons.push({
+          label: '',
+          action: 'TOGGLE',
+          title: 'Activar rol',
+          icon: 'bi bi-toggle-on',
+          class: 'btn-action-activate',
+          type: 'button',
+        });
       }
-
-      return {
-        _role: r,
-        nombre: { typeColum: typeColum.string, columValue: r.nombre },
-        descripcion: { typeColum: typeColum.string, columValue: r.descripcion || '—' },
-        estado: {
-          typeColum: typeColum.status,
-          columValue: r.estado,
-          satusValue: true,
-        },
-        acciones: { typeColum: typeColum.button, actionButtons: buttons },
-      } as ColumnConfig;
-    }
-
-
-
-    if (this.canEdit) {
-      buttons.push({
-        label: '',
-        action: 'VER_DETALLE',
-        title: 'Ver detalle del rol',
-        icon: 'bi bi-eye',
-        class: 'btn-action-view',
-        type: 'button',
-      });
-      buttons.push({
-        label: '',
-        action: 'TOGGLE',
-        title: 'Activar rol',
-        icon: 'bi bi-toggle-on',
-        class: 'btn-action-activate',
-        type: 'button',
-      });
     }
 
     return {
@@ -291,14 +280,14 @@ export class RolesList implements OnInit {
       estado: {
         typeColum: typeColum.status,
         columValue: r.estado,
-        satusValue: false,
+        satusValue: activo,
       },
       acciones: { typeColum: typeColum.button, actionButtons: buttons },
     } as ColumnConfig;
   }
 
   onTableAction(event: { action: string; row: any; idTable: string }): void {
-    const role: Role = event.row._role;
+    const role: RolResponseDTO = event.row._role;
 
     if (event.action === 'VER_DETALLE') {
       this.abrirDetalleRol(role);
@@ -311,9 +300,9 @@ export class RolesList implements OnInit {
     }
   }
 
-  // ==================== Formulario de rol ====================
+  //  Formulario de rol 
 
-  readonly editingRole = signal<Role | null>(null);
+  readonly editingRole = signal<RolResponseDTO | null>(null);
   readonly saving = signal(false);
 
   roleForm!: FormGroup;
@@ -322,17 +311,16 @@ export class RolesList implements OnInit {
     nombre: [{ type: 'required', message: 'El nombre del rol es obligatorio.' }],
   };
 
-  // ==================== Confirmación toggle ====================
+  //  Confirmación toggle 
 
   readonly confirmVisible = signal(false);
-  readonly confirmRole = signal<Role | null>(null);
+  readonly confirmRole = signal<RolResponseDTO | null>(null);
   readonly confirmTitle = signal('');
   readonly confirmMsg = signal('');
 
-  // ==================== Ciclo de vida ====================
+  //  Ciclo de vida 
 
   constructor() {
-    // Reset automático de la paginación cuando cambia el filtro interno
     effect(() => {
       this.filtroInterno();
       this.currentPageUsuarios.set(1);
@@ -368,7 +356,7 @@ export class RolesList implements OnInit {
     return this.roleForm.get('permisos') as FormArray;
   }
 
-  // ==================== Carga de datos ====================
+  //  Carga de datos 
 
   cargar(): void {
     this.loading.set(true);
@@ -400,7 +388,7 @@ export class RolesList implements OnInit {
     });
   }
 
-  // ==================== Permisos (checkboxes) ====================
+  //  Permisos (checkboxes) 
 
   private buildPermisosCheckboxes(selectedIds: number[] = []): void {
     const array = this.permisosArray;
@@ -478,7 +466,7 @@ export class RolesList implements OnInit {
     return this.permisosArray.hasError('minSelected') && this.permisosArray.touched;
   }
 
-  // ==================== Abrir / cerrar modal ====================
+  //  Abrir / cerrar modal 
 
   abrirCrear(): void {
     this.editingRole.set(null);
@@ -490,14 +478,14 @@ export class RolesList implements OnInit {
     this.modalForm?.open();
   }
 
-  abrirEditar(role: Role): void {
+  abrirEditar(role: RolResponseDTO): void {
     this.editingRole.set(role);
     this.filtrosInternosForm.get('filtroPermisos')?.setValue('');
 
     this.roleForm?.patchValue({
       nombre: role.nombre,
       descripcion: role.descripcion ?? '',
-      estado: role.estado === 'ACTIVO',
+      estado: role.estado === Estado.ACTIVO,
     });
 
     const cached = this.roleDetalleCache()[role.id];
@@ -536,7 +524,7 @@ export class RolesList implements OnInit {
     this.modalForm?.close();
   }
 
-  // ==================== Guardar (crear / editar) ====================
+  //  Guardar (crear / editar) 
 
   guardar(): void {
     if (this.saving()) return;
@@ -661,13 +649,15 @@ export class RolesList implements OnInit {
     });
   }
 
-  // ==================== Toggle estado ====================
+  //  Toggle estado 
 
-  toggleEstado(role: Role): void {
+  toggleEstado(role: RolResponseDTO): void {
+    const activo = role.estado === Estado.ACTIVO;
+
     this.confirmRole.set(role);
-    this.confirmTitle.set(role.estado === 'ACTIVO' ? 'Inactivar rol' : 'Activar rol');
+    this.confirmTitle.set(activo ? 'Inactivar rol' : 'Activar rol');
     this.confirmMsg.set(
-      role.estado === 'ACTIVO'
+      activo
         ? `¿Desea inactivar el rol "${role.nombre}"? Los usuarios con este rol no tendrán acceso hasta ser activado nuevamente.`
         : `¿Desea activar el rol "${role.nombre}"?`
     );
@@ -680,7 +670,7 @@ export class RolesList implements OnInit {
 
     this.confirmVisible.set(false);
 
-    const nuevoEstado = role.estado !== 'ACTIVO';
+    const nuevoEstado = role.estado !== Estado.ACTIVO;
 
     const request: ModificarRolRequest = {
       nombre: role.nombre,
@@ -696,16 +686,16 @@ export class RolesList implements OnInit {
       });
   }
 
-  // ==================== Modal de Detalle del Rol ====================
+  //  Modal de Detalle del Rol 
 
-  readonly rolDetalle = signal<Role | null>(null);
+  readonly rolDetalle = signal<RolResponseDTO | null>(null);
   readonly permisosRol = signal<RecursosRolResponse[]>([]);
   readonly cargandoDetalleRol = signal(false);
 
   readonly usuariosAsignadosDetalle = signal<UsuarioAsignadoRol[]>([]);
   readonly cargandoUsuariosDetalle = signal(false);
 
-  abrirDetalleRol(role: Role): void {
+  abrirDetalleRol(role: RolResponseDTO): void {
     this.rolDetalle.set(role);
     this.permisosRol.set([]);
     this.usuariosAsignadosDetalle.set([]);
@@ -746,9 +736,9 @@ export class RolesList implements OnInit {
     this.modalDetalle?.close();
   }
 
-  // ==================== Modal de Usuarios por Rol ====================
+  //  Modal de Usuarios por Rol 
 
-  readonly rolSeleccionado = signal<Role | null>(null);
+  readonly rolSeleccionado = signal<RolResponseDTO | null>(null);
   readonly usuariosRol = signal<UsuarioAsignadoRol[]>([]);
   readonly usuarioBuscado = signal<UsuarioResponseDTO | null>(null);
   readonly buscandoUsuario = signal(false);
@@ -760,7 +750,7 @@ export class RolesList implements OnInit {
   readonly quitandoUsuarios = signal(false);
 
   readonly rolSeleccionadoActivo = computed(
-    () => this.rolSeleccionado()?.estado === 'ACTIVO'
+    () => this.rolSeleccionado()?.estado === Estado.ACTIVO
   );
 
   readonly usuariosFiltrados = computed(() => {
@@ -808,14 +798,14 @@ export class RolesList implements OnInit {
     return this.seleccionForm.get('usuarios') as FormArray;
   }
 
-  abrirUsuariosRol(role: Role): void {
+  abrirUsuariosRol(role: RolResponseDTO): void {
     this.rolSeleccionado.set(role);
     this.usuarioBuscado.set(null);
     this.filtrosInternosForm.get('filtroInterno')?.setValue('');
     this.currentPageUsuarios.set(1);
     this.selectedIndices.set(new Set());
 
-    if (role.estado !== 'ACTIVO') {
+    if (role.estado !== Estado.ACTIVO) {
       this.searchUsuarioError.set(
         `El rol "${role.nombre}" no está habilitado. Actívelo antes de gestionar usuarios.`
       );
@@ -913,13 +903,13 @@ export class RolesList implements OnInit {
     return this.selectedIndices().size;
   }
 
-  // ==================== Retirar usuarios ====================
+  //  Retirar usuarios 
 
   quitarSeleccionados(): void {
     const role = this.rolSeleccionado();
     if (!role) return;
 
-    if (role.estado !== 'ACTIVO') {
+    if (role.estado !== Estado.ACTIVO) {
       this.searchUsuarioError.set(
         `El rol "${role.nombre}" no está habilitado. Actívelo antes de quitar usuarios.`
       );
@@ -985,13 +975,13 @@ export class RolesList implements OnInit {
     this.usuariosAQuitar.set([]);
   }
 
-  // ==================== Buscar / asociar usuario ====================
+  //  Buscar / asociar usuario 
 
   buscarUsuarioRol(): void {
     const role = this.rolSeleccionado();
     if (!role) return;
 
-    if (role.estado !== 'ACTIVO') {
+    if (role.estado !== Estado.ACTIVO) {
       this.searchUsuarioError.set(
         `El rol "${role.nombre}" no está habilitado. Actívelo antes de asignar usuarios.`
       );
@@ -1049,7 +1039,7 @@ export class RolesList implements OnInit {
 
     if (!user || !role) return;
 
-    if (role.estado !== 'ACTIVO') {
+    if (role.estado !== Estado.ACTIVO) {
       this.searchUsuarioError.set(
         `El rol "${role.nombre}" no está habilitado. Actívelo antes de asignar usuarios.`
       );
