@@ -377,4 +377,30 @@ public class GestionRecursosRepository {
                         throw new RuntimeException("Error modificando recurso", e);
                 }
         }
+
+        // Elimina (o inactiva) un recurso -> PRC_ELIMINAR_RECURSO
+        public String eliminarRecurso(Long recuId, Long apliId) {
+                String sql = Propiedades.getInstance().getPropiedad(Constantes.SQL_RECURSOS_ELIMINAR);
+
+                try (Connection conn = utilsBD.obtenerConexion(Constantes.NOMBRE_BD_GIU);
+                                CallableStatement stmt = conn.prepareCall(sql)) {
+
+                        stmt.setLong(1, recuId);
+                        stmt.setLong(2, apliId);
+                        stmt.registerOutParameter(3, OracleTypes.NUMBER);
+                        stmt.registerOutParameter(4, OracleTypes.VARCHAR);
+
+                        stmt.execute();
+
+                        int codigoSalida = stmt.getInt(3);
+                        String mensajeSalida = stmt.getString(4);
+
+                        utilsBD.validarResultado(codigoSalida, mensajeSalida);
+
+                        return mensajeSalida;
+                } catch (Exception e) {
+                        throw new RuntimeException("Error eliminando recurso", e);
+                }
+        }
+
 }

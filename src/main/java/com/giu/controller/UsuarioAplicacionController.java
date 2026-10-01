@@ -470,7 +470,7 @@ public class UsuarioAplicacionController {
         @GetMapping("/recursos")
         public ResponseEntity<RespuestaGenerica<List<RecursoResponseDTO>>> obtenerRecursos(
                         @PathVariable Long apliId,
-                        @RequestParam(required = false /*, defaultValue = Constantes.ESTADO_ACTIVO*/) String estado) {
+                        @RequestParam(required = false /* , defaultValue = Constantes.ESTADO_ACTIVO */) String estado) {
 
                 logger.info("GET /aplicaciones/{}/recursos - estado={}",
                                 apliId,
@@ -587,6 +587,31 @@ public class UsuarioAplicacionController {
                 RespuestaGenerica<List<RecursoUsuarioResponseDTO>> respuesta = new RespuestaGenerica<>(
                                 TipoRespuesta.EXITOSO,
                                 recursos);
+
+                return ResponseEntity.ok(respuesta);
+        }
+
+        /**
+         * Eliminar (o inactivar) un recurso de una aplicación
+         *
+         * Método: DELETE
+         * Ruta: /api/aplicaciones/{apliId}/recursos/{recuId}
+         *
+         * Ejemplo:
+         * DELETE /api/aplicaciones/1/recursos/5
+         */
+        @DeleteMapping("/recursos/{recuId}")
+        public ResponseEntity<RespuestaGenerica<String>> eliminarRecurso(
+                        @PathVariable Long apliId,
+                        @PathVariable Long recuId) {
+
+                logger.info("DELETE /aplicaciones/{}/recursos/{}", apliId, recuId);
+
+                String mensaje = recursosService.eliminarRecurso(recuId, apliId);
+
+                RespuestaGenerica<String> respuesta = new RespuestaGenerica<>(
+                                TipoRespuesta.EXITOSO,
+                                mensaje);
 
                 return ResponseEntity.ok(respuesta);
         }

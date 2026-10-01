@@ -6,7 +6,7 @@
 ></app-header-pages>
 
 <div class="page">
-  <div class="filters-bar">
+    <div class="filters-bar">
     <app-input
       [form]="searchForm"
       [controlName]="'search'"
@@ -24,6 +24,14 @@
       [defaultOption]="'Todos'"
       [showRequiredMark]="false">
     </app-select>
+
+    <app-button
+      [text]="'Limpiar filtros'"
+      [icon]="'bi bi-arrow-counterclockwise'"
+      [class]="['btn', 'btn-primary-secondary']"
+      [type]="'button'"
+      (clickEventButton)="limpiarFiltros()"
+    ></app-button>
   </div>
 
   @if (loading()) {
@@ -250,4 +258,15 @@
   [isDestructive]="confirmResource()?.estado === Estado.ACTIVO"
   (confirm)="ejecutarToggle()"
   (cancel)="confirmVisible.set(false)"
+></app-confirm-modal>
+<!-- Confirmación (toggle / eliminar) -->
+<!-- Confirmación de eliminación -->
+<app-confirm-modal
+  [visible]="deleteVisible()"
+  title="Eliminar permiso"
+  [message]="deleteMsg()"
+  confirmText="Eliminar"
+  [isDestructive]="true"
+  (confirm)="ejecutarEliminar()"
+  (cancel)="deleteVisible.set(false); deleteResource.set(null)"
 ></app-confirm-modal>

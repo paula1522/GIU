@@ -54,7 +54,7 @@ public class GestionRecursosService {
 
                 List<RolRecursoResponseDTO> roles = gestionRecursosRepository.obtenerRolesRecurso(recuId);
 
-                logger.info("obtenerRolesRecurso - fin OK. total={}",roles.size());
+                logger.info("obtenerRolesRecurso - fin OK. total={}", roles.size());
 
                 return roles;
         }
@@ -72,14 +72,26 @@ public class GestionRecursosService {
         }
 
         // Método para modificar recurso
-        public RecursoResponseDTO modificarRecurso(Long recuId, Long apliId, ModificarRecursoRequestDTO request) {
+        public RecursoResponseDTO modificarRecurso(Long apliId, Long recuId, ModificarRecursoRequestDTO request) {
                 logger.info("modificarRecurso - inicio. id={}, apliId={}",
                                 recuId, apliId);
 
-                RecursoResponseDTO result = gestionRecursosRepository.modificarRecurso(recuId, apliId, request);
+                RecursoResponseDTO result = gestionRecursosRepository.modificarRecurso(apliId, recuId, request);
 
                 logger.info("modificarRecurso - fin OK. id={}, apliId={}", recuId, apliId);
 
                 return result;
         }
+
+        // Método para eliminar (o inactivar) un recurso
+        public String eliminarRecurso(Long recuId, Long apliId) {
+                logger.info("eliminarRecurso - inicio. id={}, apliId={}", recuId, apliId);
+
+                String mensaje = gestionRecursosRepository.eliminarRecurso(recuId, apliId);
+
+                logger.info("eliminarRecurso - fin OK. id={}, apliId={}, mensaje={}", recuId, apliId, mensaje);
+
+                return mensaje;
+        }
+
 }

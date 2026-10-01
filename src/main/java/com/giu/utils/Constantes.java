@@ -105,4 +105,5 @@ public class Constantes {
         public static final String SQL_RECURSOS_OBTENER_USUARIO = "system.pl.recursos.obtenerUsuario";
         public static final String SQL_RECURSOS_CREAR = "system.pl.recursos.crear";
         public static final String SQL_RECURSOS_MODIFICAR = "system.pl.recursos.modificar";
+        public static final String SQL_RECURSOS_ELIMINAR = "system.pl.recursos.eliminar";
 }

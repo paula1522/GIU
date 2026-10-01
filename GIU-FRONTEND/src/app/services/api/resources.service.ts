@@ -16,11 +16,13 @@ export class ResourcesService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${Constantes.CONST_ENDPOINT_BFF}/api/aplicaciones`;
 
-  listarRecursos(apliId: number): Observable<RespuestaGenerica<RecursoResponseDTO[]>> {
-    return this.http.get<RespuestaGenerica<RecursoResponseDTO[]>>(
-      `${this.apiUrl}/${apliId}/recursos`
-    );
-  }
+  listarRecursos(apliId: number,estado?: string
+  ): Observable<RespuestaGenerica<RecursoResponseDTO[]>> {
+  const url = `${this.apiUrl}/${apliId}/recursos`;
+  const params = estado ? { estado } : undefined;
+
+  return this.http.get<RespuestaGenerica<RecursoResponseDTO[]>>(url, { params });
+}
 
   obtenerRolesPorRecurso(recuId: number): Observable<RespuestaGenerica<RolRecursoResponseDTO[]>> {
     return this.http.get<RespuestaGenerica<RolRecursoResponseDTO[]>>(
@@ -48,4 +50,15 @@ export class ResourcesService {
       request
     );
   }
+
+
+  eliminarRecurso(
+    apliId: number,
+    recuId: number
+    ): Observable<RespuestaGenerica<String>> {
+    return this.http.delete<RespuestaGenerica<String>>(
+      `${this.apiUrl}/${apliId}/recursos/${recuId}`    );
+  }
+
+    
 }

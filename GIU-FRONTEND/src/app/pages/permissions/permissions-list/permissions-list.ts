@@ -69,7 +69,8 @@ export class PermissionsList implements OnInit {
   readonly columnsToDisplay = ['codigo', 'nombre', 'descripcion', 'tipo', 'estado', 'acciones'];
 
   readonly canCreate = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
-  readonly canEdit = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
+  readonly canEdit   = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
+  readonly canDelete = this.auth.hasPermission(PERMISSIONS.APLICACIONES_EDITAR);
 
   //  Filtros 
   readonly searchForm = this.fb.nonNullable.group({
@@ -105,6 +106,8 @@ export class PermissionsList implements OnInit {
     });
   });
 
+
+
   //  Header 
   readonly headerButtons = computed<HeaderButton[]>(() => {
     const btns: HeaderButton[] = [];
@@ -133,8 +136,6 @@ export class PermissionsList implements OnInit {
     const buttons: ActionButton[] = [];
     const activo = r.estado === Estado.ACTIVO;
 
-    
-
     if (this.canEdit) {
       if (activo) {
         buttons.push({
@@ -156,13 +157,14 @@ export class PermissionsList implements OnInit {
         });
       } else {
         buttons.push({
-      label: '',
-      action: 'VER_DETALLE',
-      title: 'Ver detalle del permiso',
-      icon: 'bi bi-eye',
-      class: 'btn-action-view',
-      type: 'button',
-    });
+          label: '',
+          action: 'VER_DETALLE',
+          title: 'Ver detalle del permiso',
+          icon: 'bi bi-eye',
+          class: 'btn-action-view',
+          type: 'button',
+        });
+
         buttons.push({
           label: '',
           action: 'TOGGLE',
@@ -172,6 +174,17 @@ export class PermissionsList implements OnInit {
           type: 'button',
         });
       }
+    }
+
+    if (this.canDelete) {
+      buttons.push({
+        label: '',
+        action: 'ELIMINAR',
+        title: 'Eliminar permiso',
+        icon: 'bi bi-trash',
+        class: 'btn-action-delete',
+        type: 'button',
+      });
     }
 
     return {
@@ -189,9 +202,10 @@ export class PermissionsList implements OnInit {
     const resource: RecursoResponseDTO = event.row._resource;
 
     switch (event.action) {
-      case 'VER_DETALLE': this.abrirDetalle(resource); break;
-      case 'EDITAR':      this.abrirEditar(resource); break;
-      case 'TOGGLE':      this.toggleEstado(resource); break;
+      case 'VER_DETALLE': this.abrirDetalle(resource);       break;
+      case 'EDITAR':      this.abrirEditar(resource);        break;
+      case 'TOGGLE':      this.toggleEstado(resource);       break;
+      case 'ELIMINAR':    this.confirmarEliminar(resource);  break;
     }
   }
 
@@ -239,6 +253,11 @@ export class PermissionsList implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+    limpiarFiltros(): void {
+    this.searchForm.reset({ search: '' });
+    this.estadoFiltro.reset('');
   }
 
   //  Abrir modales 
@@ -360,7 +379,7 @@ export class PermissionsList implements OnInit {
     this.modalDetalle?.close();
   }
 
-  //  Toggle estado 
+  //  Toggle estado (intacto, sin cambios) 
   readonly confirmVisible = signal(false);
   readonly confirmResource = signal<RecursoResponseDTO | null>(null);
   readonly confirmTitle = signal('');
@@ -396,6 +415,43 @@ export class PermissionsList implements OnInit {
       .subscribe({
         next: () => this.cargar(),
         error: (err) => console.error('ERROR AL CAMBIAR ESTADO:', err),
+      });
+  }
+
+  //  Eliminación (señales propias, independientes del toggle) 
+  readonly deleteVisible  = signal(false);
+  readonly deleteResource = signal<RecursoResponseDTO | null>(null);
+  readonly deleteMsg      = signal('');
+  readonly deleting       = signal(false);
+
+  confirmarEliminar(resource: RecursoResponseDTO): void {
+  this.deleteResource.set(resource);
+  this.deleteMsg.set(
+    `¿Desea eliminar el permiso "${resource.nombre}" (${resource.codigo})? ` +
+    `Esta acción es permanente. Los roles que queden sin recursos activos serán inactivados automáticamente.`
+  );
+  this.deleteVisible.set(true);
+}
+
+  ejecutarEliminar(): void {
+    const resource = this.deleteResource();
+    if (!resource) return;
+
+    this.deleting.set(true);
+
+    this.resourcesService
+      .eliminarRecurso(this.apliId(), resource.id)
+      .subscribe({
+        next: () => {
+          this.deleting.set(false);
+          this.deleteVisible.set(false);
+          this.deleteResource.set(null);
+          this.cargar();
+        },
+        error: (err) => {
+          this.deleting.set(false);
+          console.error('ERROR AL ELIMINAR RECURSO:', err);
+        },
       });
   }
 }

@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 
 import {
   AsignarRolRequest,
+  GestionarEstadoUsuarioRequest,
   UsuarioAsignadoRol,
   UsuarioResponseDTO,
   UsuarioRolResponseDTO,
@@ -105,4 +106,19 @@ export class UserService {
       }
     );
   }
+
+
+
+gestionarEstadoUsuario(
+  request: GestionarEstadoUsuarioRequest,
+  usuarioModificacion: string
+): Observable<RespuestaGenerica<string[]>> {
+  return this.http.put<RespuestaGenerica<string[]>>(
+    `${this.apiUrl}/usuarios/gestionar-estado`,
+    request,
+    {
+      headers: { usuarioModificacion },
+    }
+  );
+}
 }

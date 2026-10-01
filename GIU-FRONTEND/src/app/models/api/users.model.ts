@@ -48,3 +48,10 @@ export interface AsignarRolRequest {
 export interface GestionarRolesUsuariosRequest {
   usuariosRed: AsignarRolRequest[];
 }
+
+export interface GestionarEstadoUsuarioRequest {
+  apliId: number;
+  usuarioRed: string;
+  operacion: number; // 0 = Activar, 2 = Desactivar
+  rolId: number;
+}
