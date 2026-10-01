@@ -2,11 +2,14 @@ package com.giu.repository;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -419,6 +422,64 @@ public class GestionUsuariosRepository {
                         throw new RuntimeException("Error modificando usuario", e);
                 }
         }
+
+        public void retirarRolesUsuariosMasivo(
+        Connection conn,
+        Long apliId,
+        List<Long> usuariosIds,
+        String usuarioModificacion) {
+
+    if (usuariosIds == null || usuariosIds.isEmpty()) {
+        throw new IllegalArgumentException(
+            "Debe indicar al menos un usuario."
+        );
+    }
+
+    String placeholders = usuariosIds.stream()
+        .map(id -> "?")
+        .collect(Collectors.joining(", "));
+
+    String sql =
+        "DELETE FROM SERCON_EAF.GIU_TBL_USUARIO_X_ROL UR " +
+        "WHERE UR.APLI_ID = ? " +
+        "AND UR.USUA_USUARIO_RED IN ( " +
+        "    SELECT U.USUARIO_RED " +
+        "    FROM SERCON_EAF.GIU_TBL_USUARIOS U " +
+        "    WHERE U.ID IN (" + placeholders + ") " +
+        ")";
+
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        int indice = 1;
+
+        ps.setLong(indice++, apliId);
+
+        for (Long usuarioId : usuariosIds) {
+            ps.setLong(indice++, usuarioId);
+        }
+
+        int filasEliminadas = ps.executeUpdate();
+
+        logger.info(
+            "Retiro masivo ejecutado - apliId={}, usuariosSolicitados={}, asignacionesEliminadas={}",
+            apliId,
+            usuariosIds.size(),
+            filasEliminadas
+        );
+
+    } catch (SQLException e) {
+        logger.error(
+            "Error al retirar roles masivamente. apliId={}",
+            apliId,
+            e
+        );
+
+        throw new RuntimeException(
+            "No fue posible retirar los roles de los usuarios.",
+            e
+        );
+    }
+}
 
         // Gestionar rol de un usuario en una aplicación -> PRC_GESTIONAR_ROL_USUARIO
         public UsuarioRolResponseDTO gestionarRolUsuario(

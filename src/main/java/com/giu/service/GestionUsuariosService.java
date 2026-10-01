@@ -3,6 +3,7 @@ package com.giu.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,12 +14,10 @@ import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
 import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.EliminarRolesUsuariosMasivoDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
-import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
 import com.giu.model.gestionUsuarios.ModificarUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioMasivoExcelDTO;
 import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
-import com.giu.model.gestionUsuarios.UsuarioRolRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.repository.GestionSeguridadRepository;
 import com.giu.repository.GestionUsuariosRepository;
@@ -167,7 +166,6 @@ public class GestionUsuariosService {
                 return result;
         }
 
-        
         // Método para modificar la información de un usuario existente en el sistema
         public UsuarioResponseDTO modificarUsuario(ModificarUsuarioRequestDTO request, String usuarioModificacion) {
                 logger.info("modificarUsuario - inicio. usuarioRed={}", request.getUsuarioRed());
@@ -312,7 +310,8 @@ public class GestionUsuariosService {
                 return resultado;
         }
 
-        // Método para retirar roles o inactivar usuarios de forma masiva mediante archivo Excel
+        // Método para retirar roles o inactivar usuarios de forma masiva mediante
+        // archivo Excel
         public void gestionarUsuariosMasivo(
                         Long apliId,
                         MultipartFile archivo,
@@ -325,20 +324,20 @@ public class GestionUsuariosService {
 
                 try {
 
-                        registros = ExcelUtils.leerExcel(archivo.getInputStream(),row -> {
+                        registros = ExcelUtils.leerExcel(archivo.getInputStream(), row -> {
 
-                                                EliminarRolesUsuariosMasivoDTO registro = new EliminarRolesUsuariosMasivoDTO();
+                                EliminarRolesUsuariosMasivoDTO registro = new EliminarRolesUsuariosMasivoDTO();
 
-                                                registro.setUsuarioRed(ExcelUtils.obtenerTexto(row.getCell(0)));
-                                                registro.setRolId(ExcelUtils.obtenerLong(row.getCell(1)));
-                                                registro.setOperacion(ExcelUtils.obtenerTexto(row.getCell(2)));
+                                registro.setUsuarioRed(ExcelUtils.obtenerTexto(row.getCell(0)));
+                                registro.setRolId(ExcelUtils.obtenerLong(row.getCell(1)));
+                                registro.setOperacion(ExcelUtils.obtenerTexto(row.getCell(2)));
 
-                                                return registro;
-                                        });
+                                return registro;
+                        });
 
                 } catch (Exception e) {
 
-                        logger.error("gestionarUsuariosMasivo - error leyendo archivo Excel",e);
+                        logger.error("gestionarUsuariosMasivo - error leyendo archivo Excel", e);
 
                         throw new RuntimeException("Error leyendo el archivo Excel", e);
                 }
@@ -381,14 +380,14 @@ public class GestionUsuariosService {
                                         request.setUsuarioRed(registro.getUsuarioRed());
                                         request.setOperacion(Constantes.OPERACION_INACTIVAR);
 
-                                        gestionSeguridadRepository.gestionarEstadoUsuario(conn,request);
+                                        gestionSeguridadRepository.gestionarEstadoUsuario(conn, request);
 
                                 } else {
 
                                         throw new RuntimeException("Operación inválida para el usuario "
-                                                                        + registro.getUsuarioRed()
-                                                                        + ": "
-                                                                        + registro.getOperacion());
+                                                        + registro.getUsuarioRed()
+                                                        + ": "
+                                                        + registro.getOperacion());
                                 }
                         }
 
@@ -468,49 +467,50 @@ public class GestionUsuariosService {
                 return result;
         }
 
-        public List<UsuarioRolResponseDTO> retirarRolesUsuarios(
+        public void retirarRolesUsuarios(
                         Long apliId,
-                        GestionarRolesUsuariosRequestDTO request,
+                        List<Long> usuariosIds,
                         String usuarioModificacion) {
 
-                logger.info("retirarRolesUsuarios - inicio. apliId={}, total={}",
-                                apliId, request.getUsuariosRed().size());
+                if (apliId == null || apliId <= 0) {
+                        throw new IllegalArgumentException(
+                                        "El ID de la aplicación debe ser válido.");
+                }
 
-                List<UsuarioRolResponseDTO> retirados = new ArrayList<>();
+                if (usuariosIds == null || usuariosIds.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                        "Debe indicar al menos un usuario.");
+                }
+
+                if (usuarioModificacion == null
+                                || usuarioModificacion.trim().isEmpty()) {
+                        throw new IllegalArgumentException(
+                                        "El usuario que realiza la operación es obligatorio.");
+                }
+
+                List<Long> idsUnicos = usuariosIds.stream()
+                                .distinct()
+                                .collect(Collectors.toList());
+
+                logger.info(
+                                "Retiro masivo de roles - apliId={}, totalUsuarios={}",
+                                apliId,
+                                idsUnicos.size());
 
                 TransaccionUtils.ejecutar(conn -> {
-
-                        for (UsuarioRolRequestDTO usuario : request.getUsuariosRed()) {
-
-                                logger.debug("retirarRolesUsuarios - procesando. usuarioRed={}, rolId={}",
-                                                usuario.getUsuarioRed(), usuario.getRolId());
-
-                                GestionarRolUsuarioRequestDTO rolRequest = new GestionarRolUsuarioRequestDTO();
-                                rolRequest.setUsuarioRed(usuario.getUsuarioRed());
-                                rolRequest.setRolId(usuario.getRolId());
-
-                                UsuarioRolResponseDTO resultado = gestionUsuariosRepository.gestionarRolUsuario(
-                                                conn,
-                                                apliId,
-                                                rolRequest,
-                                                usuarioModificacion,
-                                                Constantes.OPERACION_RETIRAR);
-
-                                if (resultado != null) {
-                                        retirados.add(resultado);
-                                } else {
-                                        logger.warn("retirarRolesUsuarios - sin respuesta del SP. usuarioRed={}, rolId={}",
-                                                        usuario.getUsuarioRed(),
-                                                        usuario.getRolId());
-                                }
-                        }
+                        gestionUsuariosRepository.retirarRolesUsuariosMasivo(
+                                        conn,
+                                        apliId,
+                                        idsUnicos,
+                                        usuarioModificacion);
 
                         return null;
                 });
 
-                logger.info("retirarRolesUsuarios - fin OK. totalRetirados={}", retirados.size());
-                return retirados;
+                logger.info(
+                                "Retiro masivo de roles finalizado - apliId={}, totalUsuarios={}",
+                                apliId,
+                                idsUnicos.size());
         }
-
 
 }

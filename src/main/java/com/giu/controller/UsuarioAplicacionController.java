@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
-import com.giu.model.gestionUsuarios.GestionarRolesUsuariosRequestDTO;
+import com.giu.model.gestionUsuarios.RetirarRolesUsuariosRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioRolResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioAplicacionResponseDTO;
 import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
@@ -166,7 +167,7 @@ public class UsuarioAplicacionController {
          * Archivo Excel
          * 
          */
-        @PutMapping("/usuario")
+        @PutMapping(value = "/usuario", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<RespuestaGenerica<Void>> gestionarUsuariosMasivo(
                         @PathVariable Long apliId,
                         @RequestParam("archivo") MultipartFile archivo,
@@ -223,29 +224,30 @@ public class UsuarioAplicacionController {
         }
 
         /**
-         * Retirar roles a multiplex usuarios de una aplicación específica
+         * Retirar todos los roles de varios usuarios en una aplicación específica
          *
-         * Método: DELETE
+         * Método: PUT
          * Ruta: /api/aplicaciones/{apliId}/usuario
          *
-         * Ejemplo:
-         * DELETE /api/aplicaciones/1/usuario
+         * Ejemplo de cuerpo: { "usuariosIds": [1, 2, 3] }
          */
-        @DeleteMapping("/usuario")
-        public ResponseEntity<RespuestaGenerica<List<UsuarioRolResponseDTO>>> retirarRolesUsuarios(
+        @PutMapping(value = "/usuario", consumes = MediaType.APPLICATION_JSON_VALUE)
+        public ResponseEntity<RespuestaGenerica<Void>> retirarRolesUsuarios(
                         @RequestHeader("usuarioModificacion") String usuarioModificacion,
                         @PathVariable Long apliId,
-                        @Valid @RequestBody GestionarRolesUsuariosRequestDTO request) {
+                        @Valid @RequestBody RetirarRolesUsuariosRequestDTO request) {
 
-                logger.info("DELETE /aplicaciones/{}/usuario - total={}",
-                                apliId, request.getUsuariosRed().size());
+                logger.info(
+                                "PUT /aplicaciones/{}/usuario - totalUsuarios={}",
+                                apliId,
+                                request.getUsuariosIds().size());
 
-                List<UsuarioRolResponseDTO> usuariosRoles = usuarioService.retirarRolesUsuarios(apliId, request,
+                usuarioService.retirarRolesUsuarios(
+                                apliId,
+                                request.getUsuariosIds(),
                                 usuarioModificacion);
 
-                RespuestaGenerica<List<UsuarioRolResponseDTO>> respuesta = new RespuestaGenerica<>(
-                                TipoRespuesta.EXITOSO,
-                                usuariosRoles);
+                RespuestaGenerica<Void> respuesta = new RespuestaGenerica<>(TipoRespuesta.EXITOSO, null);
 
                 return ResponseEntity.ok(respuesta);
         }
