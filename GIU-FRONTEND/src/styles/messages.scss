@@ -1,0 +1,127 @@
+/* =====================================================================
+   MENSAJES REUTILIZABLES
+   Uso:
+     <div class="msg msg--error">...</div>
+     <div class="msg msg--success">...</div>
+     <div class="msg msg--warning">...</div>
+     <div class="msg msg--info">...</div>
+   ===================================================================== */
+
+.msg {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  border: 1px solid transparent;
+  animation: msg-slide-in 0.25s ease-out;
+
+  /* Ícono */
+  &__icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  /* Mensaje */
+  &__text {
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+  }
+
+  /* Botón cerrar */
+  &__close {
+    background: transparent;
+    border: none;
+    padding: 0.25rem 0.35rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.65;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s, background-color 0.15s;
+    flex-shrink: 0;
+
+    &:hover {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    i {
+      font-size: 0.8rem;
+      line-height: 1;
+    }
+  }
+
+  /* ------------ VARIANTES ------------ */
+
+  /* Error */
+  &--error {
+    background-color: #fee2e2;
+    border-color: #fecaca;
+    color: #991b1b;
+
+    .msg__icon { color: #dc2626; }
+  }
+
+  /* Success */
+  &--success {
+    background-color: #d1fae5;
+    border-color: #a7f3d0;
+    color: #065f46;
+
+    .msg__icon { color: #059669; }
+  }
+
+  /* Warning */
+  &--warning {
+    background-color: #fef3c7;
+    border-color: #fde68a;
+    color: #92400e;
+
+    .msg__icon { color: #d97706; }
+  }
+
+  /* Info */
+  &--info {
+    background-color: #dbeafe;
+    border-color: #bfdbfe;
+    color: #1e40af;
+
+    .msg__icon { color: #2563eb; }
+  }
+
+  /* ------------ TAMAÑOS (opcional) ------------ */
+  &--sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    gap: 0.5rem;
+
+    .msg__icon { font-size: 1rem; }
+  }
+
+  &--lg {
+    padding: 1rem 1.25rem;
+    font-size: 0.9375rem;
+    gap: 0.85rem;
+
+    .msg__icon { font-size: 1.25rem; }
+  }
+}
+
+@keyframes msg-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

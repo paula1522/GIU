@@ -45,6 +45,7 @@ import {
 } from '../../../models/api/roles.model';
 import {
   AsignarRolRequest,
+  GestionarEstadoUsuarioRequest,
   UsuarioAsignadoRol,
   UsuarioResponseDTO,
 } from '../../../models/api/users.model';
@@ -80,6 +81,9 @@ export class RolesList implements OnInit {
   private readonly userService = inject(UserService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+
+  /** Constante local para el valor de "Activar" según el backend. */
+  private readonly OPERACION_ACTIVAR_USUARIO = 0;
 
   /** Expuestos para el template. */
   readonly Estado = Estado;
@@ -221,8 +225,6 @@ export class RolesList implements OnInit {
     const buttons: ActionButton[] = [];
     const activo = r.estado === Estado.ACTIVO;
 
-
-    // Ver usuarios: solo roles activos
     if (activo) {
       buttons.push({
         label: '',
@@ -254,14 +256,15 @@ export class RolesList implements OnInit {
           type: 'button',
         });
       } else {
-         buttons.push({
-      label: '',
-      action: 'VER_DETALLE',
-      title: 'Ver detalle del rol',
-      icon: 'bi bi-eye',
-      class: 'btn-action-view',
-      type: 'button',
-    });
+        buttons.push({
+          label: '',
+          action: 'VER_DETALLE',
+          title: 'Ver detalle del rol',
+          icon: 'bi bi-eye',
+          class: 'btn-action-view',
+          type: 'button',
+        });
+
         buttons.push({
           label: '',
           action: 'TOGGLE',
@@ -375,7 +378,7 @@ export class RolesList implements OnInit {
   }
 
   cargarRecursos(): void {
-    this.recursosService.listarRecursos(this.apliId()).subscribe({
+    this.recursosService.listarRecursos(this.apliId(), Estado.ACTIVO).subscribe({
       next: (res) => {
         this.recursos.set(res.data ?? []);
         this.buildPermisosCheckboxes();
@@ -388,6 +391,10 @@ export class RolesList implements OnInit {
     });
   }
 
+    limpiarFiltros(): void {
+    this.searchForm.reset({ search: '' });
+    this.estadoFiltro.reset('');
+  }
   //  Permisos (checkboxes) 
 
   private buildPermisosCheckboxes(selectedIds: number[] = []): void {
@@ -744,10 +751,22 @@ export class RolesList implements OnInit {
   readonly buscandoUsuario = signal(false);
   readonly searchUsuarioError = signal('');
 
+  readonly cargandoUsuariosRol = signal(false);
+  readonly ejecutandoAccion = signal(false);
+
+  // ✅ Nuevas señales para mensajes de éxito
+  readonly mensajeExito = signal('');
+  private exitTimer?: ReturnType<typeof setTimeout>;
+
   readonly confirmQuitarVisible = signal(false);
   readonly confirmQuitarMsg = signal('');
   readonly usuariosAQuitar = signal<UsuarioAsignadoRol[]>([]);
   readonly quitandoUsuarios = signal(false);
+
+  readonly confirmAsociarVisible = signal(false);
+  readonly confirmAsociarTitle = signal('');
+  readonly confirmAsociarMsg = signal('');
+  readonly modoActivarYAsociar = signal(false);
 
   readonly rolSeleccionadoActivo = computed(
     () => this.rolSeleccionado()?.estado === Estado.ACTIVO
@@ -801,6 +820,7 @@ export class RolesList implements OnInit {
   abrirUsuariosRol(role: RolResponseDTO): void {
     this.rolSeleccionado.set(role);
     this.usuarioBuscado.set(null);
+    this.mensajeExito.set('');
     this.filtrosInternosForm.get('filtroInterno')?.setValue('');
     this.currentPageUsuarios.set(1);
     this.selectedIndices.set(new Set());
@@ -826,14 +846,20 @@ export class RolesList implements OnInit {
   }
 
   cargarUsuariosRol(rolId: number): void {
+    this.cargandoUsuariosRol.set(true);
+
     this.userService.listarUsuariosPorRol(rolId).subscribe({
       next: (usuarios) => {
         this.usuariosRol.set(usuarios);
         this.currentPageUsuarios.set(1);
         this.selectedIndices.set(new Set());
         this.seleccionForm.get('selectAll')?.setValue(false);
+        this.cargandoUsuariosRol.set(false);
       },
-      error: (err) => console.error('ERROR AL CARGAR USUARIOS DEL ROL:', err),
+      error: (err) => {
+        console.error('ERROR AL CARGAR USUARIOS DEL ROL:', err);
+        this.cargandoUsuariosRol.set(false);
+      },
     });
   }
 
@@ -941,19 +967,23 @@ export class RolesList implements OnInit {
     this.confirmQuitarVisible.set(false);
     this.quitandoUsuarios.set(true);
 
-    const requests: AsignarRolRequest[] = usuarios.map((u) => ({
-      usuarioRed: u.usuarioRed,
-      rolId: role.id,
-    }));
+    const usuariosIds = usuarios.map((u) => u.id);
+    const total = usuarios.length;
 
     this.userService
-      .retirarRoles(this.apliId(), requests, this.auth.usuarioRed())
+      .retirarRoles(this.apliId(), usuariosIds, this.auth.usuarioRed())
       .subscribe({
         next: () => {
           this.quitandoUsuarios.set(false);
           this.usuariosAQuitar.set([]);
           this.selectedIndices.set(new Set());
           this.searchUsuarioError.set('');
+
+          // ✅ Mensaje de éxito
+          this.mostrarExito(
+            `${total} usuario(s) fueron retirados del rol "${role.nombre}" correctamente.`
+          );
+
           this.cargarUsuariosRol(role.id);
         },
         error: (err) => {
@@ -997,16 +1027,15 @@ export class RolesList implements OnInit {
 
     this.buscandoUsuario.set(true);
     this.searchUsuarioError.set('');
+    this.usuarioBuscado.set(null);
+    this.mensajeExito.set('');
 
     this.userService.listarUsuarios({ usuarioRed }).subscribe({
       next: (res) => {
-        this.buscandoUsuario.set(false);
-
-        const lista = res.data ?? [];
-        const user = lista[0];
+        const user = (res.data ?? [])[0];
 
         if (!user) {
-          this.usuarioBuscado.set(null);
+          this.buscandoUsuario.set(false);
           this.searchUsuarioError.set(
             `No se encontró ningún usuario con usuarioRed "${usuarioRed}".`
           );
@@ -1018,13 +1047,35 @@ export class RolesList implements OnInit {
         );
 
         if (yaAsignado) {
+          this.buscandoUsuario.set(false);
           this.searchUsuarioError.set(
             `El usuario "${user.usuarioRed}" ya está asignado a este rol.`
           );
-          this.usuarioBuscado.set(null);
-        } else {
-          this.usuarioBuscado.set(user);
+          return;
         }
+
+        this.userService
+          .obtenerRolUsuario(this.apliId(), user.usuarioRed)
+          .subscribe({
+            next: (asignacion) => {
+              this.buscandoUsuario.set(false);
+
+              const yaTieneRol = asignacion !== null && asignacion.rolId != null;
+
+              if (yaTieneRol) {
+                this.usuarioBuscado.set(null);
+                this.searchUsuarioError.set(
+                  `El usuario "${user.usuarioRed}" ya tiene un rol asignado en la aplicación.`
+                );
+              } else {
+                this.usuarioBuscado.set(user);
+              }
+            },
+            error: () => {
+              this.buscandoUsuario.set(false);
+              this.usuarioBuscado.set(user);
+            },
+          });
       },
       error: () => {
         this.buscandoUsuario.set(false);
@@ -1033,10 +1084,9 @@ export class RolesList implements OnInit {
     });
   }
 
-  asociarUsuarioRol(): void {
+  confirmarAsociarUsuario(): void {
     const user = this.usuarioBuscado();
     const role = this.rolSeleccionado();
-
     if (!user || !role) return;
 
     if (role.estado !== Estado.ACTIVO) {
@@ -1046,32 +1096,105 @@ export class RolesList implements OnInit {
       return;
     }
 
+    const inactivo = user.estado !== EstadoUsuario.ACTIVO;
+
+    this.modoActivarYAsociar.set(inactivo);
+    this.confirmAsociarTitle.set(inactivo ? 'Activar y asociar rol' : 'Asociar rol');
+    this.confirmAsociarMsg.set(
+      inactivo
+        ? `El usuario "${user.usuarioRed}" está inactivo. Al confirmar, se activará y se le asignará el rol "${role.nombre}".`
+        : `¿Desea asignar el rol "${role.nombre}" al usuario "${user.usuarioRed}"?`
+    );
+    this.confirmAsociarVisible.set(true);
+  }
+
+  cancelarAsociarUsuario(): void {
+    this.confirmAsociarVisible.set(false);
+    this.modoActivarYAsociar.set(false);
+  }
+
+  ejecutarAsociarUsuario(): void {
+    const user = this.usuarioBuscado();
+    const role = this.rolSeleccionado();
+    if (!user || !role) return;
+
+    this.confirmAsociarVisible.set(false);
+    this.ejecutandoAccion.set(true);
     this.searchUsuarioError.set('');
 
-    this.userService
-      .asignarRol(
-        this.apliId(),
-        { usuarioRed: user.usuarioRed, rolId: role.id },
-        this.auth.usuarioRed()
-      )
-      .subscribe({
-        next: () => {
-          this.usuarioBuscado.set(null);
-          this.searchUsuarioForm.reset({ usuarioRed: '' });
-          this.cargarUsuariosRol(role.id);
-        },
-        error: (err) => {
-          console.error('ERROR AL ASIGNAR ROL:', err);
+    const activarPrimero = this.modoActivarYAsociar();
+    const usuarioRed = user.usuarioRed;
+    const rolId = role.id;
+    const nombreRol = role.nombre;
 
-          const msg =
-            err?.error?.mensaje ||
-            err?.error?.message ||
-            `El usuario "${user.usuarioRed}" ya tiene un rol asignado en la aplicación.`;
+    const operacion$: Observable<any> = activarPrimero
+      ? this.userService.gestionarEstadoUsuario(
+          {
+            apliId: this.apliId(),
+            usuarioRed,
+            operacion: this.OPERACION_ACTIVAR_USUARIO,
+            rolId,
+          } as GestionarEstadoUsuarioRequest,
+          this.auth.usuarioRed()
+        )
+      : this.userService.asignarRol(
+          this.apliId(),
+          { usuarioRed, rolId },
+          this.auth.usuarioRed()
+        );
 
-          this.searchUsuarioError.set(msg);
-          this.usuarioBuscado.set(null);
-        },
-      });
+    operacion$.subscribe({
+      next: () => {
+        this.ejecutandoAccion.set(false);
+        this.modoActivarYAsociar.set(false);
+        this.usuarioBuscado.set(null);
+        this.searchUsuarioForm.reset({ usuarioRed: '' });
+
+        // Mensaje de éxito
+        this.mostrarExito(
+          activarPrimero
+            ? `El usuario "${usuarioRed}" fue activado y se le asignó el rol "${nombreRol}" correctamente.`
+            : `El rol "${nombreRol}" fue asignado al usuario "${usuarioRed}" correctamente.`
+        );
+
+        this.cargarUsuariosRol(rolId);
+      },
+      error: (err) => {
+        this.ejecutandoAccion.set(false);
+
+        const msg =
+          err?.error?.mensaje ||
+          err?.error?.message ||
+          (activarPrimero
+            ? `No se pudo activar y asociar el rol al usuario "${usuarioRed}".`
+            : `No se pudo asociar el rol al usuario "${usuarioRed}".`);
+
+        this.searchUsuarioError.set(msg);
+      },
+    });
+  }
+
+  //  Mensaje de éxito (auto-cierre) 
+
+  private mostrarExito(mensaje: string): void {
+    if (this.exitTimer) {
+      clearTimeout(this.exitTimer);
+    }
+
+    this.mensajeExito.set(mensaje);
+
+    this.exitTimer = setTimeout(() => {
+      this.mensajeExito.set('');
+      this.exitTimer = undefined;
+    }, 5000);
+  }
+
+  cerrarMensajeExito(): void {
+    if (this.exitTimer) {
+      clearTimeout(this.exitTimer);
+      this.exitTimer = undefined;
+    }
+    this.mensajeExito.set('');
   }
 
   cerrarUsuariosModal(): void {
@@ -1079,10 +1202,18 @@ export class RolesList implements OnInit {
     this.usuariosRol.set([]);
     this.usuarioBuscado.set(null);
     this.searchUsuarioError.set('');
+    this.mensajeExito.set('');
+    if (this.exitTimer) {
+      clearTimeout(this.exitTimer);
+      this.exitTimer = undefined;
+    }
     this.filtrosInternosForm.get('filtroInterno')?.setValue('');
     this.selectedIndices.set(new Set());
     this.confirmQuitarVisible.set(false);
     this.usuariosAQuitar.set([]);
+    this.confirmAsociarVisible.set(false);
+    this.modoActivarYAsociar.set(false);
+    this.ejecutandoAccion.set(false);
     this.modalUsuarios?.close();
   }
 }

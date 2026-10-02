@@ -27,11 +27,12 @@ export interface UsuarioRolResponseDTO {
 }
 
 export interface UsuarioAsignadoRol {
+  id: number;
   usuarioRed: string;
   nombre: string;
   correo: string;
   numeroIdentificacion: string;
-  estado: EstadoUsuario;              
+  estado: EstadoUsuario;
   apliId: number;
   rolId: number;
   fechaIn: string | null;
@@ -39,6 +40,10 @@ export interface UsuarioAsignadoRol {
 }
 
 //  Requests 
+
+export interface RetirarRolesUsuariosRequest {
+  usuariosIds: number[];
+}
 
 export interface AsignarRolRequest {
   usuarioRed: string;

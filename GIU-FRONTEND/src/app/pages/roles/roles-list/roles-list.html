@@ -12,6 +12,14 @@
     <app-select [id]="'filtro-estado'" [textLabel]="'Estado'" [control]="estadoFiltro" [options]="estadoOptions"
       [displayKey]="'nombre'" [valueKey]="'id'" [defaultOption]="'Todos'" [showRequiredMark]="false">
     </app-select>
+
+    <app-button
+      [text]="'Limpiar filtros'"
+      [icon]="'bi bi-arrow-counterclockwise'"
+      [class]="['btn', 'btn-primary-secondary']"
+      [type]="'button'"
+      (clickEventButton)="limpiarFiltros()"
+    ></app-button>
   </div>
 
   @if (loading()) {
@@ -162,18 +170,34 @@
 
         <app-button [text]="buscandoUsuario() ? 'Buscando…' : 'Buscar'"
           [icon]="buscandoUsuario() ? 'bi bi-arrow-clockwise' : 'bi bi-search'" [class]="['btn', 'btn-primary']"
-          [type]="'submit'" [disabled]="buscandoUsuario() || !rolSeleccionadoActivo()"
-          (clickEventButton)="buscarUsuarioRol()">
+          [type]="'submit'" [disabled]="buscandoUsuario() || !rolSeleccionadoActivo()">
         </app-button>
       </div>
     </form>
 
-    @if (searchUsuarioError()) {
-    <div class="search-usuario-error">
-      {{ searchUsuarioError() }}
-    </div>
-    }
+<!-- Mensaje de error -->
+@if (searchUsuarioError()) {
+<div class="msg msg--error">
+  <i class="bi bi-exclamation-circle-fill msg__icon"></i>
+  <span class="msg__text">{{ searchUsuarioError() }}</span>
+  <button type="button" class="msg__close" (click)="searchUsuarioError.set('')" aria-label="Cerrar">
+    <i class="bi bi-x-lg"></i>
+  </button>
+</div>
+}
 
+<!-- Mensaje de éxito -->
+@if (mensajeExito()) {
+<div class="msg msg--success">
+  <i class="bi bi-check-circle-fill msg__icon"></i>
+  <span class="msg__text">{{ mensajeExito() }}</span>
+  <button type="button" class="msg__close" (click)="cerrarMensajeExito()" aria-label="Cerrar">
+    <i class="bi bi-x-lg"></i>
+  </button>
+</div>
+}
+
+    <!-- Bloque usuario encontrado -->
     @if (usuarioBuscado(); as user) {
     <div class="usuario-encontrado" [class.usuario-encontrado--activo]="user.estado === EstadoUsuario.ACTIVO"
       [class.usuario-encontrado--inactivo]="user.estado !== EstadoUsuario.ACTIVO">
@@ -194,10 +218,15 @@
         </span>
       </div>
 
-      <app-button [text]="'Asociar al rol'" [icon]="'bi bi-link-45deg'" [class]="['btn', 'btn-primary']"
-        [type]="'button'" [disabled]="user.estado !== EstadoUsuario.ACTIVO || !rolSeleccionadoActivo()"
-        (clickEventButton)="asociarUsuarioRol()">
+      <app-button
+        [text]="user.estado === EstadoUsuario.ACTIVO ? 'Asociar al rol' : 'Activar y asociar rol'"
+        [icon]="user.estado === EstadoUsuario.ACTIVO ? 'bi bi-link-45deg' : 'bi bi-person-check'"
+        [class]="['btn', 'btn-primary']"
+        [type]="'button'"
+        [disabled]="ejecutandoAccion() || !rolSeleccionadoActivo()"
+        (clickEventButton)="confirmarAsociarUsuario()">
       </app-button>
+
     </div>
     }
   </div>
@@ -209,7 +238,9 @@
       Usuarios asignados ({{ usuariosRol().length }})
     </div>
 
-    @if (usuariosRol().length === 0) {
+    @if (cargandoUsuariosRol()) {
+    <div class="detalle-loading">Cargando usuarios…</div>
+    } @else if (usuariosRol().length === 0) {
     <div class="empty-usuarios">
       No hay usuarios asignados a este rol.
     </div>
@@ -429,4 +460,11 @@
 <app-confirm-modal [visible]="confirmQuitarVisible()" [title]="'Quitar usuarios del rol'"
   [message]="confirmQuitarMsg()" [confirmText]="quitandoUsuarios() ? 'Quitando…' : 'Quitar'"
   [isDestructive]="true" (confirm)="ejecutarQuitarUsuarios()" (cancel)="cancelarQuitarUsuarios()">
+</app-confirm-modal>
+
+<!--  Confirmación asociar / activar+asociar  -->
+<app-confirm-modal [visible]="confirmAsociarVisible()" [title]="confirmAsociarTitle()"
+  [message]="confirmAsociarMsg()"
+  [confirmText]="ejecutandoAccion() ? 'Procesando…' : (modoActivarYAsociar() ? 'Activar y asociar' : 'Asociar')"
+  [isDestructive]="false" (confirm)="ejecutarAsociarUsuario()" (cancel)="cancelarAsociarUsuario()">
 </app-confirm-modal>

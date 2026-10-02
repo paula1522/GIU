@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import {
   AsignarRolRequest,
@@ -62,21 +62,25 @@ export class UserService {
         const indexUsuarios = new Map<string, UsuarioResponseDTO>();
         usuariosData.forEach((u) => indexUsuarios.set(u.usuarioRed, u));
 
+
+
         return asignacionesData.map<UsuarioAsignadoRol>((a) => {
           const info = indexUsuarios.get(a.usuarioRed);
 
           return {
-            usuarioRed:           a.usuarioRed,
-            nombre:               info?.nombre ?? '—',
-            correo:               info?.correo ?? '—',
+            id: info?.id ?? -1,
+            usuarioRed: a.usuarioRed,
+            nombre: info?.nombre ?? '—',
+            correo: info?.correo ?? '—',
             numeroIdentificacion: info?.numeroIdentificacion ?? '—',
-            estado:               info?.estado ?? EstadoUsuario.INACTIVO,
-            apliId:               a.apliId,
-            rolId:                a.rolId,
-            fechaIn:              a.fechaIn,
-            fechaFin:             a.fechaFin,
+            estado: info?.estado ?? EstadoUsuario.INACTIVO,
+            apliId: a.apliId,
+            rolId: a.rolId,
+            fechaIn: a.fechaIn,
+            fechaFin: a.fechaFin,
           };
         });
+
       })
     );
   }
@@ -94,31 +98,41 @@ export class UserService {
   }
 
   retirarRoles(
-    apliId: number,
-    requests: AsignarRolRequest[],
+  apliId: number,
+  usuariosIds: number[],
+  usuarioModificacion: string
+): Observable<RespuestaGenerica<void>> {
+  return this.http.put<RespuestaGenerica<void>>(
+    `${this.apiUrl}/aplicaciones/${apliId}/usuario`,
+    { usuariosIds },
+    { headers: { usuarioModificacion } }
+  );
+}
+
+
+
+  gestionarEstadoUsuario(
+    request: GestionarEstadoUsuarioRequest,
     usuarioModificacion: string
-  ): Observable<RespuestaGenerica<UsuarioRolResponseDTO[]>> {
-    return this.http.delete<RespuestaGenerica<UsuarioRolResponseDTO[]>>(
-      `${this.apiUrl}/aplicaciones/${apliId}/usuario`,
+  ): Observable<RespuestaGenerica<string[]>> {
+    return this.http.put<RespuestaGenerica<string[]>>(
+      `${this.apiUrl}/usuarios/gestionar-estado`,
+      request,
       {
         headers: { usuarioModificacion },
-        body: { usuariosRed: requests },
       }
     );
   }
 
 
-
-gestionarEstadoUsuario(
-  request: GestionarEstadoUsuarioRequest,
-  usuarioModificacion: string
-): Observable<RespuestaGenerica<string[]>> {
-  return this.http.put<RespuestaGenerica<string[]>>(
-    `${this.apiUrl}/usuarios/gestionar-estado`,
-    request,
-    {
-      headers: { usuarioModificacion },
-    }
-  );
-}
+  obtenerRolUsuario(apliId: number, usuarioRed: string): Observable<UsuarioRolResponseDTO | null> {
+    return this.http
+      .get<RespuestaGenerica<UsuarioRolResponseDTO>>(
+        `${this.apiUrl}/aplicaciones/${apliId}/rol/usuario/${usuarioRed}`
+      )
+      .pipe(
+        map((r) => r.data ?? null),
+        catchError(() => of(null))
+      );
+  }
 }
