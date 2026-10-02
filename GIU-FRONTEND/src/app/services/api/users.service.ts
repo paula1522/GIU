@@ -6,6 +6,8 @@ import { catchError, map } from 'rxjs/operators';
 import {
   AsignarRolRequest,
   GestionarEstadoUsuarioRequest,
+  ModificarUsuarioRequest,
+  UsuarioAplicacionRolDTO,
   UsuarioAsignadoRol,
   UsuarioResponseDTO,
   UsuarioRolResponseDTO,
@@ -134,5 +136,28 @@ export class UserService {
         map((r) => r.data ?? null),
         catchError(() => of(null))
       );
+  }
+
+
+
+
+  modificarUsuario(
+    request: ModificarUsuarioRequest,
+    usuarioModificacion: string
+  ): Observable<RespuestaGenerica<UsuarioResponseDTO>> {
+    return this.http.put<RespuestaGenerica<UsuarioResponseDTO>>(
+      `${this.apiUrl}/usuarios`,
+      request,
+      { headers: { usuarioModificacion } }
+    );
+  }
+
+
+  obtenerAplicacionesRolesUsuario(
+    usuarioRed: string
+  ): Observable<RespuestaGenerica<UsuarioAplicacionRolDTO[]>> {
+    return this.http.get<RespuestaGenerica<UsuarioAplicacionRolDTO[]>>(
+      `${this.apiUrl}/usuarios/${usuarioRed}/aplicaciones-roles`
+    );
   }
 }

@@ -1,10 +1,14 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 
 import { UserService } from '../../../services/api/users.service';
 import { AuthService } from '../../../services/logic/auth.service';
-import { UsuarioResponseDTO } from '../../../models/api/users.model';
+import {
+  ModificarUsuarioRequest,
+  UsuarioAplicacionRolDTO,
+  UsuarioResponseDTO,
+} from '../../../models/api/users.model';
 
 import { TableComponent } from '../../../shared/atomic-desing/atoms/table/table.component';
 import { ColumnConfig, ActionButton, typeColum } from '../../../shared/atomic-desing/atoms/table/table.interface';
@@ -13,6 +17,7 @@ import { SelectComponent } from '../../../shared/atomic-desing/atoms/select/sele
 import { ButtonComponent } from '../../../shared/atomic-desing/atoms/button/button.component';
 import { ConfirmModalComponent } from '../../../shared/atomic-desing/molecule/confirm-modal/confirm-modal.component';
 import { HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/header-pages/header-pages.component';
+import { ModalComponent } from '../../../shared/atomic-desing/molecule/modal/modal.component';
 
 @Component({
   selector: 'app-users-global',
@@ -27,6 +32,7 @@ import { HeaderPagesComponent } from '../../../shared/atomic-desing/molecule/hea
     ButtonComponent,
     ConfirmModalComponent,
     HeaderPagesComponent,
+    ModalComponent,
   ],
   templateUrl: './users-global.html',
   styleUrl: './users-global.scss',
@@ -36,14 +42,14 @@ export class UsersGlobal implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
+  @ViewChild('modalDetalle') modalDetalle!: ModalComponent;
+
   readonly loading = signal(false);
   readonly usuarios = signal<UsuarioResponseDTO[]>([]);
   readonly filteredUsers = signal<UsuarioResponseDTO[]>([]);
 
-  /** Formulario reactivo de filtros. */
   filtrosForm!: FormGroup;
 
-  /** Opciones para los selects. */
   readonly estadoOptions = [
     { id: '', nameSelect: 'Todos los estados' },
     { id: 'ACTIVO', nameSelect: 'Activo' },
@@ -56,8 +62,6 @@ export class UsersGlobal implements OnInit {
     { id: 'SI', nameSelect: 'Super Admin: Sí' },
     { id: 'NO', nameSelect: 'Super Admin: No' },
   ];
-
-  // ======== Configuración del átomo de Tabla ========
 
   readonly tableColumnTitle = ['Usuario Red', 'Nombre', 'Correo', 'Identificación', 'Estado', 'Super Admin', 'Acciones'];
   readonly columnsToDisplay = ['usuarioRed', 'nombre', 'correo', 'numeroIdentificacion', 'estado', 'superAdmin', 'acciones'];
@@ -73,7 +77,7 @@ export class UsersGlobal implements OnInit {
         action: 'DETALLES',
         title: 'Ver detalle del usuario',
         icon: 'bi bi-info-circle',
-        class: 'btn-table-view',
+        class: 'btn-action-view',
         type: 'button',
       },
     ];
@@ -108,12 +112,13 @@ export class UsersGlobal implements OnInit {
     }
   }
 
-  // ======== Confirmación toggle super admin ========
+  //  Confirmación toggle super admin 
 
   readonly confirmVisible = signal(false);
   readonly confirmUser = signal<UsuarioResponseDTO | null>(null);
   readonly confirmMsg = signal('');
   readonly pendingSwitchValue = signal(false);
+  readonly cambiandoSuperAdmin = signal(false);
 
   confirmarToggleSuperAdmin(user: UsuarioResponseDTO): void {
     this.confirmUser.set(user);
@@ -133,50 +138,84 @@ export class UsersGlobal implements OnInit {
     if (!user) return;
 
     this.confirmVisible.set(false);
+    this.cambiandoSuperAdmin.set(true);
 
-    // TODO: conectar con endpoint real cuando exista
-    // this.userService.actualizar({ usuarioRed, superAdministrador: newValue }, this.auth.usuarioRed())
     const newValue = this.pendingSwitchValue();
 
-    this.usuarios.update((list) =>
-      list.map((u) =>
-        u.usuarioRed === user.usuarioRed
-          ? { ...u, superAdministrador: newValue ? 1 : 0 }
-          : u
-      )
-    );
+    const request: ModificarUsuarioRequest = {
+      usuarioRed: user.usuarioRed,
+      nombre: user.nombre,
+      correo: user.correo,
+      numeroIdentificacion: user.numeroIdentificacion,
+      superAdministrador: newValue,
+    };
 
-    this.filtrar();
+    this.userService
+      .modificarUsuario(request, this.auth.usuarioRed())
+      .subscribe({
+        next: (res) => {
+          const actualizado = res.data;
+
+          if (actualizado) {
+            this.usuarios.update((list) =>
+              list.map((u) =>
+                u.usuarioRed === actualizado.usuarioRed ? actualizado : u
+              )
+            );
+          }
+
+          this.cambiandoSuperAdmin.set(false);
+          this.filtrar();
+        },
+        error: (err) => {
+          console.error('ERROR AL CAMBIAR SUPER ADMIN:', err);
+          this.cambiandoSuperAdmin.set(false);
+          this.filteredUsers.set([...this.filteredUsers()]);
+        },
+      });
   }
 
   cancelarToggleSuperAdmin(): void {
     this.confirmVisible.set(false);
-    this.filtrar();
+    this.filteredUsers.set([...this.filteredUsers()]);
   }
 
-  // ======== Modal de detalle ========
+  //  Modal de detalle 
 
-  readonly showDetalle = signal(false);
   readonly usuarioDetalle = signal<UsuarioResponseDTO | null>(null);
   readonly cargandoDetalle = signal(false);
-  readonly aplicacionesUsuario = signal<any[]>([]);
+  readonly aplicacionesUsuario = signal<UsuarioAplicacionRolDTO[]>([]);
 
   abrirDetalle(user: UsuarioResponseDTO): void {
     this.usuarioDetalle.set(user);
-    this.showDetalle.set(true);
     this.aplicacionesUsuario.set([]);
-    this.cargandoDetalle.set(false);
+    this.cargandoDetalle.set(true);
 
-    // TODO: conectar endpoint de aplicaciones por usuario cuando exista
+    this.modalDetalle?.open();
+
+    this.userService
+      .obtenerAplicacionesRolesUsuario(user.usuarioRed)
+      .subscribe({
+        next: (res) => {
+          this.aplicacionesUsuario.set(res.data ?? []);
+          this.cargandoDetalle.set(false);
+        },
+        error: (err) => {
+          console.error('ERROR AL CARGAR APLICACIONES DEL USUARIO:', err);
+          this.aplicacionesUsuario.set([]);
+          this.cargandoDetalle.set(false);
+        },
+      });
   }
 
   cerrarDetalle(): void {
-    this.showDetalle.set(false);
+    this.modalDetalle?.close();
     this.usuarioDetalle.set(null);
     this.aplicacionesUsuario.set([]);
+    this.cargandoDetalle.set(false);
   }
 
-  // ======== Ciclo de vida ========
+  //  Ciclo de vida 
 
   ngOnInit(): void {
     this.filtrosForm = this.fb.group({
@@ -191,14 +230,13 @@ export class UsersGlobal implements OnInit {
     this.cargar();
   }
 
-  // ======== Carga de datos ========
+  //  Carga de datos 
 
   cargar(): void {
     this.loading.set(true);
 
     this.userService.listarUsuarios().subscribe({
       next: (res) => {
-        console.log('USUARIOS:', res);
         this.usuarios.set(res.data ?? []);
         this.filtrar();
         this.loading.set(false);
@@ -212,7 +250,7 @@ export class UsersGlobal implements OnInit {
     });
   }
 
-  // ======== Filtros ========
+  //  Filtros 
 
   filtrar(): void {
     const v = this.filtrosForm?.getRawValue() ?? {};
@@ -245,7 +283,6 @@ export class UsersGlobal implements OnInit {
     );
   }
 
-  /** Limpia todos los filtros del formulario. */
   limpiarFiltros(): void {
     this.filtrosForm?.reset({
       searchTerm: '',
@@ -255,8 +292,6 @@ export class UsersGlobal implements OnInit {
     });
     this.filtrar();
   }
-
-  // ======== Getters para los selects ========
 
   get estadoControl(): FormControl {
     return this.filtrosForm.get('estado') as FormControl;

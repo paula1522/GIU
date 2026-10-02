@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
+import com.giu.model.gestionUsuarios.AplicacionRolUsuarioDTO;
 import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.EliminarRolesUsuariosMasivoDTO;
 import com.giu.model.gestionUsuarios.GestionarRolUsuarioRequestDTO;
@@ -62,17 +63,19 @@ public class GestionUsuariosService {
         // Método para obtener los usuarios asociados a una aplicación específica según
         // el estado
         public List<UsuarioAplicacionResponseDTO> obtenerUsuariosPorAplicacion(
-                        Long apliId, String estado) {
+                Long apliId, String estado) {
 
-                logger.info("obtenerUsuariosPorAplicacion - inicio. apliId={}, estado={}", apliId, estado);
+        logger.info("obtenerUsuariosPorAplicacion - inicio. apliId={}, estado={}", apliId, estado);
 
-                List<UsuarioAplicacionResponseDTO> result = gestionUsuariosRepository.obtenerUsuarioXAplicacion(
-                                apliId,
-                                estado);
+        List<UsuarioAplicacionResponseDTO> result = gestionUsuariosRepository.obtenerUsuarioXAplicacion(
+                        null,
+                        apliId,
+                        null,
+                        estado);
 
-                logger.info("obtenerUsuariosPorAplicacion - fin OK. total={}", result.size());
-                return result;
-        }
+        logger.info("obtenerUsuariosPorAplicacion - fin OK. total={}", result.size());
+        return result;
+}
 
         // Método para obtener el rol de un usuario específico en una aplicación
         public UsuarioRolResponseDTO obtenerRolUsuario(String usuarioRed, Long apliId) {
@@ -512,5 +515,37 @@ public class GestionUsuariosService {
                                 apliId,
                                 idsUnicos.size());
         }
+
+
+
+
+public List<AplicacionRolUsuarioDTO> obtenerAplicacionesRolesUsuario(String usuarioRed) {
+
+    logger.info("obtenerAplicacionesRolesUsuario - inicio. usuarioRed={}", usuarioRed);
+
+    List<UsuarioAplicacionResponseDTO> raw = gestionUsuariosRepository.obtenerUsuarioXAplicacion(
+            usuarioRed,
+            null,
+            null,
+            null);
+
+    List<AplicacionRolUsuarioDTO> resultado = raw.stream()
+            .map(r -> {
+                AplicacionRolUsuarioDTO dto = new AplicacionRolUsuarioDTO();
+                dto.setNombreApli(r.getNombreApli());
+                dto.setRolId(r.getIdRol());
+                dto.setNombreRol(r.getNombreRol());
+                dto.setFechaInRol(r.getFechaInRol());
+                dto.setFechaFinRol(r.getFechaFinRol());
+                dto.setEstadoApli(r.getEstadoApli());
+                dto.setEsAdminApli(r.getIdRol() == null); // sin rol = admin
+                return dto;
+            })
+            .collect(Collectors.toList());
+
+    logger.info("obtenerAplicacionesRolesUsuario - fin OK. usuarioRed={}, total={}",
+            usuarioRed, resultado.size());
+    return resultado;
+}
 
 }

@@ -96,12 +96,13 @@ public class GestionUsuariosRepository {
         // Consultar usuarios asociados a una aplicación ->
         // FN_OBTENER_USUARIO_X_APLICACION
         public List<UsuarioAplicacionResponseDTO> obtenerUsuarioXAplicacion(
+                        String usuarioRed,
                         Long apliId,
-                        String estado) {
+                        String estadoUsua,
+                        String estadoApli) {
 
-                logger.debug("obtenerUsuarioXAplicacion - ejecutando FN_OBTENER_USUARIO_X_APLICACION. apliId={}, estado={}",
-                                apliId,
-                                estado);
+                logger.debug("obtenerUsuarioXAplicacion - usuarioRed={}, apliId={}, estadoUsua={}, estadoApli={}",
+                                usuarioRed, apliId, estadoUsua, estadoApli);
 
                 List<UsuarioAplicacionResponseDTO> usuarios = new ArrayList<>();
 
@@ -112,10 +113,31 @@ public class GestionUsuariosRepository {
                         try (CallableStatement stmt = conn.prepareCall(sql)) {
 
                                 stmt.registerOutParameter(1, OracleTypes.CURSOR);
-                                stmt.setNull(2, Types.VARCHAR);
-                                stmt.setObject(3, apliId);
-                                stmt.setString(4, estado);
-                                stmt.setNull(5, Types.VARCHAR);
+
+                                // ✅ Java 8: trim().isEmpty() en lugar de isBlank()
+                                if (usuarioRed != null && !usuarioRed.trim().isEmpty()) {
+                                        stmt.setString(2, usuarioRed.toUpperCase().trim());
+                                } else {
+                                        stmt.setNull(2, Types.VARCHAR);
+                                }
+
+                                if (apliId != null) {
+                                        stmt.setObject(3, apliId);
+                                } else {
+                                        stmt.setNull(3, Types.NUMERIC);
+                                }
+
+                                if (estadoUsua != null && !estadoUsua.trim().isEmpty()) {
+                                        stmt.setString(4, estadoUsua.toUpperCase().trim());
+                                } else {
+                                        stmt.setNull(4, Types.VARCHAR);
+                                }
+
+                                if (estadoApli != null && !estadoApli.trim().isEmpty()) {
+                                        stmt.setString(5, estadoApli.toUpperCase().trim());
+                                } else {
+                                        stmt.setNull(5, Types.VARCHAR);
+                                }
 
                                 stmt.execute();
 
@@ -132,37 +154,35 @@ public class GestionUsuariosRepository {
                                                 usuario.setNumeroIdentificacion(rs.getString("NUMERO_IDENTIFICACION"));
                                                 usuario.setEstadoUsua(rs.getString("ESTADO_USUA"));
                                                 usuario.setEsSuperAdmin(rs.getInt("ES_SUPER_ADMIN"));
-                                                usuario.setFechaCreacion(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_CREACION")));
+                                                usuario.setFechaCreacion(FechaUtils
+                                                                .convertirFecha(rs.getTimestamp("FECHA_CREACION")));
                                                 usuario.setUsuarioCreacion(rs.getString("USUARIO_CREACION"));
-                                                usuario.setFechaModificacion(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_MODIFICACION")));
+                                                usuario.setFechaModificacion(FechaUtils
+                                                                .convertirFecha(rs.getTimestamp("FECHA_MODIFICACION")));
                                                 usuario.setUsuarioModificacion(rs.getString("USUARIO_MODIFICACION"));
+
                                                 usuario.setCodigoApli(rs.getString("CODIGO_APLI"));
                                                 usuario.setNombreApli(rs.getString("NOMBRE_APLI"));
                                                 usuario.setEstadoApli(rs.getString("ESTADO_APLI"));
+
                                                 usuario.setIdRol(rs.getObject("ID_ROL", Long.class));
                                                 usuario.setNombreRol(rs.getString("NOMBRE_ROL"));
-                                                usuario.setFechaInRol(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_IN_ROL")));
-                                                usuario.setFechaFinRol(FechaUtils.convertirFecha(
-                                                                rs.getTimestamp("FECHA_FIN_ROL")));
+                                                usuario.setFechaInRol(FechaUtils
+                                                                .convertirFecha(rs.getTimestamp("FECHA_IN_ROL")));
+                                                usuario.setFechaFinRol(FechaUtils
+                                                                .convertirFecha(rs.getTimestamp("FECHA_FIN_ROL")));
 
                                                 usuarios.add(usuario);
                                         }
                                 }
                         }
 
-                        logger.debug("obtenerUsuarioXAplicacion - registros mapeados. total={}",
-                                        usuarios.size());
+                        logger.debug("obtenerUsuarioXAplicacion - total={}", usuarios.size());
 
                 } catch (Exception e) {
-
-                        logger.error("obtenerUsuarioXAplicacion - error. apliId={}, estado={}",
-                                        apliId,
-                                        estado, e);
-
-                        throw new RuntimeException("Error consultando Administradores", e);
+                        logger.error("obtenerUsuarioXAplicacion - error. usuarioRed={}, apliId={}", usuarioRed, apliId,
+                                        e);
+                        throw new RuntimeException("Error consultando usuarios por aplicación", e);
                 }
 
                 return usuarios;
@@ -424,62 +444,57 @@ public class GestionUsuariosRepository {
         }
 
         public void retirarRolesUsuariosMasivo(
-        Connection conn,
-        Long apliId,
-        List<Long> usuariosIds,
-        String usuarioModificacion) {
+                        Connection conn,
+                        Long apliId,
+                        List<Long> usuariosIds,
+                        String usuarioModificacion) {
 
-    if (usuariosIds == null || usuariosIds.isEmpty()) {
-        throw new IllegalArgumentException(
-            "Debe indicar al menos un usuario."
-        );
-    }
+                if (usuariosIds == null || usuariosIds.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                        "Debe indicar al menos un usuario.");
+                }
 
-    String placeholders = usuariosIds.stream()
-        .map(id -> "?")
-        .collect(Collectors.joining(", "));
+                String placeholders = usuariosIds.stream()
+                                .map(id -> "?")
+                                .collect(Collectors.joining(", "));
 
-    String sql =
-        "DELETE FROM SERCON_EAF.GIU_TBL_USUARIO_X_ROL UR " +
-        "WHERE UR.APLI_ID = ? " +
-        "AND UR.USUA_USUARIO_RED IN ( " +
-        "    SELECT U.USUARIO_RED " +
-        "    FROM SERCON_EAF.GIU_TBL_USUARIOS U " +
-        "    WHERE U.ID IN (" + placeholders + ") " +
-        ")";
+                String sql = "DELETE FROM SERCON_EAF.GIU_TBL_USUARIO_X_ROL UR " +
+                                "WHERE UR.APLI_ID = ? " +
+                                "AND UR.USUA_USUARIO_RED IN ( " +
+                                "    SELECT U.USUARIO_RED " +
+                                "    FROM SERCON_EAF.GIU_TBL_USUARIOS U " +
+                                "    WHERE U.ID IN (" + placeholders + ") " +
+                                ")";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        int indice = 1;
+                        int indice = 1;
 
-        ps.setLong(indice++, apliId);
+                        ps.setLong(indice++, apliId);
 
-        for (Long usuarioId : usuariosIds) {
-            ps.setLong(indice++, usuarioId);
+                        for (Long usuarioId : usuariosIds) {
+                                ps.setLong(indice++, usuarioId);
+                        }
+
+                        int filasEliminadas = ps.executeUpdate();
+
+                        logger.info(
+                                        "Retiro masivo ejecutado - apliId={}, usuariosSolicitados={}, asignacionesEliminadas={}",
+                                        apliId,
+                                        usuariosIds.size(),
+                                        filasEliminadas);
+
+                } catch (SQLException e) {
+                        logger.error(
+                                        "Error al retirar roles masivamente. apliId={}",
+                                        apliId,
+                                        e);
+
+                        throw new RuntimeException(
+                                        "No fue posible retirar los roles de los usuarios.",
+                                        e);
+                }
         }
-
-        int filasEliminadas = ps.executeUpdate();
-
-        logger.info(
-            "Retiro masivo ejecutado - apliId={}, usuariosSolicitados={}, asignacionesEliminadas={}",
-            apliId,
-            usuariosIds.size(),
-            filasEliminadas
-        );
-
-    } catch (SQLException e) {
-        logger.error(
-            "Error al retirar roles masivamente. apliId={}",
-            apliId,
-            e
-        );
-
-        throw new RuntimeException(
-            "No fue posible retirar los roles de los usuarios.",
-            e
-        );
-    }
-}
 
         // Gestionar rol de un usuario en una aplicación -> PRC_GESTIONAR_ROL_USUARIO
         public UsuarioRolResponseDTO gestionarRolUsuario(

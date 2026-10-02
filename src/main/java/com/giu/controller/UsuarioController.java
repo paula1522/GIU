@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.giu.model.RespuestaGenerica;
 import com.giu.utils.TipoRespuesta;
 import com.giu.model.gestionSeguridad.GestionarEstadoUsuarioRequest;
+import com.giu.model.gestionUsuarios.AplicacionRolUsuarioDTO;
 import com.giu.model.gestionUsuarios.CrearUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.ModificarUsuarioRequestDTO;
 import com.giu.model.gestionUsuarios.UsuarioResponseDTO;
@@ -131,4 +133,29 @@ public class UsuarioController {
 
                 return ResponseEntity.ok(respuesta);
         }
+
+
+        /**
+ * Obtiene las aplicaciones y roles asociados a un usuario.
+ *
+ * Método: GET
+ * Ruta: /api/usuarios/{usuarioRed}/aplicaciones-roles
+ *
+ * Ejemplo:
+ * GET /api/usuarios/UUU222/aplicaciones-roles
+ */
+@GetMapping("/{usuarioRed}/aplicaciones-roles")
+public ResponseEntity<RespuestaGenerica<List<AplicacionRolUsuarioDTO>>> obtenerAplicacionesRolesUsuario(
+        @PathVariable String usuarioRed) {
+
+    logger.info("GET /usuarios/{}/aplicaciones-roles", usuarioRed);
+
+    List<AplicacionRolUsuarioDTO> resultado =
+            usuarioService.obtenerAplicacionesRolesUsuario(usuarioRed);
+
+    RespuestaGenerica<List<AplicacionRolUsuarioDTO>> respuesta =
+            new RespuestaGenerica<>(TipoRespuesta.EXITOSO, resultado);
+
+    return ResponseEntity.ok(respuesta);
+}
 }

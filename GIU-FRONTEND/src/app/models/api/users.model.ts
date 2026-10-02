@@ -1,14 +1,13 @@
+import { EstadoUsuario } from "../../utils/constants/estados.constants";
 
 //  Responses 
-
-import { EstadoUsuario } from "../../utils/constants/estados.constants";
 
 export interface UsuarioResponseDTO {
   id: number;
   usuarioRed: string;
   nombre: string;
   correo: string;
-  estado: EstadoUsuario;              
+  estado: EstadoUsuario;
   numeroIdentificacion: string;
   superAdministrador: number;
   fechaCreacion: string | null;
@@ -39,6 +38,20 @@ export interface UsuarioAsignadoRol {
   fechaFin: string | null;
 }
 
+/**
+ * DTO devuelto por GET /api/usuarios/{usuarioRed}/aplicaciones-roles
+ * Si `nombreRol` es null → el usuario es admin de la app (sin rol específico).
+ */
+export interface UsuarioAplicacionRolDTO {
+  nombreApli: string;
+  rolId: number | null;
+  nombreRol: string | null;
+  fechaInRol: string | null;
+  fechaFinRol: string | null;
+  estadoApli: string;
+  esAdminApli: boolean;
+}
+
 //  Requests 
 
 export interface RetirarRolesUsuariosRequest {
@@ -59,4 +72,12 @@ export interface GestionarEstadoUsuarioRequest {
   usuarioRed: string;
   operacion: number; // 0 = Activar, 2 = Desactivar
   rolId: number;
+}
+
+export interface ModificarUsuarioRequest {
+  usuarioRed: string;
+  nombre?: string;
+  correo?: string;
+  numeroIdentificacion?: string;
+  superAdministrador?: boolean;
 }
